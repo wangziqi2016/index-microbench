@@ -23,6 +23,77 @@ Index<KeyType, KeyComparator> *getInstance(const int type, const uint64_t kt) {
     return new BtreeIndex<KeyType, KeyComparator>(kt);
 }
 
+/*
+ * PinToCore() - This function pins the current thread to a core
+ */
+void PinToCore(size_t core_id) {
+  cpu_set_t cpu_set;
+  CPU_ZERO(&cpu_set);
+  CPU_SET(core_id * 2, &cpu_set);
+
+  int ret = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set), &cpu_set);
+  if(ret != 0) {
+    fprintf(stderr, "PinToCore() returns non-0\n");
+    exit(1);
+  }
+
+  return;
+}
+
+template <typename Fn, typename... Args>
+void StartThreads(Index<keytype, keycomp> *tree_p,
+                  uint64_t num_threads,
+                  Fn &&fn,
+                  Args &&...args) {
+  std::vector<std::thread> thread_group;
+
+  if(tree_p != nullptr) {
+    // Update the GC array
+    tree_p->UpdateThreadLocal(num_threads);
+  }
+
+  //fprintf(stderr, "Update thread local\n");
+
+  auto fn2 = [tree_p, &fn](uint64_t thread_id, Args ...args) {
+    if(tree_p != nullptr) {
+      tree_p->AssignGCID(thread_id);
+    }
+
+    PinToCore(thread_id);
+
+    //fprintf(stderr, "Assign GCID\n");
+
+    fn(thread_id, args...);
+
+    if(tree_p != nullptr) {
+      // Make sure it does not stand on the way of other threads
+      tree_p->UnregisterThread(thread_id);
+    }
+
+    return;
+  };
+
+  // Launch a group of threads
+  for (uint64_t thread_itr = 0; thread_itr < num_threads; ++thread_itr) {
+    thread_group.push_back(std::thread{fn2, thread_itr, std::ref(args...)});
+  }
+
+  //fprintf(stderr, "Finished creating threads\n");
+
+  // Join the threads with the main thread
+  for (uint64_t thread_itr = 0; thread_itr < num_threads; ++thread_itr) {
+    thread_group[thread_itr].join();
+  }
+
+  // Restore to single thread mode after all threads have finished
+  if(tree_p != nullptr) {
+    tree_p->UpdateThreadLocal(1);
+  }
+
+  return;
+}
+
+
 //==============================================================
 // LOAD
 //==============================================================
@@ -129,23 +200,38 @@ inline void load(int wl, int kt, int index_type, std::vector<keytype> &init_keys
 //==============================================================
 // EXEC
 //==============================================================
-inline void exec(int wl, int index_type, std::vector<keytype> &init_keys, std::vector<keytype> &keys, std::vector<uint64_t> &values, std::vector<int> &ranges, std::vector<int> &ops) {
+inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &init_keys, std::vector<keytype> &keys, std::vector<uint64_t> &values, std::vector<int> &ranges, std::vector<int> &ops) {
 
   Index<keytype, keycomp> *idx = getInstance<keytype, keycomp>(index_type, key_type);
 
+  // WRITE ONLY TEST--------------
+  int count = (int)init_keys.size();
+  double start_time = get_now();
+  auto func = [idx, &init_keys, num_thread, &values](uint64_t thread_id, bool) {
+    size_t total_num_key = init_keys.size();
+    size_t key_per_thread = total_num_key / num_thread;
+    size_t start_index = key_per_thread * thread_id;
+    size_t end_index = start_index + key_per_thread;
+
+    for(size_t i = start_index;i < end_index;i++) {
+      idx->insert(init_keys[i], values[i]);
+    }
+
+    return;
+  };
+
+  StartThreads(idx, num_thread, func, false);
+
+/*
   //WRITE ONLY TEST-----------------
   int count = 0;
   double start_time = get_now();
   while (count < (int)init_keys.size()) {
     idx->insert(init_keys[count], values[count]);
-    /*
-    if (!idx->insert(init_keys[count], values[count])) {
-      std::cout << "LOAD FAIL!\n";
-      return;
     }
-    */
     count++;
   }
+*/
   double end_time = get_now();
   double tput = count / (end_time - start_time) / 1000000; //Mops/sec
 
@@ -184,6 +270,71 @@ inline void exec(int wl, int index_type, std::vector<keytype> &init_keys, std::v
   }
 #endif
 
+  if(values.size() < keys.size()) {
+    fprintf(stderr, "Values array too small\n");
+    exit(1);
+  }
+
+  // Calculate the number of transactions here
+  for(auto op : ops) {
+    switch(op) {
+      case 0:
+      case 1:
+      case 3:
+        txn_num++;
+        break;
+      case 2:
+        if(index_type == 2) txn_num += 2;
+        else txn_num++;
+        break;
+      default:
+        fprintf(stderr, "Unknown operation\n");
+        exit(1);
+        break;
+    }
+  }
+
+  fprintf(stderr, "# of Txn: %d\n", txn_num);
+
+  auto func2 = [num_thread,
+                idx,
+                &keys,
+                &values,
+                &ranges,
+                &ops](uint64_t thread_id, bool) {
+    size_t total_num_op = ops.size();
+    size_t op_per_thread = total_num_op / num_thread;
+    size_t start_index = op_per_thread * thread_id;
+    size_t end_index = start_index + op_per_thread;
+
+    std::vector<uint64_t> v;
+    v.reserve(10);
+
+    for(size_t i = start_index;i < end_index;i++) {
+      int op = ops[i];
+
+      if (op == 0) { //INSERT
+        idx->insert(keys[i], values[i]);
+      }
+      else if (op == 1) { //READ
+        v.clear();
+        idx->find(keys[i], &v);
+      }
+      else if (op == 2) { //UPDATE
+        idx->upsert(keys[i], values[i]);
+      }
+      else if (op == 3) { //SCAN
+        idx->scan(keys[i], ranges[i]);
+      }
+    }
+
+    return;
+  };
+
+  StartThreads(idx, num_thread, func2, false);
+
+  end_time = get_now();
+/*
   std::vector<uint64_t> v;
   v.reserve(10);
 
@@ -213,6 +364,7 @@ inline void exec(int wl, int index_type, std::vector<keytype> &init_keys, std::v
     }
     txn_num++;
   }
+*/
 
 #ifdef PAPI_IPC
   if((retval = PAPI_ipc(&real_time, &proc_time, &ins, &ipc)) < PAPI_OK) {    
@@ -237,7 +389,6 @@ inline void exec(int wl, int index_type, std::vector<keytype> &init_keys, std::v
   std::cout << "L3 miss = " << counters[2] << "\n";
 #endif
 
-  end_time = get_now();
   tput = txn_num / (end_time - start_time) / 1000000; //Mops/sec
 
   std::cout << "sum = " << sum << "\n";
@@ -258,11 +409,12 @@ inline void exec(int wl, int index_type, std::vector<keytype> &init_keys, std::v
 
 int main(int argc, char *argv[]) {
 
-  if (argc != 4) {
+  if (argc != 5) {
     std::cout << "Usage:\n";
     std::cout << "1. workload type: a, c, e\n";
     std::cout << "2. key distribution: email\n";
     std::cout << "3. index type: btree, art, bwtree\n";
+    std::cout << "4. Number of threads: (1 - 40)\n";
     return 1;
   }
 
@@ -301,7 +453,17 @@ int main(int argc, char *argv[]) {
   else
     index_type = 0;
 
-  printf("index type = %d\n", index_type);
+  // Then read number of threads using command line
+  int num_thread = atoi(argv[4]);
+  if(num_thread < 1 || num_thread > 40) {
+    fprintf(stderr, "Do not support %d threads\n", num_thread);
+
+    return 1;
+  } else {
+    fprintf(stderr, "Number of threads: %d\n", num_thread);
+  }
+
+  fprintf(stderr, "index type = %d\n", index_type);
 
   std::vector<keytype> init_keys;
   std::vector<keytype> keys;
@@ -311,7 +473,7 @@ int main(int argc, char *argv[]) {
 
   load(wl, kt, index_type, init_keys, keys, values, ranges, ops);
   printf("Finish loading\n");
-  exec(wl, index_type, init_keys, keys, values, ranges, ops);
+  exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
 
   return 0;
 }

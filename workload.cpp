@@ -1,5 +1,8 @@
 #include "microbench.h"
 
+#include <cstring>
+#include <cctype>
+
 typedef uint64_t keytype;
 typedef std::less<uint64_t> keycomp;
 
@@ -28,7 +31,7 @@ Index<KeyType, KeyComparator> *getInstance(const int type, const uint64_t kt) {
 void PinToCore(size_t core_id) {
   cpu_set_t cpu_set;
   CPU_ZERO(&cpu_set);
-  CPU_SET(core_id, &cpu_set);
+  CPU_SET(core_id * 2, &cpu_set);
 
   int ret = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set), &cpu_set);
   if(ret != 0) {
@@ -90,6 +93,86 @@ void StartThreads(Index<keytype, keycomp> *tree_p,
   }
   
   return;
+}
+
+/*
+ * MemUsage() - Reads memory usage from /proc file system
+ */
+size_t MemUsage() {
+  const char *reason = nullptr;
+  size_t usage = 0UL;
+  size_t file_size = 0UL;
+
+  char *start_p, *end_p;
+  int ret = 0;
+
+  static constexpr size_t PROC_MEM_BUFFER_SIZE = 4096UL;
+  char buffer[PROC_MEM_BUFFER_SIZE];
+
+  FILE *fp = fopen("/proc/meminfo", "rb");
+  if(fp == nullptr) {
+    fprintf(stderr, "Could not open /proc/meminfo to read memory usage\n");
+    exit(1);
+  }
+
+  int offset = 0;
+  while((offset < PROC_MEM_BUFFER_SIZE - 1) && (feof(fp) == false)) {
+    buffer[offset] = fgetc(fp);
+    offset++;
+  }
+
+  buffer[offset] = '\0';
+
+  static constexpr const char *pattern1 = "MemFree:";
+  static constexpr const char *pattern2 = "kB";
+  
+  start_p = strstr(buffer, pattern1);
+  if(start_p == nullptr) {
+    fprintf(stderr, "Could not find \"%s\"\n", pattern1);
+    exit(1);
+  } else {
+    start_p += strlen(pattern1);
+  }
+
+  end_p = strstr(start_p + strlen(pattern1), pattern2);
+  if(end_p == nullptr) {
+    fprintf(stderr, "Could not find \"%s\"\n", pattern2);
+    exit(1);
+  } else {
+    end_p--;
+  }
+
+  while((start_p <= end_p) && (isdigit(*start_p) == false)) {
+    start_p++;
+  }
+
+  while((end_p >= start_p) && (isdigit(*end_p) == false)) {
+    end_p--;
+  }
+
+  while((start_p <= end_p)) {
+    if(isdigit(*start_p) == false) {
+      fprintf(stderr, "Unrecognized digit: %c\n", *start_p);
+      exit(1);
+    }
+
+    size_t digit = static_cast<size_t>(*start_p - '0');
+    usage = usage * 10 + digit;
+
+    start_p++;
+  }
+
+  ret = fclose(fp);
+  if(ret != 0) {
+    reason = "fclose";
+    goto syscall_error;
+  }
+
+  return usage;
+
+syscall_error:
+  fprintf(stderr, "System call failed (%s)\n", reason);
+  exit(1);
 }
 
 
@@ -352,6 +435,8 @@ inline void exec(int wl,
   
   StartThreads(idx, num_thread, func2, false);
   
+  end_time = get_now();
+
 #ifdef PAPI_IPC
   if((retval = PAPI_ipc(&real_time, &proc_time, &ins, &ipc)) < PAPI_OK) {    
     printf("PAPI error: retval: %d\n", retval);
@@ -375,7 +460,6 @@ inline void exec(int wl,
   std::cout << "L3 miss = " << counters[2] << "\n";
 #endif
 
-  end_time = get_now();
   tput = txn_num / (end_time - start_time) / 1000000; //Mops/sec
 
   std::cout << "sum = " << sum << "\n";
@@ -466,8 +550,9 @@ int main(int argc, char *argv[]) {
   std::vector<int> ops; //INSERT = 0, READ = 1, UPDATE = 2
 
   load(wl, kt, index_type, init_keys, keys, values, ranges, ops);
-  printf("Finished loading workload file\n");
+  printf("Finished loading workload file (mem = %lu)\n", MemUsage());
   exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
+  printf("Finished running benchmark (mem = %lu)\n", MemUsage());
 
   return 0;
 }

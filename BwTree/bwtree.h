@@ -27,7 +27,6 @@
 
 #include <algorithm>
 #include <array>
-#include <atomic>
 #include <cassert>
 #include <chrono>
 #include <thread>
@@ -35,12 +34,58 @@
 // offsetof() is defined here
 #include <cstddef>
 #include <vector>
+#include <atomic>
+
+#define SINGLE_THREAD
+#ifdef SINGLE_THREAD
+#warning "Compiling single threaded BwTree..."
+
+template <typename T>
+struct FakeAtomic {
+  T data;
+
+  FakeAtomic() : data{} {}
+  FakeAtomic(T value) : data{value} {}
+  ~FakeAtomic() {}
+
+  FakeAtomic &operator=(T value) { data = value; return *this; }
+  
+  inline T load() { return data; }
+  inline void store(T value) { data = value; }
+  inline bool compare_exchange_strong(T &old_value, T new_value) {
+    assert(old_value == data);
+    (void)old_value;
+
+    data = new_value;
+
+    return true;
+  }
+
+  template <typename Op>
+  inline T fetch_add(const Op &diff) {
+    T old = data;
+    data += diff;
+    return old;
+  }
+
+  template <typename Op>
+  inline T fetch_sub(const Op &diff) {
+    T old = data;
+    data -= diff;
+    return old;
+  }
+}; // struct atomic
+
+#define AtomicType FakeAtomic
+#else
+#define AtomicType std::atomic
+#endif
 
 /*
  * BWTREE_PELOTON - Specifies whether Peloton-specific features are
  *                  Compiled or not
  *                  We strive to make BwTree a standalone and independent
- *                  module that can be plugged-and-played in any situation
+ *                  module that  can be plugged-and-played in any situation
  */
 //#define BWTREE_PELOTON
 
@@ -314,7 +359,7 @@ class BwTreeBase {
   
   // This is used to count the number of threads participating GC process
   // We use this number to initialize GC data structure
-  static std::atomic<size_t> total_thread_num;
+  static AtomicType<size_t> total_thread_num;
   
   // This is the array being allocated for performing GC
   // The allocation aligns its address to cache line boundary
@@ -1903,12 +1948,12 @@ class BwTree : public BwTreeBase {
    private: 
     // This points to the higher address end of the chunk we are 
     // allocating from
-    std::atomic<char *> tail;
+    AtomicType<char *> tail;
     // This points to the lower limit of the memory region we could use
     char *const limit;
     // This forms a linked list which needs to be traversed in order to 
     // free chunks of memory
-    std::atomic<AllocationMeta *> next;
+    AtomicType<AllocationMeta *> next;
   
    public:
     /*
@@ -3060,7 +3105,7 @@ class BwTree : public BwTreeBase {
                root_id.load(),
                first_leaf_id);
 
-    InstallNewNode(root_id, root_node_p);
+    InstallNewNode(root_id.load(), root_node_p);
 
     // Initially there is no element inside the leaf node so we set element
     // count to be 0
@@ -7692,15 +7737,14 @@ before_switch:
   const KeyValuePairComparator key_value_pair_cmp_obj;
   const KeyValuePairEqualityChecker key_value_pair_eq_obj;
   const KeyValuePairHashFunc key_value_pair_hash_obj;
-
   // This value is atomic and will change
-  std::atomic<NodeID> root_id;
+  AtomicType<NodeID> root_id;
 
   // This value is non-atomic, but it remains constant after constructor
   NodeID first_leaf_id;
 
-  std::atomic<NodeID> next_unused_node_id;
-  std::array<std::atomic<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
+  AtomicType<NodeID> next_unused_node_id;
+  std::array<AtomicType<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
 
   // This list holds free NodeID which was removed by remove delta
   // We recycle NodeID in epoch manager
@@ -7755,12 +7799,12 @@ before_switch:
     struct EpochNode {
       // We need this to be atomic in order to accurately
       // count the number of threads
-      std::atomic<int> active_thread_count;
+      AtomicType<int> active_thread_count;
 
       // We need this to be atomic to be able to
       // add garbage nodes without any race condition
       // i.e. GC nodes are CASed onto this pointer
-      std::atomic<GarbageNode *> garbage_list_p;
+      AtomicType<GarbageNode *> garbage_list_p;
 
       // This does not need to be atomic since it is
       // only maintained by the epoch thread
@@ -7803,8 +7847,8 @@ before_switch:
     size_t epoch_created;
     size_t epoch_freed;
 
-    std::atomic<size_t> epoch_join;
-    std::atomic<size_t> epoch_leave;
+    AtomicType<size_t> epoch_join;
+    AtomicType<size_t> epoch_leave;
     #endif
 
     /*

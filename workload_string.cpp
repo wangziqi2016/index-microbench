@@ -11,16 +11,14 @@ static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
 //==============================================================
 template<typename KeyType, class KeyComparator>
 Index<KeyType, KeyComparator> *getInstance(const int type, const uint64_t kt) {
-  if (type == 0)
-    return new BtreeIndex<KeyType, KeyComparator>(kt);
-  else if (type == 1)
-    return new ArtIndex_Generic<KeyType, KeyComparator>(kt);
-  else if (type == 2)
+  if (type == 1)
     return new BwTreeIndex<KeyType, KeyComparator, GenericEqualityChecker<31>, GenericHasher<31>>(kt);
-  else if (type == 3)
-    return new SkipListIndex<KeyType, KeyComparator, GenericEqualityChecker<31>>(kt); 
-  else
-    return new BtreeIndex<KeyType, KeyComparator>(kt);
+  else if (type == 2)
+    return new MassTreeIndex<KeyType, KeyComparator>(kt);
+  else {
+    fprintf(stderr, "Unknown index type: %d\n", type);
+    exit(1);
+  }
 }
 
 /*
@@ -213,8 +211,10 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
     size_t start_index = key_per_thread * thread_id;
     size_t end_index = start_index + key_per_thread;
 
+    threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
+
     for(size_t i = start_index;i < end_index;i++) {
-      idx->insert(init_keys[i], values[i]);
+      idx->insert(init_keys[i], values[i], ti);
     }
 
     return;
@@ -284,7 +284,7 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
         txn_num++;
         break;
       case 2:
-        if(index_type == 2) txn_num += 2;
+        if(index_type == TYPE_BWTREE) txn_num += 2;
         else txn_num++;
         break;
       default:
@@ -310,21 +310,23 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
     std::vector<uint64_t> v;
     v.reserve(10);
 
+    threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
+
     for(size_t i = start_index;i < end_index;i++) {
       int op = ops[i];
 
       if (op == 0) { //INSERT
-        idx->insert(keys[i], values[i]);
+        idx->insert(keys[i], values[i], ti);
       }
       else if (op == 1) { //READ
         v.clear();
-        idx->find(keys[i], &v);
+        idx->find(keys[i], &v, ti);
       }
       else if (op == 2) { //UPDATE
-        idx->upsert(keys[i], values[i]);
+        idx->upsert(keys[i], values[i], ti);
       }
       else if (op == 3) { //SCAN
-        idx->scan(keys[i], ranges[i]);
+        idx->scan(keys[i], ranges[i], ti);
       }
     }
 
@@ -438,21 +440,16 @@ int main(int argc, char *argv[]) {
   else
     kt = 0;
 
-
   int index_type = 0;
-  // 0 = btree
-  // 1 = art
-  if (strcmp(argv[3], "btree") == 0)
-    index_type = 0;
-  else if (strcmp(argv[3], "art") == 0)
+  if (strcmp(argv[3], "bwtree") == 0)
     index_type = 1;
-  else if (strcmp(argv[3], "bwtree") == 0)
+  else if (strcmp(argv[3], "masstree") == 0)
     index_type = 2;
-  else if (strcmp(argv[3], "skiplist") == 0) 
-    index_type = 3;
-  else
-    index_type = 0;
-
+  else {
+    fprintf(stderr, "Unknown index type: %d\n", index_type);
+    exit(1);
+  } 
+ 
   // Then read number of threads using command line
   int num_thread = atoi(argv[4]);
   if(num_thread < 1 || num_thread > 40) {

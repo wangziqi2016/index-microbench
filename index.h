@@ -121,7 +121,7 @@ class MassTreeIndex : public Index<KeyType, KeyComparator>
     i = __bswap_64(i);
   }
 
-  inline void swap_endian(const char *) {
+  inline void swap_endian(GenericKey<31> &) {
     return;
   }
   
@@ -131,7 +131,7 @@ class MassTreeIndex : public Index<KeyType, KeyComparator>
 
   bool insert(KeyType key, uint64_t value, threadinfo *ti) {
     swap_endian(key);
-    idx->put((const char*)&key, 8, (const char*)&value, 8, ti);
+    idx->put((const char*)&key, sizeof(KeyType), (const char*)&value, 8, ti);
 
     return true;
   }
@@ -139,7 +139,7 @@ class MassTreeIndex : public Index<KeyType, KeyComparator>
   uint64_t find(KeyType key, std::vector<uint64_t> *v, threadinfo *ti) {
     Str val;
     swap_endian(key);
-    idx->get((const char*)&key, 8, val, ti);
+    idx->get((const char*)&key, sizeof(KeyType), val, ti);
 
     v->clear();
     v->push_back(*(uint64_t *)val.s);
@@ -149,7 +149,7 @@ class MassTreeIndex : public Index<KeyType, KeyComparator>
 
   bool upsert(KeyType key, uint64_t value, threadinfo *ti) {
     swap_endian(key);
-    idx->put((const char*)&key, 8, (const char*)&value, 8, ti);
+    idx->put((const char*)&key, sizeof(KeyType), (const char*)&value, 8, ti);
     return true;
   }
 
@@ -157,7 +157,7 @@ class MassTreeIndex : public Index<KeyType, KeyComparator>
     Str val;
 
     swap_endian(key);
-    int key_len = 8;
+    int key_len = sizeof(KeyType);
 
     for (int i = 0; i < range; i++) {
       idx->dynamic_get_next(val, (char *)&key, &key_len, ti);

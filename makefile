@@ -31,11 +31,11 @@ workload.o: workload.cpp microbench.h index.h
 workload: workload.o bwtree.o ./masstree/mtIndexAPI.a
 	$(CXX) $(CFLAGS) -o workload workload.o bwtree.o masstree/mtIndexAPI.a $(MEMMGR) -lpthread -lm
 
-workload_string.o: workload_string.cpp microbench.h
+workload_string.o: workload_string.cpp microbench.h index.h
 	$(CXX) $(CFLAGS) -c -o workload_string.o workload_string.cpp
 
-workload_string: workload_string.o bwtree.o skiplist.o
-	$(CXX) $(CFLAGS) -o workload_string workload_string.o bwtree.o skiplist.o $(MEMMGR) -lpthread -lm
+workload_string: workload_string.o bwtree.o ./masstree/mtIndexAPI.a
+	$(CXX) $(CFLAGS) -o workload_string workload_string.o bwtree.o masstree/mtIndexAPI.a $(MEMMGR) -lpthread -lm
 
 bwtree.o: ./BwTree/bwtree.h ./BwTree/bwtree.cpp
 	$(CXX) $(CFLAGS) -c -o bwtree.o ./BwTree/bwtree.cpp

@@ -1,12 +1,8 @@
 #include <iostream>
 #include "indexkey.h"
-#include "stx/btree_map.h"
-#include "stx/btree.h"
-#include "ART/hybridART.h"
 #include "BwTree/bwtree.h"
 #include <byteswap.h>
 
-#include "skiplist/skiplist.h"
 #include "masstree/mtIndexAPI.hh"
 
 using namespace wangziqi2013;

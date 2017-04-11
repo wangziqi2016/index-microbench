@@ -5,6 +5,9 @@
 
 #include "masstree/mtIndexAPI.hh"
 
+#ifndef _INDEX_H
+#define _INDEX_H
+
 using namespace wangziqi2013;
 using namespace bwtree;
 
@@ -182,5 +185,6 @@ class MassTreeIndex : public Index<KeyType, KeyComparator>
   MapType *idx;
 };
 
+#endif
 
 

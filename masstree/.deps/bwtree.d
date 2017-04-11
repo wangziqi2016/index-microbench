@@ -93,8 +93,7 @@ bwtree.o: BwTree/bwtree.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
  /usr/include/c++/5/bits/functional_hash.h \
  /usr/include/c++/5/bits/hash_bytes.h \
- /usr/include/c++/5/bits/basic_string.tcc /usr/include/c++/5/atomic \
- /usr/include/c++/5/bits/atomic_base.h /usr/include/c++/5/cassert \
+ /usr/include/c++/5/bits/basic_string.tcc /usr/include/c++/5/cassert \
  /usr/include/assert.h /usr/include/c++/5/chrono /usr/include/c++/5/ratio \
  /usr/include/c++/5/ctime /usr/include/c++/5/bits/parse_numbers.h \
  /usr/include/c++/5/thread /usr/include/c++/5/functional \
@@ -109,14 +108,15 @@ bwtree.o: BwTree/bwtree.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/bits/allocated_ptr.h \
  /usr/include/c++/5/ext/aligned_buffer.h \
  /usr/include/c++/5/bits/shared_ptr_atomic.h \
+ /usr/include/c++/5/bits/atomic_base.h \
  /usr/include/c++/5/backward/auto_ptr.h /usr/include/c++/5/unordered_set \
  /usr/include/c++/5/bits/hashtable.h \
  /usr/include/c++/5/bits/hashtable_policy.h \
  /usr/include/c++/5/bits/unordered_set.h /usr/include/c++/5/cstddef \
  /usr/include/c++/5/vector /usr/include/c++/5/bits/stl_vector.h \
  /usr/include/c++/5/bits/stl_bvector.h /usr/include/c++/5/bits/vector.tcc \
- BwTree/sorted_small_set.h BwTree/bloom_filter.h \
- /usr/include/c++/5/cstring /usr/include/string.h \
+ /usr/include/c++/5/atomic BwTree/sorted_small_set.h \
+ BwTree/bloom_filter.h /usr/include/c++/5/cstring /usr/include/string.h \
  /usr/include/x86_64-linux-gnu/bits/string3.h BwTree/atomic_stack.h
 
 /usr/include/stdc-predef.h:
@@ -379,10 +379,6 @@ BwTree/bwtree.h:
 
 /usr/include/c++/5/bits/basic_string.tcc:
 
-/usr/include/c++/5/atomic:
-
-/usr/include/c++/5/bits/atomic_base.h:
-
 /usr/include/c++/5/cassert:
 
 /usr/include/assert.h:
@@ -425,6 +421,8 @@ BwTree/bwtree.h:
 
 /usr/include/c++/5/bits/shared_ptr_atomic.h:
 
+/usr/include/c++/5/bits/atomic_base.h:
+
 /usr/include/c++/5/backward/auto_ptr.h:
 
 /usr/include/c++/5/unordered_set:
@@ -444,6 +442,8 @@ BwTree/bwtree.h:
 /usr/include/c++/5/bits/stl_bvector.h:
 
 /usr/include/c++/5/bits/vector.tcc:
+
+/usr/include/c++/5/atomic:
 
 BwTree/sorted_small_set.h:
 

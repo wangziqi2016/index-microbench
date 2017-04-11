@@ -135,7 +135,7 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/ext/aligned_buffer.h \
  /usr/include/c++/5/bits/stl_map.h /usr/include/c++/5/tuple \
  /usr/include/c++/5/array /usr/include/c++/5/bits/uses_allocator.h \
- /usr/include/c++/5/bits/stl_multimap.h index.h indexkey.h \
+ /usr/include/c++/5/bits/stl_multimap.h util.h indexkey.h index.h \
  BwTree/bwtree.h /usr/include/c++/5/algorithm \
  /usr/include/c++/5/bits/stl_algo.h \
  /usr/include/c++/5/bits/algorithmfwd.h \
@@ -591,9 +591,11 @@ allocatortracker.h:
 
 /usr/include/c++/5/bits/stl_multimap.h:
 
-index.h:
+util.h:
 
 indexkey.h:
+
+index.h:
 
 BwTree/bwtree.h:
 

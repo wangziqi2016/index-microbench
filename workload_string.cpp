@@ -1,96 +1,16 @@
 #include "microbench.h"
+#include "index.h"
 
 typedef GenericKey<31> keytype;
 typedef GenericComparator<31> keycomp;
 
+using KeyEuqalityChecker = GenericEqualityChecker<31>;
+using KeyHashFunc = GenericHasher<31>;
+
 static const uint64_t key_type=0;
 static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
 
-//==============================================================
-// GET INSTANCE
-//==============================================================
-template<typename KeyType, class KeyComparator>
-Index<KeyType, KeyComparator> *getInstance(const int type, const uint64_t kt) {
-  if (type == 1)
-    return new BwTreeIndex<KeyType, KeyComparator, GenericEqualityChecker<31>, GenericHasher<31>>(kt);
-  else if (type == 2)
-    return new MassTreeIndex<KeyType, KeyComparator>(kt);
-  else {
-    fprintf(stderr, "Unknown index type: %d\n", type);
-    exit(1);
-  }
-}
-
-/*
- * PinToCore() - This function pins the current thread to a core
- */
-void PinToCore(size_t core_id) {
-  cpu_set_t cpu_set;
-  CPU_ZERO(&cpu_set);
-  CPU_SET(core_id * 2, &cpu_set);
-
-  int ret = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set), &cpu_set);
-  if(ret != 0) {
-    fprintf(stderr, "PinToCore() returns non-0\n");
-    exit(1);
-  }
-
-  return;
-}
-
-template <typename Fn, typename... Args>
-void StartThreads(Index<keytype, keycomp> *tree_p,
-                  uint64_t num_threads,
-                  Fn &&fn,
-                  Args &&...args) {
-  std::vector<std::thread> thread_group;
-
-  if(tree_p != nullptr) {
-    // Update the GC array
-    tree_p->UpdateThreadLocal(num_threads);
-  }
-
-  //fprintf(stderr, "Update thread local\n");
-
-  auto fn2 = [tree_p, &fn](uint64_t thread_id, Args ...args) {
-    if(tree_p != nullptr) {
-      tree_p->AssignGCID(thread_id);
-    }
-
-    PinToCore(thread_id);
-
-    //fprintf(stderr, "Assign GCID\n");
-
-    fn(thread_id, args...);
-
-    if(tree_p != nullptr) {
-      // Make sure it does not stand on the way of other threads
-      tree_p->UnregisterThread(thread_id);
-    }
-
-    return;
-  };
-
-  // Launch a group of threads
-  for (uint64_t thread_itr = 0; thread_itr < num_threads; ++thread_itr) {
-    thread_group.push_back(std::thread{fn2, thread_itr, std::ref(args...)});
-  }
-
-  //fprintf(stderr, "Finished creating threads\n");
-
-  // Join the threads with the main thread
-  for (uint64_t thread_itr = 0; thread_itr < num_threads; ++thread_itr) {
-    thread_group[thread_itr].join();
-  }
-
-  // Restore to single thread mode after all threads have finished
-  if(tree_p != nullptr) {
-    tree_p->UpdateThreadLocal(1);
-  }
-
-  return;
-}
-
+#include "util.h"
 
 //==============================================================
 // LOAD
@@ -200,7 +120,7 @@ inline void load(int wl, int kt, int index_type, std::vector<keytype> &init_keys
 //==============================================================
 inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &init_keys, std::vector<keytype> &keys, std::vector<uint64_t> &values, std::vector<int> &ranges, std::vector<int> &ops) {
 
-  Index<keytype, keycomp> *idx = getInstance<keytype, keycomp>(index_type, key_type);
+  Index<keytype, keycomp> *idx = getInstance<keytype, keycomp, KeyEuqalityChecker, KeyHashFunc>(index_type, key_type);
 
   // WRITE ONLY TEST--------------
   int count = (int)init_keys.size();

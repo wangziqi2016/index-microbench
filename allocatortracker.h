@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <iostream>
 
+#ifndef ALLOCATOR_TRACKER_H
+#define ALLOCATOR_TRACKER_H
 
 template<typename ValueType> 
 /**
@@ -84,3 +86,5 @@ public:
   }
   */
 };
+
+#endif

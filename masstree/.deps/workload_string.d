@@ -217,7 +217,7 @@ workload_string.o: workload_string.cpp /usr/include/stdc-predef.h \
  masstree/masstree_remove.hh masstree/masstree_scan.hh masstree/kvtest.hh \
  masstree/misc.hh masstree/clp.h masstree/kvrandom.hh masstree/kvio.hh \
  /usr/include/c++/5/numeric /usr/include/c++/5/bits/stl_numeric.h \
- masstree/config.h
+ masstree/config.h util.h
 
 /usr/include/stdc-predef.h:
 
@@ -860,3 +860,5 @@ masstree/kvio.hh:
 /usr/include/c++/5/bits/stl_numeric.h:
 
 masstree/config.h:
+
+util.h:

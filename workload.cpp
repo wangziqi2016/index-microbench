@@ -9,14 +9,19 @@ typedef std::less<uint64_t> keycomp;
 static const uint64_t key_type=0;
 static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
 
+enum {
+  TYPE_BWTREE = 0,
+  TYPE_MASSTREE,
+}
+
 //==============================================================
 // GET INSTANCE
 //==============================================================
 template<typename KeyType, class KeyComparator>
 Index<KeyType, KeyComparator> *getInstance(const int type, const uint64_t kt) {
-  if (type == 1)
+  if (type == TYPE_BWTREE)
     return new BwTreeIndex<KeyType, KeyComparator>(kt);
-  else if (type == 2)
+  else if (type == TYPE_MASSTREE)
     return new MassTreeIndex<KeyType, KeyComparator>(kt);
   else {
     fprintf(stderr, "Unknown index type: %d\n", type);
@@ -382,7 +387,7 @@ inline void exec(int wl,
         txn_num++;
         break;
       case 2:
-        if(index_type == 2) txn_num += 2;
+        if(index_type == TYPE_BWTREE) txn_num += 2;
         else txn_num++;
         break;
       default:
@@ -480,7 +485,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Usage:\n";
     std::cout << "1. workload type: a, c, e\n";
     std::cout << "2. key distribution: rand, mono\n";
-    std::cout << "3. index type: btree, art, bwtree skiplist masstree\n";
+    std::cout << "3. index type: bwtree masstree\n";
     std::cout << "4. number of threads (integer)\n";
     
     return 1;
@@ -513,9 +518,9 @@ int main(int argc, char *argv[]) {
 
   int index_type = 0;
   if (strcmp(argv[3], "bwtree") == 0)
-    index_type = 1;
+    index_type = TYPE_BWTREE;
   else if (strcmp(argv[3], "masstree") == 0)
-    index_type = 2;
+    index_type = TYPE_MASSTREE;
   else {
     fprintf(stderr, "Unknown index type: %d\n", index_type);
     exit(1);

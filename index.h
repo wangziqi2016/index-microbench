@@ -173,6 +173,9 @@ class MassTreeIndex : public Index<KeyType, KeyComparator>
   MassTreeIndex(uint64_t kt) {
     idx = new MapType{};
 
+    threadinfo *main_ti = threadinfo::make(threadinfo::TI_MAIN, -1);
+    idx->setup(main_ti);
+
     return;
   }
 

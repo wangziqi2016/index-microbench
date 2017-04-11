@@ -1,0 +1,5 @@
+
+*.o
+workloads
+workload
+workload_string

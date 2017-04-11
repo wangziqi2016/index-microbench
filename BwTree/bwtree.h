@@ -36,7 +36,7 @@
 #include <vector>
 #include <atomic>
 
-#define SINGLE_THREAD
+//#define SINGLE_THREAD
 #ifdef SINGLE_THREAD
 #warning "Compiling single threaded BwTree..."
 
@@ -725,7 +725,7 @@ class BwTree : public BwTreeBase {
   /*
    * enum class NodeType - Bw-Tree node type
    */
-  enum class NodeType : short {
+  enum class NodeType : unsigned char {
     // We separate leaf and inner into two different intervals
     // to make it possible for compiler to optimize
 

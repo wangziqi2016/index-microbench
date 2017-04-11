@@ -158,15 +158,15 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/lib/gcc/x86_64-linux-gnu/5/include/mm_malloc.h \
  /usr/include/c++/5/deque /usr/include/c++/5/bits/stl_deque.h \
  /usr/include/c++/5/bits/deque.tcc BwTree/bwtree.h \
- /usr/include/c++/5/atomic /usr/include/c++/5/chrono \
- /usr/include/c++/5/ratio /usr/include/c++/5/ctime \
- /usr/include/c++/5/bits/parse_numbers.h /usr/include/c++/5/thread \
- /usr/include/c++/5/unordered_set /usr/include/c++/5/bits/hashtable.h \
+ /usr/include/c++/5/chrono /usr/include/c++/5/ratio \
+ /usr/include/c++/5/ctime /usr/include/c++/5/bits/parse_numbers.h \
+ /usr/include/c++/5/thread /usr/include/c++/5/unordered_set \
+ /usr/include/c++/5/bits/hashtable.h \
  /usr/include/c++/5/bits/hashtable_policy.h \
- /usr/include/c++/5/bits/unordered_set.h BwTree/sorted_small_set.h \
- BwTree/bloom_filter.h BwTree/atomic_stack.h /usr/include/byteswap.h \
- skiplist/skiplist.h masstree/mtIndexAPI.hh /usr/include/unistd.h \
- /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+ /usr/include/c++/5/bits/unordered_set.h /usr/include/c++/5/atomic \
+ BwTree/sorted_small_set.h BwTree/bloom_filter.h BwTree/atomic_stack.h \
+ /usr/include/byteswap.h skiplist/skiplist.h masstree/mtIndexAPI.hh \
+ /usr/include/unistd.h /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
  /usr/include/x86_64-linux-gnu/bits/environments.h \
  /usr/include/x86_64-linux-gnu/bits/confname.h /usr/include/getopt.h \
  /usr/include/x86_64-linux-gnu/bits/unistd.h \
@@ -666,8 +666,6 @@ ART/hybridART.h:
 
 BwTree/bwtree.h:
 
-/usr/include/c++/5/atomic:
-
 /usr/include/c++/5/chrono:
 
 /usr/include/c++/5/ratio:
@@ -685,6 +683,8 @@ BwTree/bwtree.h:
 /usr/include/c++/5/bits/hashtable_policy.h:
 
 /usr/include/c++/5/bits/unordered_set.h:
+
+/usr/include/c++/5/atomic:
 
 BwTree/sorted_small_set.h:
 

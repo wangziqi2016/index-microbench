@@ -12,7 +12,7 @@ static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
 enum {
   TYPE_BWTREE = 0,
   TYPE_MASSTREE,
-}
+};
 
 //==============================================================
 // GET INSTANCE

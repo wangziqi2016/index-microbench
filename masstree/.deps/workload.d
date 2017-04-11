@@ -136,13 +136,16 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/bits/stl_map.h /usr/include/c++/5/tuple \
  /usr/include/c++/5/array /usr/include/c++/5/bits/uses_allocator.h \
  /usr/include/c++/5/bits/stl_multimap.h index.h indexkey.h \
- stx/btree_map.h stx/btree.h /usr/include/c++/5/algorithm \
+ BwTree/bwtree.h /usr/include/c++/5/algorithm \
  /usr/include/c++/5/bits/stl_algo.h \
  /usr/include/c++/5/bits/algorithmfwd.h \
  /usr/include/c++/5/bits/stl_heap.h /usr/include/c++/5/bits/stl_tempbuf.h \
  /usr/include/c++/5/bits/uniform_int_dist.h /usr/include/c++/5/limits \
- /usr/include/c++/5/functional /usr/include/c++/5/memory \
- /usr/include/c++/5/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/5/cassert /usr/include/assert.h \
+ /usr/include/c++/5/chrono /usr/include/c++/5/ratio \
+ /usr/include/c++/5/ctime /usr/include/c++/5/bits/parse_numbers.h \
+ /usr/include/c++/5/thread /usr/include/c++/5/functional \
+ /usr/include/c++/5/memory /usr/include/c++/5/bits/stl_raw_storage_iter.h \
  /usr/include/c++/5/ext/concurrence.h \
  /usr/include/c++/5/bits/unique_ptr.h \
  /usr/include/c++/5/bits/shared_ptr.h \
@@ -150,23 +153,14 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/bits/allocated_ptr.h \
  /usr/include/c++/5/bits/shared_ptr_atomic.h \
  /usr/include/c++/5/bits/atomic_base.h \
- /usr/include/c++/5/backward/auto_ptr.h /usr/include/c++/5/cstddef \
- /usr/include/c++/5/cassert /usr/include/assert.h stx/btree.h \
- ART/hybridART.h /usr/lib/gcc/x86_64-linux-gnu/5/include/emmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/5/include/xmmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/5/include/mmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/5/include/mm_malloc.h \
- /usr/include/c++/5/deque /usr/include/c++/5/bits/stl_deque.h \
- /usr/include/c++/5/bits/deque.tcc BwTree/bwtree.h \
- /usr/include/c++/5/chrono /usr/include/c++/5/ratio \
- /usr/include/c++/5/ctime /usr/include/c++/5/bits/parse_numbers.h \
- /usr/include/c++/5/thread /usr/include/c++/5/unordered_set \
+ /usr/include/c++/5/backward/auto_ptr.h /usr/include/c++/5/unordered_set \
  /usr/include/c++/5/bits/hashtable.h \
  /usr/include/c++/5/bits/hashtable_policy.h \
- /usr/include/c++/5/bits/unordered_set.h /usr/include/c++/5/atomic \
- BwTree/sorted_small_set.h BwTree/bloom_filter.h BwTree/atomic_stack.h \
- /usr/include/byteswap.h skiplist/skiplist.h masstree/mtIndexAPI.hh \
- /usr/include/unistd.h /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+ /usr/include/c++/5/bits/unordered_set.h /usr/include/c++/5/cstddef \
+ /usr/include/c++/5/atomic BwTree/sorted_small_set.h \
+ BwTree/bloom_filter.h BwTree/atomic_stack.h /usr/include/byteswap.h \
+ masstree/mtIndexAPI.hh /usr/include/unistd.h \
+ /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
  /usr/include/x86_64-linux-gnu/bits/environments.h \
  /usr/include/x86_64-linux-gnu/bits/confname.h /usr/include/getopt.h \
  /usr/include/x86_64-linux-gnu/bits/unistd.h \
@@ -217,10 +211,11 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/bits/stream_iterator.h masstree/masstree_key.hh \
  masstree/string_slice.hh masstree/masstree_struct.hh \
  masstree/stringbag.hh masstree/masstree_insert.hh \
- masstree/masstree_get.hh masstree/masstree_split.hh \
- masstree/btree_leaflink.hh masstree/masstree_remove.hh \
- masstree/masstree_scan.hh masstree/kvtest.hh masstree/misc.hh \
- masstree/clp.h masstree/kvrandom.hh masstree/kvio.hh \
+ masstree/masstree_get.hh /usr/include/c++/5/deque \
+ /usr/include/c++/5/bits/stl_deque.h /usr/include/c++/5/bits/deque.tcc \
+ masstree/masstree_split.hh masstree/btree_leaflink.hh \
+ masstree/masstree_remove.hh masstree/masstree_scan.hh masstree/kvtest.hh \
+ masstree/misc.hh masstree/clp.h masstree/kvrandom.hh masstree/kvio.hh \
  /usr/include/c++/5/numeric /usr/include/c++/5/bits/stl_numeric.h \
  masstree/config.h
 
@@ -600,9 +595,7 @@ index.h:
 
 indexkey.h:
 
-stx/btree_map.h:
-
-stx/btree.h:
+BwTree/bwtree.h:
 
 /usr/include/c++/5/algorithm:
 
@@ -617,6 +610,20 @@ stx/btree.h:
 /usr/include/c++/5/bits/uniform_int_dist.h:
 
 /usr/include/c++/5/limits:
+
+/usr/include/c++/5/cassert:
+
+/usr/include/assert.h:
+
+/usr/include/c++/5/chrono:
+
+/usr/include/c++/5/ratio:
+
+/usr/include/c++/5/ctime:
+
+/usr/include/c++/5/bits/parse_numbers.h:
+
+/usr/include/c++/5/thread:
 
 /usr/include/c++/5/functional:
 
@@ -640,42 +647,6 @@ stx/btree.h:
 
 /usr/include/c++/5/backward/auto_ptr.h:
 
-/usr/include/c++/5/cstddef:
-
-/usr/include/c++/5/cassert:
-
-/usr/include/assert.h:
-
-stx/btree.h:
-
-ART/hybridART.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/5/include/emmintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/5/include/xmmintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/5/include/mmintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/5/include/mm_malloc.h:
-
-/usr/include/c++/5/deque:
-
-/usr/include/c++/5/bits/stl_deque.h:
-
-/usr/include/c++/5/bits/deque.tcc:
-
-BwTree/bwtree.h:
-
-/usr/include/c++/5/chrono:
-
-/usr/include/c++/5/ratio:
-
-/usr/include/c++/5/ctime:
-
-/usr/include/c++/5/bits/parse_numbers.h:
-
-/usr/include/c++/5/thread:
-
 /usr/include/c++/5/unordered_set:
 
 /usr/include/c++/5/bits/hashtable.h:
@@ -683,6 +654,8 @@ BwTree/bwtree.h:
 /usr/include/c++/5/bits/hashtable_policy.h:
 
 /usr/include/c++/5/bits/unordered_set.h:
+
+/usr/include/c++/5/cstddef:
 
 /usr/include/c++/5/atomic:
 
@@ -693,8 +666,6 @@ BwTree/bloom_filter.h:
 BwTree/atomic_stack.h:
 
 /usr/include/byteswap.h:
-
-skiplist/skiplist.h:
 
 masstree/mtIndexAPI.hh:
 
@@ -859,6 +830,12 @@ masstree/stringbag.hh:
 masstree/masstree_insert.hh:
 
 masstree/masstree_get.hh:
+
+/usr/include/c++/5/deque:
+
+/usr/include/c++/5/bits/stl_deque.h:
+
+/usr/include/c++/5/bits/deque.tcc:
 
 masstree/masstree_split.hh:
 

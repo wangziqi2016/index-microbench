@@ -63,7 +63,7 @@ configure config.h.in: configure.ac
 	touch config.h.in
 
 config.status: configure
-	./configure 
+	./configure  'enable_memdebug=no' 'enable_assert=no' 'enable_assertions=no' 'enable_preconditions=no' 'enable_invariants=no'
 
 $(DEPSDIR)/stamp:
 	mkdir -p $(DEPSDIR)

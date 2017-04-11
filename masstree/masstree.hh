@@ -28,7 +28,7 @@ template <typename T> class value_print;
 template <int LW = 15, int IW = LW> struct nodeparams {
     static constexpr int leaf_width = LW;
     static constexpr int internode_width = IW;
-    static constexpr bool concurrent = false;
+    static constexpr bool concurrent = true;
     static constexpr bool prefetch = true;
     static constexpr int bound_method = bound_method_binary;
     static constexpr int debug_level = 0;

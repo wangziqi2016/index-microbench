@@ -55,8 +55,6 @@ void StartThreads(Index<keytype, keycomp> *tree_p,
     tree_p->UpdateThreadLocal(num_threads);
   }
  
-  //fprintf(stderr, "Update thread local\n");
- 
   auto fn2 = [tree_p, &fn](uint64_t thread_id, Args ...args) {
     if(tree_p != nullptr) {
       tree_p->AssignGCID(thread_id);
@@ -80,8 +78,6 @@ void StartThreads(Index<keytype, keycomp> *tree_p,
   for (uint64_t thread_itr = 0; thread_itr < num_threads; ++thread_itr) {
     thread_group.push_back(std::thread{fn2, thread_itr, std::ref(args...)});
   }
-
-  //fprintf(stderr, "Finished creating threads\n");
 
   // Join the threads with the main thread
   for (uint64_t thread_itr = 0; thread_itr < num_threads; ++thread_itr) {
@@ -313,9 +309,11 @@ inline void exec(int wl,
     size_t key_per_thread = total_num_key / num_thread;
     size_t start_index = key_per_thread * thread_id;
     size_t end_index = start_index + key_per_thread;
-    
+   
+    threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
+ 
     for(size_t i = start_index;i < end_index;i++) {
-      idx->insert(init_keys[i], values[i]);
+      idx->insert(init_keys[i], values[i], ti);
     }
     
     return;
@@ -413,21 +411,23 @@ inline void exec(int wl,
     std::vector<uint64_t> v;
     v.reserve(10);
  
+    threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
+
     for(size_t i = start_index;i < end_index;i++) {
       int op = ops[i];
       
       if (op == 0) { //INSERT
-        idx->insert(keys[i] + 1, values[i]);
+        idx->insert(keys[i] + 1, values[i], ti);
       }
       else if (op == 1) { //READ
         v.clear();
-        idx->find(keys[i], &v);
+        idx->find(keys[i], &v, ti);
       }
       else if (op == 2) { //UPDATE
-        idx->upsert(keys[i], values[i]);
+        idx->upsert(keys[i], values[i], ti);
       }
       else if (op == 3) { //SCAN
-        idx->scan(keys[i], ranges[i]);
+        idx->scan(keys[i], ranges[i], ti);
       }
     }
     

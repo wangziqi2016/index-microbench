@@ -74,6 +74,7 @@ class mt_index {
 public:
   mt_index() {}
   ~mt_index() {
+/*
     table_->destroy(*ti_);
     delete table_;
     ti_->rcu_clean();
@@ -81,7 +82,7 @@ public:
     free(ti_);
     if (cur_key_)
       free(cur_key_);
-    
+*/    
     return;
   }
 
@@ -94,162 +95,98 @@ public:
     return ((unsigned long long)hi << 32) | lo;
   }
 
-  inline void setup() {
-    ti_ = threadinfo::make(threadinfo::TI_MAIN, -1);
+  inline void setup(threadinfo *ti) {
     table_ = new T;
-    table_->initialize(*ti_);
-
-    ic = 0;
+    table_->initialize(*ti);
 
     srand(rdtsc_timer());
-  }
-
-  void setup(int keysize, bool multivalue) {
-    setup();
-
-    cur_key_ = NULL;
-    cur_keylen_ = 0;
-
-    key_size_ = keysize;
-    multivalue_ = multivalue;
-  }
-
-  void setup(int keysize, int keyLen, bool multivalue) {
-    setup();
-
-    cur_key_ = (char*)malloc(keyLen * 2);
-    cur_keylen_ = 0;
-
-    key_size_ = keysize;
-    multivalue_ = multivalue;
   }
 
   //#####################################################################################
   // Garbage Collection
   //#####################################################################################
-  inline void clean_rcu() {
-    ti_->rcu_quiesce();
+  inline void clean_rcu(threadinfo *ti) {
+    ti->rcu_quiesce();
   }
 
-  inline void gc_dynamic() {
-    if (ti_->limbo >= GC_THRESHOLD) {
-      clean_rcu();
-      ti_->dealloc_rcu += ti_->limbo;
-      ti_->limbo = 0;
+  inline void gc_dynamic(threadinfo *ti) {
+    if (ti->limbo >= GC_THRESHOLD) {
+      clean_rcu(ti);
+      ti->dealloc_rcu += ti->limbo;
+      ti->limbo = 0;
     }
   }
   
-  inline void reset() {
-    if (multivalue_) {
-      if (SECONDARY_INDEX_TYPE == 0) table_->destroy(*ti_);
-      else if (SECONDARY_INDEX_TYPE == 1) table_->destroy_novalue(*ti_);
-    }
-    else {
-      table_->destroy_novalue(*ti_);
-    }
-    
-    delete table_;
-    
-    gc_dynamic();
-    table_ = new T;
-    table_->initialize(*ti_);
-    ic = 0;
-  }
-
   //#####################################################################################
   //Insert Unique
   //#####################################################################################
-  inline bool put_uv(const Str &key, const Str &value) {
+  inline bool put_uv(const Str &key, const Str &value, threadinfo *ti) {
     typename T::cursor_type lp(table_->table(), key);
-    bool found = lp.find_insert(*ti_);
+    bool found = lp.find_insert(*ti);
     if (!found)
-      ti_->advance_timestamp(lp.node_timestamp());
+      ti->advance_timestamp(lp.node_timestamp());
     else {
-      lp.finish(1, *ti_);
+      lp.finish(1, *ti);
       return false;
     }
-    qtimes_.ts = ti_->update_timestamp();
+    qtimes_.ts = ti->update_timestamp();
     qtimes_.prev_ts = 0;
-    lp.value() = row_type::create1(value, qtimes_.ts, *ti_);
-    lp.finish(1, *ti_);
-    ic++;
+    lp.value() = row_type::create1(value, qtimes_.ts, *ti);
+    lp.finish(1, *ti);
 
     return true;
   }
   
-  bool put_uv(const char *key, int keylen, const char *value, int valuelen) {
-    return put_uv(Str(key, keylen), Str(value, valuelen));
+  bool put_uv(const char *key, int keylen, const char *value, int valuelen, threadinfo *ti) {
+    return put_uv(Str(key, keylen), Str(value, valuelen), ti);
   }
 
   //#####################################################################################
   // Upsert
   //#####################################################################################
-  inline void put(const Str &key, const Str &value) {
+  inline void put(const Str &key, const Str &value, threadinfo *ti) {
     typename T::cursor_type lp(table_->table(), key);
-    bool found = lp.find_insert(*ti_);
+    bool found = lp.find_insert(*ti);
     if (!found) {
-      ti_->advance_timestamp(lp.node_timestamp());
-      qtimes_.ts = ti_->update_timestamp();
+      ti->advance_timestamp(lp.node_timestamp());
+      qtimes_.ts = ti->update_timestamp();
       qtimes_.prev_ts = 0;
     }
     else {
-      qtimes_.ts = ti_->update_timestamp(lp.value()->timestamp());
+      qtimes_.ts = ti->update_timestamp(lp.value()->timestamp());
       qtimes_.prev_ts = lp.value()->timestamp();
-      lp.value()->deallocate_rcu(*ti_);
+      lp.value()->deallocate_rcu(*ti);
     }
     
-    lp.value() = row_type::create1(value, qtimes_.ts, *ti_);
-    lp.finish(1, *ti_);
-    ic += (value.len/VALUE_LEN);
+    lp.value() = row_type::create1(value, qtimes_.ts, *ti);
+    lp.finish(1, *ti);
   }
 
-  void put(const char *key, int keylen, const char *value, int valuelen) {
-    return put(Str(key, keylen), Str(value, valuelen));
+  void put(const char *key, int keylen, const char *value, int valuelen, threadinfo *ti) {
+    put(Str(key, keylen), Str(value, valuelen), ti);
   }
 
   //#################################################################################
   // Get (unique value)
   //#################################################################################
-  inline bool dynamic_get(const Str &key, Str &value) {
-    if (ic == 0) return false;
+  inline bool dynamic_get(const Str &key, Str &value, threadinfo *ti) {
     typename T::unlocked_cursor_type lp(table_->table(), key);
-    bool found = lp.find_unlocked(*ti_);
+    bool found = lp.find_unlocked(*ti);
     if (found)
       value = lp.value()->col(0);
     return found;
   }
   
-  inline bool get(const Str &key, Str &value) {
-    return dynamic_get(key, value);
-  }
-  
-  bool get (const char *key, int keylen, Str &value) {
-    return get(Str(key, keylen), value);
-  }
-
-  //#################################################################################
-  // Exist
-  //#################################################################################
-  inline bool exist(const Str &key) {
-    bool found = false;
-    if (ic != 0) {
-    	typename T::unlocked_cursor_type lp(table_->table(), key);
-    	found = lp.find_unlocked(*ti_);
-    }
-    
-    return found;
-  }
-  
-  bool exist(const char *key, int keylen) {
-    return exist(Str(key, keylen));
+  bool get (const char *key, int keylen, Str &value, threadinfo *ti) {
+    return dynamic_get(Str(key, keylen), value, ti);
   }
 
   //#################################################################################
   // Get Next (ordered)
   //#################################################################################
-  bool dynamic_get_next(Str &value, char *cur_key, int *cur_keylen) {
+  bool dynamic_get_next(Str &value, char *cur_key, int *cur_keylen, threadinfo *ti) {
     Json req = Json::array(0, 0, Str(cur_key, *cur_keylen), 2);
-    q_[0].run_scan(table_->table(), req, *ti_);
+    q_[0].run_scan(table_->table(), req, *ti);
     if (req.size() < 4)
       return false;
     value = req[3].as_s();
@@ -265,81 +202,10 @@ public:
     return true;
   }
 
-  //#################################################################################
-  // Remove Unique
-  //#################################################################################
-  inline bool dynamic_remove(const Str &key) {
-    if (ic == 0) return false;
-    
-    if (ti_->limbo >= GC_THRESHOLD) {
-      clean_rcu();
-      ti_->dealloc_rcu += ti_->limbo;
-      ti_->limbo = 0;
-    }
-    bool remove_success = q_[0].run_remove(table_->table(), key, *ti_);
-    if (remove_success)
-      ic--;
-    return remove_success;
-  }
-
-  inline bool remove(const Str &key) {
-    bool remove_success = dynamic_remove(key);
-    return remove_success;
-  }
-
-  bool remove(const char *key, int keylen) {
-    return remove(Str(key, keylen));
-  }
-
-  //#################################################################################
-  // Update
-  //#################################################################################
-
-  inline bool update_uv(const Str &key, const char *value) {
-    Str get_value;
-    if (dynamic_get(key, get_value)) {
-      put(key, Str(value, VALUE_LEN));
-      return true;
-    }
-    
-    return false;
-  }
-
-  bool update_uv(const char *key, int keylen, const char *value) {
-    return update_uv(Str(key, keylen), value);
-  }
-
-  //#################################################################################
-  // Memory Stats
-  //#################################################################################
-  uint64_t memory_consumption () const {
-    return (ti_->pool_alloc 
-	    + ti_->alloc 
-	    - ti_->pool_dealloc 
-	    - ti_->dealloc 
-	    - ti_->pool_dealloc_rcu 
-	    - ti_->dealloc_rcu);
-  }
-
-  //#################################################################################
-  // Accessors
-  //#################################################################################
-  int get_ic () {
-    return ic;
-  }
-
 private:
   T *table_;
-  int ic;
-  threadinfo *ti_;
   query<row_type> q_[1];
   loginfo::query_times qtimes_;
-
-  char* cur_key_;
-  int cur_keylen_;
-
-  bool multivalue_;
-  int key_size_;
 };
 
 #endif //MTINDEXAPI_H

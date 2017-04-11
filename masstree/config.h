@@ -11,13 +11,13 @@
 #define CACHE_LINE_SIZE 64
 
 /* Define to enable debugging assertions. */
-#define ENABLE_ASSERTIONS 1
+/* #undef ENABLE_ASSERTIONS */
 
 /* Define to enable invariant assertions. */
-/* #undef ENABLE_INVARIANTS */
+#define ENABLE_INVARIANTS 0
 
 /* Define to enable precondition assertions. */
-/* #undef ENABLE_PRECONDITIONS */
+#define ENABLE_PRECONDITIONS 0
 
 /* Define to 1 if you have the `clock_gettime' function. */
 #define HAVE_CLOCK_GETTIME 1

@@ -262,7 +262,7 @@ inline void exec(int wl,
 
   //READ/UPDATE/SCAN TEST----------------
   start_time = get_now();
-  int txn_num = 0;
+  int txn_num = GetTxnCount(ops, index_type);
   uint64_t sum = 0;
   uint64_t s = 0;
 
@@ -293,25 +293,6 @@ inline void exec(int wl,
   if(values.size() < keys.size()) {
     fprintf(stderr, "Values array too small\n");
     exit(1);
-  }
-
-  // Calculate the number of transactions here
-  for(auto op : ops) {
-    switch(op) {
-      case OP_INSERT: 
-      case OP_READ:
-      case OP_SCAN:
-        txn_num++;
-        break;
-      case OP_UPSERT:
-        if(index_type == TYPE_BWTREE) txn_num += 2;
-        else txn_num++;
-        break;
-      default:
-        fprintf(stderr, "Unknown operation\n");
-        exit(1);
-        break;
-    }
   }
 
   fprintf(stderr, "# of Txn: %d\n", txn_num);

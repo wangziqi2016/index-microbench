@@ -164,7 +164,7 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
 
   //READ/UPDATE/SCAN TEST----------------
   start_time = get_now();
-  int txn_num = 0;
+  int txn_num = GetTxnCount(ops, index_type);
   uint64_t sum = 0;
 
 #ifdef PAPI_IPC
@@ -193,25 +193,6 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
   if(values.size() < keys.size()) {
     fprintf(stderr, "Values array too small\n");
     exit(1);
-  }
-
-  // Calculate the number of transactions here
-  for(auto op : ops) {
-    switch(op) {
-      case OP_READ:
-      case OP_SCAN:
-      case OP_INSERT:
-        txn_num++;
-        break;
-      case OP_UPSERT:
-        if(index_type == TYPE_BWTREE) txn_num += 2;
-        else txn_num++;
-        break;
-      default:
-        fprintf(stderr, "Unknown operation\n");
-        exit(1);
-        break;
-    }
   }
 
   fprintf(stderr, "# of Txn: %d\n", txn_num);

@@ -335,7 +335,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Usage:\n";
     std::cout << "1. workload type: a, c, e\n";
     std::cout << "2. key distribution: email\n";
-    std::cout << "3. index type: btree, art, bwtree\n";
+    std::cout << "3. index type: bwtree masstree\n";
     std::cout << "4. Number of threads: (1 - 40)\n";
     return 1;
   }
@@ -362,9 +362,9 @@ int main(int argc, char *argv[]) {
 
   int index_type = 0;
   if (strcmp(argv[3], "bwtree") == 0)
-    index_type = 1;
+    index_type = TYPE_BWTREE;
   else if (strcmp(argv[3], "masstree") == 0)
-    index_type = 2;
+    index_type = TYPE_MASSTREE;
   else {
     fprintf(stderr, "Unknown index type: %d\n", index_type);
     exit(1);

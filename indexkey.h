@@ -12,6 +12,10 @@ public:
   }
 
   char data[keySize];
+
+  inline bool operator<(const GenericKey<keySize> &other) { return strcmp(data, other.data) < 0; }
+  inline bool operator>(const GenericKey<keySize> &other) { return strcmp(data, other.data) > 0; }
+  inline bool operator==(const GenericKey<keySize> &other) { return strcmp(data, other.data) == 0; }
 };
 
 template <std::size_t keySize>

@@ -223,7 +223,7 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
         v.clear();
         idx->find(keys[i], &v, ti);
       }
-      else if (op == OP_UPDATE) { //UPDATE
+      else if (op == OP_UPSERT) { //UPDATE
         idx->upsert(keys[i], values[i], ti);
       }
       else if (op == OP_SCAN) { //SCAN
@@ -316,7 +316,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Usage:\n";
     std::cout << "1. workload type: a, c, e\n";
     std::cout << "2. key distribution: email\n";
-    std::cout << "3. index type: bwtree masstree\n";
+    std::cout << "3. index type: bwtree masstree artolc btreeolc\n";
     std::cout << "4. Number of threads: (1 - 40)\n";
     return 1;
   }
@@ -346,6 +346,10 @@ int main(int argc, char *argv[]) {
     index_type = TYPE_BWTREE;
   else if (strcmp(argv[3], "masstree") == 0)
     index_type = TYPE_MASSTREE;
+  else if (strcmp(argv[3], "artolc") == 0)
+    index_type = TYPE_ARTOLC;
+  else if (strcmp(argv[3], "btreeolc") == 0)
+    index_type = TYPE_BTREEOLC;
   else {
     fprintf(stderr, "Unknown index type: %d\n", index_type);
     exit(1);

@@ -10,6 +10,8 @@
 enum {
   TYPE_BWTREE = 0,
   TYPE_MASSTREE,
+  TYPE_ARTOLC,
+  TYPE_BTREEOLC,
 };
 
 // These are workload operations
@@ -32,6 +34,10 @@ Index<KeyType, KeyComparator> *getInstance(const int type, const uint64_t kt) {
     return new BwTreeIndex<KeyType, KeyComparator, KeyEuqal, KeyHash>(kt);
   else if (type == TYPE_MASSTREE)
     return new MassTreeIndex<KeyType, KeyComparator>(kt);
+  else if (type == TYPE_ARTOLC)
+      return new ArtOLCIndex<KeyType, KeyComparator>(kt);
+  else if (type == TYPE_BTREEOLC)
+    return new BTreeOLCIndex<KeyType, KeyComparator>(kt);
   else {
     fprintf(stderr, "Unknown index type: %d\n", type);
     exit(1);

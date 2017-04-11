@@ -7,8 +7,8 @@ CFLAGS = -g -Ofast -Wno-invalid-offsetof -mcx16 -DNDEBUG -DBWTREE_NODEBUG $(DEPC
 
 # By default just use 1 thread. Override this option to allow running the
 # benchmark with 20 threads. i.e. THREAD_NUM=20 make run_all_atrloc
-THREAD_NUM=1
-TYPE=bwtree
+THREAD_NUM?=1
+TYPE?=bwtree
 
 SNAPPY = /usr/lib/libsnappy.so.1.3.0
 
@@ -28,17 +28,20 @@ run_all: workload workload_string
 workload.o: workload.cpp microbench.h index.h util.h
 	$(CXX) $(CFLAGS) -c -o workload.o workload.cpp
 
-workload: workload.o bwtree.o ./masstree/mtIndexAPI.a
-	$(CXX) $(CFLAGS) -o workload workload.o bwtree.o masstree/mtIndexAPI.a $(MEMMGR) -lpthread -lm
+workload: workload.o bwtree.o artolc.o ./masstree/mtIndexAPI.a
+	$(CXX) $(CFLAGS) -o workload workload.o bwtree.o artolc.o masstree/mtIndexAPI.a $(MEMMGR) -lpthread -lm -ltbb
 
 workload_string.o: workload_string.cpp microbench.h index.h util.h
 	$(CXX) $(CFLAGS) -c -o workload_string.o workload_string.cpp
 
-workload_string: workload_string.o bwtree.o ./masstree/mtIndexAPI.a
-	$(CXX) $(CFLAGS) -o workload_string workload_string.o bwtree.o masstree/mtIndexAPI.a $(MEMMGR) -lpthread -lm
+workload_string: workload_string.o bwtree.o artolc.o ./masstree/mtIndexAPI.a
+	$(CXX) $(CFLAGS) -o workload_string workload_string.o bwtree.o artolc.o masstree/mtIndexAPI.a $(MEMMGR) -lpthread -lm -ltbb
 
 bwtree.o: ./BwTree/bwtree.h ./BwTree/bwtree.cpp
 	$(CXX) $(CFLAGS) -c -o bwtree.o ./BwTree/bwtree.cpp
+
+artolc.o:
+	$(CXX) $(CFLAGS) ./ARTOLC/Tree.cpp -c -o artolc.o $(MEMMGR) -lpthread -lm -ltbb
 
 generate_workload:
 	python gen_workload.py workload_config.inp

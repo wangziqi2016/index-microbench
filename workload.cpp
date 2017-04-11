@@ -179,21 +179,21 @@ inline void load(int wl, int kt, int index_type, std::vector<keytype> &init_keys
   while ((count < LIMIT) && infile_txn.good()) {
     infile_txn >> op >> key;
     if (op.compare(insert) == 0) {
-      ops.push_back(0);
+      ops.push_back(OP_INSERT);
       keys.push_back(key);
       ranges.push_back(1);
     }
     else if (op.compare(read) == 0) {
-      ops.push_back(1);
+      ops.push_back(OP_READ);
       keys.push_back(key);
     }
     else if (op.compare(update) == 0) {
-      ops.push_back(2);
+      ops.push_back(OP_UPSERT);
       keys.push_back(key);
     }
     else if (op.compare(scan) == 0) {
       infile_txn >> range;
-      ops.push_back(3);
+      ops.push_back(OP_SCAN);
       keys.push_back(key);
       ranges.push_back(range);
     }
@@ -298,12 +298,12 @@ inline void exec(int wl,
   // Calculate the number of transactions here
   for(auto op : ops) {
     switch(op) {
-      case 0: 
-      case 1:
-      case 3:
+      case OP_INSERT: 
+      case OP_READ:
+      case OP_SCAN:
         txn_num++;
         break;
-      case 2:
+      case OP_UPSERT:
         if(index_type == TYPE_BWTREE) txn_num += 2;
         else txn_num++;
         break;
@@ -335,17 +335,17 @@ inline void exec(int wl,
     for(size_t i = start_index;i < end_index;i++) {
       int op = ops[i];
       
-      if (op == 0) { //INSERT
+      if (op == OP_INSERT) { //INSERT
         idx->insert(keys[i] + 1, values[i], ti);
       }
-      else if (op == 1) { //READ
+      else if (op == OP_READ) { //READ
         v.clear();
         idx->find(keys[i], &v, ti);
       }
-      else if (op == 2) { //UPDATE
+      else if (op == OP_UPSERT) { //UPDATE
         idx->upsert(keys[i], values[i], ti);
       }
-      else if (op == 3) { //SCAN
+      else if (op == OP_SCAN) { //SCAN
         idx->scan(keys[i], ranges[i], ti);
       }
     }

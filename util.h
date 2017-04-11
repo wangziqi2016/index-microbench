@@ -12,6 +12,14 @@ enum {
   TYPE_MASSTREE,
 };
 
+// These are workload operations
+enum {
+  OP_INSERT,
+  OP_READ,
+  OP_UPSERT,
+  OP_SCAN,
+};
+
 //==============================================================
 // GET INSTANCE
 //==============================================================
@@ -93,5 +101,38 @@ void StartThreads(Index<keytype, keycomp> *tree_p,
 
   return;
 }
+
+/*
+ * GetTxnCount() - Counts transactions and return 
+ */
+template <bool upsert_hack=true>
+int GetTxnCount(const std::vector<int> &ops) {
+  int count = 0;
+ 
+  for(auto op : ops) {
+    switch(op) {
+      case OP_INSERT:
+      case OP_READ:
+      case OP_SCAN:
+        count++;
+        break;
+      case OP_UPSERT:
+        if(index_type == TYPE_BWTREE) {
+          count += (upsert_hack ? 2 : 1);
+        } else {
+          count++;
+        }
+
+        break;
+      default:
+        fprintf(stderr, "Unknown operation\n");
+        exit(1);
+        break;
+    }
+  }
+
+  return count;
+}
+
 
 #endif

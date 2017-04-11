@@ -106,7 +106,8 @@ void StartThreads(Index<keytype, keycomp> *tree_p,
  * GetTxnCount() - Counts transactions and return 
  */
 template <bool upsert_hack=true>
-int GetTxnCount(const std::vector<int> &ops) {
+int GetTxnCount(const std::vector<int> &ops,
+                int index_type) {
   int count = 0;
  
   for(auto op : ops) {

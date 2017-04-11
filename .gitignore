@@ -1,4 +1,5 @@
 
+*.log
 *.d
 *.o
 workloads

@@ -14,18 +14,14 @@ static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
 //==============================================================
 template<typename KeyType, class KeyComparator>
 Index<KeyType, KeyComparator> *getInstance(const int type, const uint64_t kt) {
-  if (type == 0)
-    return new BtreeIndex<KeyType, KeyComparator>(kt);
-  else if (type == 1)
-    return new ArtIndex<KeyType, KeyComparator>(kt);
-  else if (type == 2)
+  if (type == 1)
     return new BwTreeIndex<KeyType, KeyComparator>(kt);
-  else if (type == 3)
-    return new SkipListIndex<KeyType, KeyComparator>(kt);
-  else if (type == 4)
+  else if (type == 2)
     return new MassTreeIndex<KeyType, KeyComparator>(kt);
-  else
-    return new BtreeIndex<KeyType, KeyComparator>(kt);
+  else {
+    fprintf(stderr, "Unknown index type: %d\n", type);
+    exit(1);
+  }
 }
 
 void PinToCore(size_t core_id) {
@@ -516,20 +512,14 @@ int main(int argc, char *argv[]) {
     kt = 0;
 
   int index_type = 0;
-  // 0 = btree
-  // 1 = art
-  if (strcmp(argv[3], "btree") == 0)
-    index_type = 0;
-  else if (strcmp(argv[3], "art") == 0)
+  if (strcmp(argv[3], "bwtree") == 0)
     index_type = 1;
-  else if (strcmp(argv[3], "bwtree") == 0)
-    index_type = 2;
-  else if (strcmp(argv[3], "skiplist") == 0)
-    index_type = 3;
   else if (strcmp(argv[3], "masstree") == 0)
-    index_type = 4;
-  else
-    index_type = 0;
+    index_type = 2;
+  else {
+    fprintf(stderr, "Unknown index type: %d\n", index_type);
+    exit(1);
+  }
   
   // Then read number of threads using command line
   int num_thread = atoi(argv[4]);

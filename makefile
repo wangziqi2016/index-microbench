@@ -14,7 +14,7 @@ SNAPPY = /usr/lib/libsnappy.so.1.3.0
 
 all: workload workload_string
 
-run_all_artolc: workload workload_string
+run_all: workload workload_string
 	./workload a rand $(TYPE) $(THREAD_NUM) 
 	./workload c rand $(TYPE) $(THREAD_NUM)
 	./workload e rand $(TYPE) $(THREAD_NUM)

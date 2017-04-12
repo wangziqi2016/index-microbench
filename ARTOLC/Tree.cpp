@@ -413,6 +413,13 @@ namespace ART_OLC {
                 Key key;
                 loadKey(N::getLeaf(nextNode), key);
 
+		if (key == k) {
+		  // upsert
+		  N::change(node, k[level], N::setLeaf(tid));
+		  node->writeUnlock();
+		  return;
+		}
+
                 level++;
                 uint32_t prefixLength = 0;
                 while (key[level + prefixLength] == k[level + prefixLength]) {

@@ -68,8 +68,6 @@ class ArtOLCIndex : public Index<KeyType, KeyComparator>
   bool upsert(KeyType key, uint64_t value, threadinfo *ti) {
     auto t = idx->getThreadInfo();
     Key k; setKey(k, key);
-    uint64_t oldValue = idx->lookup(k, t);
-    idx->remove(k, oldValue, t);
     idx->insert(k, value, t);
   }
 

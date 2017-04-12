@@ -27,7 +27,6 @@
 
 #include <algorithm>
 #include <array>
-#include <atomic>
 #include <cassert>
 #include <chrono>
 #include <thread>
@@ -35,12 +34,58 @@
 // offsetof() is defined here
 #include <cstddef>
 #include <vector>
+#include <atomic>
+
+//#define SINGLE_THREAD
+#ifdef SINGLE_THREAD
+#warning "Compiling single threaded BwTree..."
+
+template <typename T>
+struct FakeAtomic {
+  T data;
+
+  FakeAtomic() : data{} {}
+  FakeAtomic(T value) : data{value} {}
+  ~FakeAtomic() {}
+
+  FakeAtomic &operator=(T value) { data = value; return *this; }
+  
+  inline T load() { return data; }
+  inline void store(T value) { data = value; }
+  inline bool compare_exchange_strong(T &old_value, T new_value) {
+    assert(old_value == data);
+    (void)old_value;
+
+    data = new_value;
+
+    return true;
+  }
+
+  template <typename Op>
+  inline T fetch_add(const Op &diff) {
+    T old = data;
+    data += diff;
+    return old;
+  }
+
+  template <typename Op>
+  inline T fetch_sub(const Op &diff) {
+    T old = data;
+    data -= diff;
+    return old;
+  }
+}; // struct atomic
+
+#define AtomicType FakeAtomic
+#else
+#define AtomicType std::atomic
+#endif
 
 /*
  * BWTREE_PELOTON - Specifies whether Peloton-specific features are
  *                  Compiled or not
  *                  We strive to make BwTree a standalone and independent
- *                  module that can be plugged-and-played in any situation
+ *                  module that  can be plugged-and-played in any situation
  */
 //#define BWTREE_PELOTON
 
@@ -114,14 +159,11 @@ static void dummy(const char*, ...) {}
 
 #ifdef BWTREE_DEBUG
 
-#define bwt_printf(fmt, ...) \
-  do { \
-    if(print_flag == false) break; \
-    fprintf(stderr, "%-24s(%8lX): " fmt, \
-            __FUNCTION__, \
-            std::hash<std::thread::id>()(std::this_thread::get_id()), \
-            ##__VA_ARGS__); \
-    fflush(stdout); \
+#define bwt_printf(fmt, ...)                              \
+  do {                                                    \
+    if(print_flag == false) break;                        \
+    fprintf(stderr, "%-24s(%8lX): " fmt, __FUNCTION__, std::hash<std::thread::id>()(std::this_thread::get_id()), ##__VA_ARGS__); \
+    fflush(stdout);                                       \
   } while (0);
 
 #else
@@ -137,65 +179,32 @@ static void dummy(const char*, ...) {}
 // the testing framework
 extern bool print_flag;
 
-/////////////////////////////////////////////////////////////////////
-// The following are important constants used by 
-// BwTree - do not modify 
-/////////////////////////////////////////////////////////////////////
-
 // This constant represents INVALID_NODE_ID which is used as an indication
 // that the node is actually the last node on that level
-static constexpr NodeID INVALID_NODE_ID = static_cast<NodeID>(0UL);
+#define INVALID_NODE_ID ((NodeID)0UL)
 
 // The NodeID for the first leaf is fixed, which is 2
-static constexpr NodeID FIRST_LEAF_NODE_ID = static_cast<NodeID>(2UL);
+#define FIRST_LEAF_NODE_ID ((NodeID)2UL)
 
 // This is the value we use in epoch manager to make sure
 // no thread sneaking in while GC decision is being made
-// Note: No long maintained, should avoid using this
 #define MAX_THREAD_COUNT ((int)0x7FFFFFFF)
 
-/////////////////////////////////////////////////////////////////////
-// BwTree parameters - You may need to fine tune this to get the
-// maximum performance
-/////////////////////////////////////////////////////////////////////
-
 // The maximum number of nodes we could map in this index
-static constexpr size_t MAPPING_TABLE_SIZE = 0x1 << 20;
+#define MAPPING_TABLE_SIZE ((size_t)(1 << 20))
 
-// If the length of delta chain exceeds ( >= ) this then we consolidate 
-// the node
-static constexpr int INNER_DELTA_CHAIN_LENGTH_THRESHOLD = 8;
-static constexpr int LEAF_DELTA_CHAIN_LENGTH_THRESHOLD = 16;
+// If the length of delta chain exceeds ( >= ) this then we consolidate the node
+#define INNER_DELTA_CHAIN_LENGTH_THRESHOLD ((int)8)
+#define LEAF_DELTA_CHAIN_LENGTH_THRESHOLD ((int)16)
 
-static_assert(INNER_DELTA_CHAIN_LENGTH_THRESHOLD >= 1 && 
-              LEAF_DELTA_CHAIN_LENGTH_THRESHOLD >= 1,
-              "Delta chain length must be greater than 0");
+// If node size goes above this then we split it
+#define INNER_NODE_SIZE_UPPER_THRESHOLD ((int)128)
+#define INNER_NODE_SIZE_LOWER_THRESHOLD ((int)32)
 
-// The following are split and merge thresholds. They must
-// be reasonable and if not then static assertion would fail
+#define LEAF_NODE_SIZE_UPPER_THRESHOLD ((int)128)
+#define LEAF_NODE_SIZE_LOWER_THRESHOLD ((int)32)
 
-static constexpr int INNER_NODE_SIZE_UPPER_THRESHOLD = 64;
-static constexpr int INNER_NODE_SIZE_LOWER_THRESHOLD = 16;
-static constexpr int LEAF_NODE_SIZE_UPPER_THRESHOLD = 128;
-static constexpr int LEAF_NODE_SIZE_LOWER_THRESHOLD = 32;
-
-// Make sure the inner node size is legal
-static_assert(INNER_NODE_SIZE_UPPER_THRESHOLD > 
-              (INNER_NODE_SIZE_LOWER_THRESHOLD * 2),
-              "Inner node split threshold must be no smaller than 2 times"
-              " of the merge threshold");
-
-// Make sure the leaf node size is legal
-static_assert(LEAF_NODE_SIZE_UPPER_THRESHOLD > 
-              (LEAF_NODE_SIZE_LOWER_THRESHOLD * 2),
-              "Leaf node split threshold must be no smaller than 2 times"
-              " of the merge threshold");
-
-// This is the number of threads we support for new-style GC
-static constexpr int PREALLOCATE_THREAD_NUM = 1024;
-
-// Whether BwTree supports non-unique key
-#define UNIQUE_KEY
+#define PREALLOCATE_THREAD_NUM ((size_t)1024)
 
 /*
  * InnerInlineAllocateOfType() - allocates a chunk of memory from base node and
@@ -227,13 +236,9 @@ static constexpr int PREALLOCATE_THREAD_NUM = 1024;
  * class BwTreeBase - Base class of BwTree that stores some common members
  */
 class BwTreeBase {
-  // This macro is commonly defined by other libraries, so be
-  // careful with the global name space
-#ifndef CACHE_LINE_SIZE 
   // This is the presumed size of cache line
-  static constexpr size_t CACHE_LINE_SIZE = 64;
-#endif
-
+  //static constexpr size_t CACHE_LINE_SIZE = 64;
+  
   // This is the mask we used for address alignment (AND with this)
   static constexpr size_t CACHE_LINE_MASK = ~(CACHE_LINE_SIZE - 1);
   
@@ -354,7 +359,7 @@ class BwTreeBase {
   
   // This is used to count the number of threads participating GC process
   // We use this number to initialize GC data structure
-  static std::atomic<size_t> total_thread_num;
+  static AtomicType<size_t> total_thread_num;
   
   // This is the array being allocated for performing GC
   // The allocation aligns its address to cache line boundary
@@ -720,7 +725,7 @@ class BwTree : public BwTreeBase {
   /*
    * enum class NodeType - Bw-Tree node type
    */
-  enum class NodeType : short {
+  enum class NodeType : unsigned char {
     // We separate leaf and inner into two different intervals
     // to make it possible for compiler to optimize
 
@@ -745,9 +750,6 @@ class BwTree : public BwTreeBase {
     LeafDeleteType = 10,
     LeafRemoveType = 11,
     LeafMergeType = 12,
-    // Update an existing value;
-    // The value must exist in order to be defined
-    LeafUpdateType = 13,
   };
 
   ///////////////////////////////////////////////////////////////////
@@ -1510,44 +1512,7 @@ class BwTree : public BwTreeBase {
                    // For delete node it inherits item count from its child
                    // and - 1 from it since one element was deleted
                    p_child_node_p->GetItemCount() - 1}
-    {}
-  };
-  
-  /*
-   * class LeafUpdateNode - Represents an update operation over an
-   *                        existing key-value pair
-   *
-   * Note that for unique keys we do not need to store the old value
-   * because threads traversing the delta chain will exit immediately
-   * once it sees update record (for value collection function this
-   * is the value to collect; for Insert() this means we could not insert
-   * and for Delete() this means we could delete). For non-unique keys
-   * this is interpreted as an insert node on top of a delete node
-   */
-  class LeafUpdateNode : public LeafDataNode {
-   public:
-    // This is the value before update; key is the same
-    // as the key in the LeafDataNode base
-    KeyValuePair old_item;
-    
-    /*
-     * Constructor
-     */
-    LeafUpdateNode(const KeyType &p_update_key,
-                   const ValueType &p_old_value,
-                   const ValueType &p_new_value,
-                   const BaseNode *p_child_node_p,
-                   std::pair<int, bool> p_index_pair) :
-      LeafDataNode{std::make_pair(p_update_key, p_new_value),
-                   NodeType::LeafUpdateType,
-                   p_child_node_p,
-                   p_index_pair,
-                   &p_child_node_p->GetLowKeyPair(),
-                   &p_child_node_p->GetHighKeyPair(),
-                   p_child_node_p->GetDepth() + 1,
-                   p_child_node_p->GetItemCount()},
-      old_item{std::make_pair(p_update_key, p_old_value)}
-    {}
+     {}
   };
 
   /*
@@ -1978,17 +1943,17 @@ class BwTree : public BwTreeBase {
     // One reasonable amount of memory for each chunk is 
     // delta chain len * struct len + sizeof this struct
     static constexpr size_t CHUNK_SIZE = \
-      sizeof(DeltaNodeUnion) * 16 + sizeof(AllocationMeta);
+      sizeof(DeltaNodeUnion) * 8 + sizeof(AllocationMeta);
     
    private: 
     // This points to the higher address end of the chunk we are 
     // allocating from
-    std::atomic<char *> tail;
+    AtomicType<char *> tail;
     // This points to the lower limit of the memory region we could use
     char *const limit;
     // This forms a linked list which needs to be traversed in order to 
     // free chunks of memory
-    std::atomic<AllocationMeta *> next;
+    AtomicType<AllocationMeta *> next;
   
    public:
     /*
@@ -2958,12 +2923,6 @@ class BwTree : public BwTreeBase {
           ((LeafDeleteNode *)node_p)->~LeafDeleteNode();
 
           break;
-        case NodeType::LeafUpdateType:
-          next_node_p = ((LeafUpdateNode *)node_p)->child_node_p;
-
-          ((LeafUpdateNode *)node_p)->~LeafUpdateNode();
-
-          break;
         case NodeType::LeafSplitType:
           next_node_p = ((LeafSplitNode *)node_p)->child_node_p;
 
@@ -3146,7 +3105,7 @@ class BwTree : public BwTreeBase {
                root_id.load(),
                first_leaf_id);
 
-    InstallNewNode(root_id, root_node_p);
+    InstallNewNode(root_id.load(), root_node_p);
 
     // Initially there is no element inside the leaf node so we set element
     // count to be 0
@@ -4332,34 +4291,6 @@ abort_traverse:
 
     // We only collect values for this key
     const KeyType &search_key = context_p->search_key;
-    
-#ifndef UNIQUE_KEY    
-    
-    // The maximum size of present set and deleted set is just
-    // the length of the delta chain. Since when we reached the leaf node
-    // we just probe and add to value set
-    const int set_max_size = node_p->GetDepth();
-
-    // 1. This works even if depth is 0
-    // 2. We choose to store const ValueType * because we want to bound the
-    // size of stack array. It should be upper bounded by max delta chain
-    // length * pointer size. On the contrary, if the size of
-    // ValueType is huge, and we store ValueType, then we might cause
-    // a stack overflow
-    const ValueType *present_set_data_p[set_max_size];
-    const ValueType *deleted_set_data_p[set_max_size];
-
-    BloomFilter<ValueType, ValueEqualityChecker, ValueHashFunc> \
-      present_set{present_set_data_p,
-                  value_eq_obj,
-                  value_hash_obj};
-
-    BloomFilter<ValueType, ValueEqualityChecker, ValueHashFunc> \
-      deleted_set{deleted_set_data_p,
-                  value_eq_obj,
-                  value_hash_obj};
-                  
-#endif
 
     int start_index = 0;
     int end_index = -1;
@@ -4388,32 +4319,10 @@ abort_traverse:
                              std::make_pair(search_key, ValueType{}),
                              key_value_pair_cmp_obj);
 
-#ifndef UNIQUE_KEY
-          while((copy_start_it != leaf_node_p->End()) && \
-                (KeyCmpEqual(search_key, copy_start_it->first))) {
-            // If the value has not been deleted then just insert
-            // Note that here we use ValueSet, so need to extract value from
-            // the key value pair
-            if(deleted_set.Exists(copy_start_it->second) == false) {
-              if(present_set.Exists(copy_start_it->second) == false) {
-                // Note: As an optimization, we do not have to Insert() the
-                // value element into present set here. Since we know it
-                // is already base leaf page, adding values into present set
-                // definitely will not block the remaining values, since we
-                // know they do not duplicate inside the leaf node
-
-                value_list.push_back(copy_start_it->second);
-              }
-            }
-
-            copy_start_it++;
-          }
-#else
           if((copy_start_it != leaf_node_p->End()) && \
              (KeyCmpEqual(search_key, copy_start_it->first))) {
              value_list.push_back(copy_start_it->second);
           }
-#endif
 
           return;
         }
@@ -4422,21 +4331,8 @@ abort_traverse:
             static_cast<const LeafInsertNode *>(node_p);
 
           if(KeyCmpEqual(search_key, insert_node_p->item.first)) {
-#ifndef UNIQUE_KEY
-            if(deleted_set.Exists(insert_node_p->item.second) == false) {
-              // We must do this, since inserted set does not detect for
-              // duplication, and if the value has already been in present set
-              // then we inserted the same value twice
-              if(present_set.Exists(insert_node_p->item.second) == false) {
-                present_set.Insert(insert_node_p->item.second);
-
-                value_list.push_back(insert_node_p->item.second);
-              }
-            }
-#else
               value_list.push_back(insert_node_p->item.second);
               return; 
-#endif
           } else if(KeyCmpGreater(search_key, insert_node_p->item.first)) {
             start_index = insert_node_p->GetIndexPair().first;
           } else {
@@ -4452,20 +4348,7 @@ abort_traverse:
             static_cast<const LeafDeleteNode *>(node_p);
 
           if(KeyCmpEqual(search_key, delete_node_p->item.first)) {
-#ifndef UNIQUE_KEY
-            // Add the item into deleted set if it is:
-            //   (1) Not inserted earlier
-            //   (2) Not deleted earlier also
-            // (2) is checked to avoid too many items being
-            // inserted into the deleted set
-            if(present_set.Exists(delete_node_p->item.second) == false) {
-              if(deleted_set.Exists(delete_node_p->item.second) == false) {
-                deleted_set.Insert(delete_node_p->item.second);
-              }
-            }
-#else
             return;
-#endif
           } else if(KeyCmpGreater(search_key, delete_node_p->item.first)) {
             start_index = delete_node_p->GetIndexPair().first;
           } else {
@@ -4476,44 +4359,6 @@ abort_traverse:
 
           break;
         } // case LeafDeleteType
-        case NodeType::LeafUpdateType: {
-          const LeafUpdateNode *update_node_p = \
-            static_cast<const LeafUpdateNode *>(node_p);
-
-          if(KeyCmpEqual(search_key, update_node_p->item.first)) {
-            // This value is common for unique key and non-uniqe key
-            const ValueType &new_value = update_node_p->item.second;
-#ifndef UNIQUE_KEY
-            const ValueType &old_value = update_node_p->old_item.second;
-          
-            if(deleted_set.Exists(new_value) == false) {
-              if(present_set.Exists(new_value) == false) {
-                present_set.Insert(new_value);
-                value_list.push_back(new_value);
-              }
-            }
-            
-            // If the value is not insertd back later then we add
-            // it as deleted
-            if(present_set.Exists(old_value) == false) {
-              if(deleted_set.Exists(old_value) == false) {
-                deleted_set.Insert(old_value);
-              }
-            }
-#else
-            value_list.push_back(new_value);
-            return;
-#endif
-          } else if(KeyCmpGreater(search_key, update_node_p->item.first)) {
-            start_index = update_node_p->GetIndexPair().first;
-          } else {
-            end_index = update_node_p->GetIndexPair().first;
-          }
-
-          node_p = update_node_p->child_node_p;
-
-          break;
-        } // case LeafUpdateType
         case NodeType::LeafRemoveType: {
           bwt_printf("ERROR: Observed LeafRemoveNode in delta chain\n");
 
@@ -4598,10 +4443,7 @@ abort_traverse:
       return nullptr;
     }
     
-#ifdef UNIQUE_KEY
-    // For unique key we do not use the search value
     (void)search_value;
-#endif
     
     /////////////////////////////////////////////////////////////////
     // Only after this point could we get snapshot and node_p
@@ -4634,41 +4476,6 @@ abort_traverse:
                              std::make_pair(search_key, ValueType{}),
                              key_value_pair_cmp_obj);
 
-#ifndef UNIQUE_KEY
-          // Search all values with the search key
-          while((scan_start_it != leaf_node_p->End()) && \
-                (KeyCmpEqual(scan_start_it->first, search_key))) {
-
-            // If there is a value matching the search value then return true
-            // We do not need to check any delete set here, since if the
-            // value has been deleted earlier then this function would
-            // already have returned
-            if(ValueCmpEqual(scan_start_it->second, search_value)) {
-              // Since only Delete() will use this piece of information
-              // we set exist flag to false to indicate that the value
-              // has been invalidated
-              index_pair_p->first = \
-                scan_start_it - leaf_node_p->Begin();
-              index_pair_p->second = true;
-
-              // Return a pointer to the item inside LeafNode;
-              // This pointer should remain valid until epoch is exited
-              return &(*scan_start_it);
-            }
-
-            scan_start_it++;
-          }
-
-          // Either key does not exist or key exists but value does not
-          // exist will reach here
-          // Since only Insert() will use the index we set exist flag to false
-          index_pair_p->first = \
-                scan_start_it - leaf_node_p->Begin();
-          index_pair_p->second = false;
-
-          return nullptr;
-#else
-
           index_pair_p->first = \
             scan_start_it - leaf_node_p->Begin();
 
@@ -4683,23 +4490,11 @@ abort_traverse:
           
           index_pair_p->second = false;
           return nullptr;
-#endif
         } // case LeafType
         case NodeType::LeafInsertType: {
           const LeafInsertNode *insert_node_p = \
             static_cast<const LeafInsertNode *>(node_p);
 
-#ifndef UNIQUE_KEY
-          if(KeyCmpEqual(search_key, insert_node_p->item.first)) {
-            if(ValueCmpEqual(insert_node_p->item.second, search_value)) {
-              // Only Delete() will use this
-              // We just simply inherit from the first node
-              *index_pair_p = insert_node_p->GetIndexPair();
-
-              return &insert_node_p->item;
-            }
-          }
-#else
           if(KeyCmpEqual(search_key, insert_node_p->item.first)) {
             // Only Delete() will use this
             // We just simply inherit from the first node
@@ -4707,7 +4502,6 @@ abort_traverse:
             
             return &insert_node_p->item;
           }
-#endif
 
           node_p = insert_node_p->child_node_p;
 
@@ -4717,18 +4511,6 @@ abort_traverse:
           const LeafDeleteNode *delete_node_p = \
             static_cast<const LeafDeleteNode *>(node_p);
 
-#ifndef UNIQUE_KEY
-          // If the value was deleted then return false
-          if(KeyCmpEqual(search_key, delete_node_p->item.first)) {
-            if(ValueCmpEqual(delete_node_p->item.second, search_value)) {
-              // Only Insert() will use this
-              // We just simply inherit from the first node
-              *index_pair_p = delete_node_p->GetIndexPair();
-
-              return nullptr;
-            }
-          }
-#else
           // If the value was deleted then return false
           if(KeyCmpEqual(search_key, delete_node_p->item.first)) {
             // Only Insert() will use this
@@ -4737,44 +4519,11 @@ abort_traverse:
             
             return nullptr;
           }
-#endif
-
+          
           node_p = delete_node_p->child_node_p;
 
           break;
         } // case LeafDeleteType
-        case NodeType::LeafUpdateType: {
-          const LeafUpdateNode *update_node_p = \
-            static_cast<const LeafUpdateNode *>(node_p);
-          
-
-#ifndef UNIQUE_KEY
-          // Unique key do not use this new value
-          const ValueType &new_value = update_node_p->item.second;
-          const ValueType &old_value = update_node_p->old_item.second;
-          // If the value was deleted then return false
-          if(KeyCmpEqual(search_key, update_node_p->item.first)) {
-            if(ValueCmpEqual(search_value, new_value)) {
-              *index_pair_p = update_node_p->GetIndexPair();
-              // Note that we return the new value item
-              return &update_node_p->item;
-            } else if(ValueCmpEqual(old_value, search_value)) {
-              *index_pair_p = update_node_p->GetIndexPair();
-              return nullptr;
-            }
-          }
-#else
-          if(KeyCmpEqual(search_key, update_node_p->item.first)) {
-            *index_pair_p = update_node_p->GetIndexPair();
-            // Note that we return the new value item
-            return &update_node_p->item;
-          }
-#endif
-          
-          node_p = update_node_p->child_node_p;
-          
-          break; 
-        } // case LeafUpdateType
         case NodeType::LeafRemoveType: {
           bwt_printf("ERROR: Observed LeafRemoveNode in delta chain\n");
 
@@ -4825,9 +4574,6 @@ abort_traverse:
   }
   
 #ifdef BWTREE_PELOTON  
-  
-  // Importantant notice: This function is always unique value
-  // no matter whether the index is unique or not
   
   /*
    * NavigateLeafNode() - Apply predicate to all values, and detect for existing
@@ -5077,10 +4823,7 @@ abort_traverse:
     // and those in the data list of leaf page do not need to be
     // put in the set
     // This is used to dedup already seen key-value pairs
-    // Note that we should prepare 2 slots for each delta
-    // because leaf update delta may add two key-value pairs
-    // instead of just one in the set
-    const KeyValuePair *delta_set_data_p[delta_change_num * 2];
+    const KeyValuePair *delta_set_data_p[delta_change_num];
 
     // This set is used as the set for deduplicating already seen
     // key value pairs
@@ -5255,15 +4998,11 @@ abort_traverse:
             while(sss.GetFront()->GetIndexPair().first == current_index) {
               // Update current status of the item on leaf base node
               // IndexPair.second == true if the value has been overwritten
-              // This is even true for upsert because upsert's logical insert
-              // and delete operation must have the same index_item value
-              item_overwritten = (item_overwritten || \
-                                  sss.GetFront()->GetIndexPair().second);
+              item_overwritten = item_overwritten || sss.GetFront()->GetIndexPair().second;
               
               // We only insert those in LeafInsertNode
               // and ignore all LeafDeleteNode
-              if(sss.GetFront()->GetType() == NodeType::LeafInsertType || \
-                 sss.GetFront()->GetType() == NodeType::LeafUpdateType) {
+              if(sss.GetFront()->GetType() == NodeType::LeafInsertType) {
                 // We remove the element from sss here
                 new_leaf_node_p->PushBack(sss.PopFront()->item);
               } else {
@@ -5320,24 +5059,6 @@ abort_traverse:
 
           break;
         } // case LeafDeleteType
-        case NodeType::LeafUpdateType: {
-          const LeafUpdateNode *update_node_p = \
-            static_cast<const LeafUpdateNode *>(node_p);
-          
-          if(delta_set.Exists(update_node_p->item) == false) {
-            delta_set.Insert(update_node_p->item);
-
-            sss.InsertNoDedup(update_node_p);
-          }
-            
-          if(delta_set.Exists(update_node_p->old_item) == false) {
-            delta_set.Insert(update_node_p->old_item);
-          }
-
-          node_p = update_node_p->child_node_p;
-
-          break;
-        } // case LeafUpdateType
         case NodeType::LeafRemoveType: {
           bwt_printf("ERROR: LeafRemoveNode not allowed\n");
 
@@ -7689,91 +7410,6 @@ before_switch:
 
     return true;
   }
-  
-  /*
-   * Upsert() - Update or Insert
-   *
-   * If we append insert delta then return true; Otherwise return false
-   */
-  bool Upsert(const KeyType &key, 
-#ifndef UNIQUE_KEY
-              const ValueType &old_value,
-#endif
-              const ValueType &new_value) {
-    bwt_printf("Upsert called\n");
-
-    EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
-    bool new_key;
-
-    while(1) {
-      Context context{key};
-      std::pair<int, bool> index_pair;
-
-#ifndef UNIQUE_KEY
-      // Check whether the key-value pair exists
-      // Also if the key previously exists in the delta chain
-      // then return the position of the node using next_key_p
-      // if there is none then return nullptr
-      const KeyValuePair *item_p = Traverse(&context, &old_value, &index_pair);
-#else
-      // The value will not be used
-      const KeyValuePair *item_p = Traverse(&context, &new_value, &index_pair);
-#endif
-
-      NodeSnapshot *snapshot_p = GetLatestNodeSnapshot(&context);
-
-      // We will CAS on top of this
-      const BaseNode *node_p = snapshot_p->node_p;
-      NodeID node_id = snapshot_p->node_id;
-
-      // If the key-value pair already exists then return false
-      // because we append update instead of upsert
-      if(item_p != nullptr) {
-        new_key = false;
-
-        const LeafUpdateNode *update_node_p = \
-          LeafInlineAllocateOfType(LeafUpdateNode, 
-                                   node_p, 
-                                   key, 
-                                   item_p->second,
-                                   new_value, 
-                                   node_p,
-                                   index_pair);
-
-        bool ret = InstallNodeToReplace(node_id,
-                                        update_node_p,
-                                        node_p);
-        if(ret == true) {
-          break;
-        } else {
-          update_node_p->~LeafUpdateNode();
-        }
-      } else {
-        new_key = true; 
-        
-        const LeafInsertNode *insert_node_p = \
-          LeafInlineAllocateOfType(LeafInsertNode, 
-                                   node_p, 
-                                   key, 
-                                   new_value, 
-                                   node_p, 
-                                   index_pair);
-
-        bool ret = InstallNodeToReplace(node_id,
-                                        insert_node_p,
-                                        node_p);
-        if(ret == true) {
-          break;
-        } else {
-          insert_node_p->~LeafInsertNode();
-        }
-      }
-    }
-
-    epoch_manager.LeaveEpoch(epoch_node_p);
-
-    return new_key;
-  }
 
 #ifdef BWTREE_PELOTON
 
@@ -8101,15 +7737,14 @@ before_switch:
   const KeyValuePairComparator key_value_pair_cmp_obj;
   const KeyValuePairEqualityChecker key_value_pair_eq_obj;
   const KeyValuePairHashFunc key_value_pair_hash_obj;
-
   // This value is atomic and will change
-  std::atomic<NodeID> root_id;
+  AtomicType<NodeID> root_id;
 
   // This value is non-atomic, but it remains constant after constructor
   NodeID first_leaf_id;
 
-  std::atomic<NodeID> next_unused_node_id;
-  std::array<std::atomic<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
+  AtomicType<NodeID> next_unused_node_id;
+  std::array<AtomicType<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
 
   // This list holds free NodeID which was removed by remove delta
   // We recycle NodeID in epoch manager
@@ -8164,12 +7799,12 @@ before_switch:
     struct EpochNode {
       // We need this to be atomic in order to accurately
       // count the number of threads
-      std::atomic<int> active_thread_count;
+      AtomicType<int> active_thread_count;
 
       // We need this to be atomic to be able to
       // add garbage nodes without any race condition
       // i.e. GC nodes are CASed onto this pointer
-      std::atomic<GarbageNode *> garbage_list_p;
+      AtomicType<GarbageNode *> garbage_list_p;
 
       // This does not need to be atomic since it is
       // only maintained by the epoch thread
@@ -8212,8 +7847,8 @@ before_switch:
     size_t epoch_created;
     size_t epoch_freed;
 
-    std::atomic<size_t> epoch_join;
-    std::atomic<size_t> epoch_leave;
+    AtomicType<size_t> epoch_join;
+    AtomicType<size_t> epoch_leave;
     #endif
 
     /*
@@ -8563,16 +8198,6 @@ try_join_again:
             next_node_p = ((LeafDeleteNode *)node_p)->child_node_p;
 
             ((LeafDeleteNode *)node_p)->~LeafDeleteNode();
-
-            #ifdef BWTREE_DEBUG
-            freed_count++;
-            #endif
-
-            break;
-          case NodeType::LeafUpdateType:
-            next_node_p = ((LeafUpdateNode *)node_p)->child_node_p;
-
-            ((LeafUpdateNode *)node_p)->~LeafUpdateNode();
 
             #ifdef BWTREE_DEBUG
             freed_count++;

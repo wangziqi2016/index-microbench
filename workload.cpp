@@ -324,7 +324,7 @@ inline void exec(int wl,
         idx->find(keys[i], &v, ti);
       }
       else if (op == OP_UPSERT) { //UPDATE
-        idx->upsert(keys[i], values[i], ti);
+        idx->upsert(keys[i], reinterpret_cast<uint64_t>(&keys[i]), ti);
       }
       else if (op == OP_SCAN) { //SCAN
         idx->scan(keys[i], ranges[i], ti);

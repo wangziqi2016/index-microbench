@@ -124,11 +124,7 @@ int GetTxnCount(const std::vector<int> &ops,
         count++;
         break;
       case OP_UPSERT:
-        if(index_type == TYPE_BWTREE) {
-          count += (upsert_hack ? 2 : 1);
-        } else {
-          count++;
-        }
+        count++;
 
         break;
       default:

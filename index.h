@@ -198,8 +198,10 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
   }
 
   bool upsert(KeyType key, uint64_t value, threadinfo *) {
-    index_p->Delete(key, value);
-    index_p->Insert(key, value);
+    //index_p->Delete(key, value);
+    //index_p->Insert(key, value);
+    
+    index_p->Upsert(key, value);
 
     return true;
   }

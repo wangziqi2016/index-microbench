@@ -10,7 +10,7 @@ namespace btreeolc {
 
 enum class PageType : uint8_t { BTreeInner=1, BTreeLeaf=2 };
 
-static const uint64_t pageSize=2*1024;
+static const uint64_t pageSize=4*1024;
 
 struct OptLock {
   std::atomic<uint64_t> typeVersionLockObsolete{0b100};

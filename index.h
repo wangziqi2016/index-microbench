@@ -140,9 +140,18 @@ class BTreeOLCIndex : public Index<KeyType, KeyComparator>
     return true;
   }
 
+  void incKey(uint64_t& key) { key++; };
+  void incKey(GenericKey<31>& key) { key.data[strlen(key.data)-1]++; };
+
   uint64_t scan(KeyType key, int range, threadinfo *ti) {
     uint64_t results[range];
-    return idx.scan(key, range, results);
+    int count = idx.scan(key, range, results);
+    // terrible hack:
+    while (count < range) {
+      incKey(key);
+      count += idx.scan(key, range - count, results + count);
+    }
+    return count;
   }
 
   int64_t getMemory() const {

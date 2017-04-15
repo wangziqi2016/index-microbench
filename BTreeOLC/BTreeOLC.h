@@ -10,7 +10,7 @@ namespace btreeolc {
 
 enum class PageType : uint8_t { BTreeInner=1, BTreeLeaf=2 };
 
-static const uint64_t pageSize=2*1024;
+static const uint64_t pageSize=4*1024;
 
 struct OptLock {
   std::atomic<uint64_t> typeVersionLockObsolete{0b100};
@@ -442,15 +442,11 @@ struct BTree {
     BTreeLeaf<Key,Value>* leaf = static_cast<BTreeLeaf<Key,Value>*>(node);
     unsigned pos = leaf->lowerBound(k);
     int count = 0;
-    for (unsigned i=pos; i<count; i++) {
+    for (unsigned i=pos; i<leaf->count; i++) {
       if (count==range)
 	break;
       output[count] = leaf->payloads[pos+i];
       count++;
-    }
-
-    if (count<range) {
-      // ???
     }
 
     if (parent) {

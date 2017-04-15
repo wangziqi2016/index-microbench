@@ -224,7 +224,7 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
         idx->find(keys[i], &v, ti);
       }
       else if (op == OP_UPSERT) { //UPDATE
-        idx->upsert(keys[i], values[i], ti);
+        idx->upsert(keys[i], (uint64_t)keys[i].data, ti);
       }
       else if (op == OP_SCAN) { //SCAN
         idx->scan(keys[i], ranges[i], ti);

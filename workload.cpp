@@ -3,6 +3,12 @@
 #include <cstring>
 #include <cctype>
 
+//#define USE_TBB
+
+#ifdef USE_TBB
+#include "tbb/tbb.h"
+#endif
+
 typedef uint64_t keytype;
 typedef std::less<uint64_t> keycomp;
 
@@ -223,6 +229,42 @@ inline void exec(int wl,
   //WRITE ONLY TEST-----------------
   int count = (int)init_keys.size();
   double start_time = get_now();
+  
+
+#ifdef USE_TBB  
+  tbb::task_scheduler_init init{num_thread};
+
+  std::atomic<int> next_thread_id;
+  next_thread_id.store(0);
+  
+  auto func = [idx, &init_keys, &values, &next_thread_id](const tbb::blocked_range<size_t>& r) {
+    size_t start_index = r.begin();
+    size_t end_index = r.end();
+   
+    threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
+
+    int thread_id = next_thread_id.fetch_add(1);
+    idx->AssignGCID(thread_id);
+    
+    int gc_counter = 0;
+    for(size_t i = start_index;i < end_index;i++) {
+      idx->insert(init_keys[i], values[i], ti);
+      gc_counter++;
+      if(gc_counter % 4096 == 0) {
+        ti->rcu_quiesce();
+      }
+    }
+
+    ti->rcu_quiesce();
+    idx->UnregisterThread(thread_id);
+    
+    return;
+  };
+
+  idx->UpdateThreadLocal(num_thread);
+  tbb::parallel_for(tbb::blocked_range<size_t>(0, count), func);
+  idx->UpdateThreadLocal(1);
+#else
   auto func = [idx, &init_keys, num_thread, &values](uint64_t thread_id, bool) {
     size_t total_num_key = init_keys.size();
     size_t key_per_thread = total_num_key / num_thread;
@@ -230,16 +272,24 @@ inline void exec(int wl,
     size_t end_index = start_index + key_per_thread;
    
     threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
- 
+
+    int gc_counter = 0;
     for(size_t i = start_index;i < end_index;i++) {
       idx->insert(init_keys[i], values[i], ti);
-    }
+      gc_counter++;
+      if(gc_counter % 4096 == 0) {
+        ti->rcu_quiesce();
+      }
+    } 
+
+    ti->rcu_quiesce();
     
     return;
   };
   
-  StartThreads(idx, num_thread, func, false);
   
+  StartThreads(idx, num_thread, func, false);
+#endif   
   /*
   while (count < (int)init_keys.size()) {
     if (!idx->insert(init_keys[count], values[count])) {

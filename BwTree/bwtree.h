@@ -164,8 +164,8 @@ static constexpr size_t MAPPING_TABLE_SIZE = 0x1 << 20;
 
 // If the length of delta chain exceeds ( >= ) this then we consolidate 
 // the node
-static constexpr int INNER_DELTA_CHAIN_LENGTH_THRESHOLD = 8;
-static constexpr int LEAF_DELTA_CHAIN_LENGTH_THRESHOLD = 16;
+static constexpr int INNER_DELTA_CHAIN_LENGTH_THRESHOLD = 2;
+static constexpr int LEAF_DELTA_CHAIN_LENGTH_THRESHOLD = 24;
 
 static_assert(INNER_DELTA_CHAIN_LENGTH_THRESHOLD >= 1 && 
               LEAF_DELTA_CHAIN_LENGTH_THRESHOLD >= 1,
@@ -195,7 +195,7 @@ static_assert(LEAF_NODE_SIZE_UPPER_THRESHOLD >
 static constexpr int PREALLOCATE_THREAD_NUM = 1024;
 
 // Whether BwTree supports non-unique key
-#define UNIQUE_KEY
+#define BWTREE_UNIQUE_KEY
 
 /*
  * InnerInlineAllocateOfType() - allocates a chunk of memory from base node and
@@ -709,11 +709,23 @@ class BwTree : public BwTreeBase {
   using KeyValuePairBloomFilter = BloomFilter<KeyValuePair,
                                               KeyValuePairEqualityChecker,
                                               KeyValuePairHashFunc>;
+  
+  // This will be the type of bollm filter if unique key is enabled                                            
+  using KeyBloomFilter = BloomFilter<KeyType, KeyEqualityChecker, KeyHashFunc>;
+  
+  // We could simplify things if non-unique key is not supported
+  // because in this case the identifier could just be key itself
+#ifndef BWTREE_UNIQUE_KEY
+  using LeafItemIdentifier = KeyValuePair;
+  using LeafItemBloomFilter = KeyValuePairBloomFilter;
+#else
+  using LeafItemIdentifier = KeyType;
+  using LeafItemBloomFilter = KeyBloomFilter;
+#endif
 
   using ValueSet = std::unordered_set<ValueType,
                                       ValueHashFunc,
                                       ValueEqualityChecker>;
-
 
   using EpochNode = typename EpochManager::EpochNode;
 
@@ -753,6 +765,14 @@ class BwTree : public BwTreeBase {
   ///////////////////////////////////////////////////////////////////
   // Comparator, equality checker and hasher for key-NodeID pair
   ///////////////////////////////////////////////////////////////////
+
+  /*
+   * LargerOne() - Chose the larger one in compile time
+   */
+  template <typename T>
+  static constexpr T LargerOne(const T &a, const T &b) {
+    return a > b ? a : b; 
+  }
 
   /*
    * class KeyNodeIDPairComparator - Compares key-value pair for < relation
@@ -1978,7 +1998,9 @@ class BwTree : public BwTreeBase {
     // One reasonable amount of memory for each chunk is 
     // delta chain len * struct len + sizeof this struct
     static constexpr size_t CHUNK_SIZE = \
-      sizeof(DeltaNodeUnion) * 16 + sizeof(AllocationMeta);
+      sizeof(DeltaNodeUnion) * LargerOne(INNER_DELTA_CHAIN_LENGTH_THRESHOLD,
+                                         LEAF_DELTA_CHAIN_LENGTH_THRESHOLD) + \
+      sizeof(AllocationMeta);
     
    private: 
     // This points to the higher address end of the chunk we are 
@@ -2438,7 +2460,7 @@ class BwTree : public BwTreeBase {
       
       // Jump over chunk content
       AllocationMeta *meta_p = GetAllocationHeader(node_p);
-            
+
       void *p = meta_p->Allocate(size);
       assert(p != nullptr);
       
@@ -3847,7 +3869,7 @@ abort_traverse:
         case NodeType::InnerType: {
           NodeID target_id = \
             LocateSeparatorByKeyBI(search_key, 
-                                    static_cast<const InnerNode *>(node_p));
+                                   static_cast<const InnerNode *>(node_p));
 
           bwt_printf("Found child in inner node (BI); child ID = %lu\n",
                      target_id);
@@ -4333,7 +4355,7 @@ abort_traverse:
     // We only collect values for this key
     const KeyType &search_key = context_p->search_key;
     
-#ifndef UNIQUE_KEY    
+#ifndef BWTREE_UNIQUE_KEY    
     
     // The maximum size of present set and deleted set is just
     // the length of the delta chain. Since when we reached the leaf node
@@ -4388,7 +4410,7 @@ abort_traverse:
                              std::make_pair(search_key, ValueType{}),
                              key_value_pair_cmp_obj);
 
-#ifndef UNIQUE_KEY
+#ifndef BWTREE_UNIQUE_KEY
           while((copy_start_it != leaf_node_p->End()) && \
                 (KeyCmpEqual(search_key, copy_start_it->first))) {
             // If the value has not been deleted then just insert
@@ -4422,7 +4444,7 @@ abort_traverse:
             static_cast<const LeafInsertNode *>(node_p);
 
           if(KeyCmpEqual(search_key, insert_node_p->item.first)) {
-#ifndef UNIQUE_KEY
+#ifndef BWTREE_UNIQUE_KEY
             if(deleted_set.Exists(insert_node_p->item.second) == false) {
               // We must do this, since inserted set does not detect for
               // duplication, and if the value has already been in present set
@@ -4452,7 +4474,7 @@ abort_traverse:
             static_cast<const LeafDeleteNode *>(node_p);
 
           if(KeyCmpEqual(search_key, delete_node_p->item.first)) {
-#ifndef UNIQUE_KEY
+#ifndef BWTREE_UNIQUE_KEY
             // Add the item into deleted set if it is:
             //   (1) Not inserted earlier
             //   (2) Not deleted earlier also
@@ -4483,7 +4505,7 @@ abort_traverse:
           if(KeyCmpEqual(search_key, update_node_p->item.first)) {
             // This value is common for unique key and non-uniqe key
             const ValueType &new_value = update_node_p->item.second;
-#ifndef UNIQUE_KEY
+#ifndef BWTREE_UNIQUE_KEY
             const ValueType &old_value = update_node_p->old_item.second;
           
             if(deleted_set.Exists(new_value) == false) {
@@ -4598,7 +4620,9 @@ abort_traverse:
       return nullptr;
     }
     
-#ifdef UNIQUE_KEY
+#ifndef BWTREE_UNIQUE_KEY
+    // NOP
+#else
     // For unique key we do not use the search value
     (void)search_value;
 #endif
@@ -4617,6 +4641,9 @@ abort_traverse:
     // Save some typing
     const KeyType &search_key = context_p->search_key;
 
+    int start_index = 0;
+    int end_index = -1;
+
     while(1) {
       NodeType type = node_p->GetType();
 
@@ -4625,16 +4652,21 @@ abort_traverse:
           const LeafNode *leaf_node_p = \
             static_cast<const LeafNode *>(node_p);
 
+          auto start_it = leaf_node_p->Begin() + start_index;
+          auto end_it = ((end_index == -1) ? \
+                         leaf_node_p->End() : \
+                         leaf_node_p->Begin() + end_index);
+
           // Here we know the search key < high key of current node
           // NOTE: We only compare keys here, so it will get to the first
           // element >= search key
           auto scan_start_it = \
-            std::lower_bound(leaf_node_p->Begin(),
-                             leaf_node_p->End(),
+            std::lower_bound(start_it,
+                             end_it,
                              std::make_pair(search_key, ValueType{}),
                              key_value_pair_cmp_obj);
 
-#ifndef UNIQUE_KEY
+#ifndef BWTREE_UNIQUE_KEY
           // Search all values with the search key
           while((scan_start_it != leaf_node_p->End()) && \
                 (KeyCmpEqual(scan_start_it->first, search_key))) {
@@ -4689,7 +4721,7 @@ abort_traverse:
           const LeafInsertNode *insert_node_p = \
             static_cast<const LeafInsertNode *>(node_p);
 
-#ifndef UNIQUE_KEY
+#ifndef BWTREE_UNIQUE_KEY
           if(KeyCmpEqual(search_key, insert_node_p->item.first)) {
             if(ValueCmpEqual(insert_node_p->item.second, search_value)) {
               // Only Delete() will use this
@@ -4706,6 +4738,10 @@ abort_traverse:
             *index_pair_p = insert_node_p->GetIndexPair();
             
             return &insert_node_p->item;
+          } else if(KeyCmpGreater(search_key, insert_node_p->item.first)) {
+            start_index = insert_node_p->GetIndexPair().first;
+          } else {
+            end_index = insert_node_p->GetIndexPair().first;
           }
 #endif
 
@@ -4717,7 +4753,7 @@ abort_traverse:
           const LeafDeleteNode *delete_node_p = \
             static_cast<const LeafDeleteNode *>(node_p);
 
-#ifndef UNIQUE_KEY
+#ifndef BWTREE_UNIQUE_KEY
           // If the value was deleted then return false
           if(KeyCmpEqual(search_key, delete_node_p->item.first)) {
             if(ValueCmpEqual(delete_node_p->item.second, search_value)) {
@@ -4727,7 +4763,7 @@ abort_traverse:
 
               return nullptr;
             }
-          }
+          } 
 #else
           // If the value was deleted then return false
           if(KeyCmpEqual(search_key, delete_node_p->item.first)) {
@@ -4736,6 +4772,10 @@ abort_traverse:
             *index_pair_p = delete_node_p->GetIndexPair();
             
             return nullptr;
+          } else if(KeyCmpGreater(search_key, delete_node_p->item.first)) {
+            start_index = delete_node_p->GetIndexPair().first;
+          } else {
+            end_index = delete_node_p->GetIndexPair().first;
           }
 #endif
 
@@ -4748,7 +4788,7 @@ abort_traverse:
             static_cast<const LeafUpdateNode *>(node_p);
           
 
-#ifndef UNIQUE_KEY
+#ifndef BWTREE_UNIQUE_KEY
           // Unique key do not use this new value
           const ValueType &new_value = update_node_p->item.second;
           const ValueType &old_value = update_node_p->old_item.second;
@@ -4762,12 +4802,16 @@ abort_traverse:
               *index_pair_p = update_node_p->GetIndexPair();
               return nullptr;
             }
-          }
+          } 
 #else
           if(KeyCmpEqual(search_key, update_node_p->item.first)) {
             *index_pair_p = update_node_p->GetIndexPair();
             // Note that we return the new value item
             return &update_node_p->item;
+          } else if(KeyCmpGreater(search_key, update_node_p->item.first)) {
+            start_index = update_node_p->GetIndexPair().first;
+          } else {
+            end_index = update_node_p->GetIndexPair().first;
           }
 #endif
           
@@ -5080,13 +5124,21 @@ abort_traverse:
     // Note that we should prepare 2 slots for each delta
     // because leaf update delta may add two key-value pairs
     // instead of just one in the set
-    const KeyValuePair *delta_set_data_p[delta_change_num * 2];
+    const LeafItemIdentifier *delta_set_data_p[delta_change_num * 2];
 
+#ifndef BWTREE_UNIQUE_KEY
     // This set is used as the set for deduplicating already seen
     // key value pairs
-    KeyValuePairBloomFilter delta_set{delta_set_data_p,
-                                      key_value_pair_eq_obj,
-                                      key_value_pair_hash_obj};
+    LeafItemBloomFilter delta_set{delta_set_data_p,
+                                  key_value_pair_eq_obj,
+                                  key_value_pair_hash_obj};
+#else
+    // For unique keys this is simpler because 
+    // we just use key type to dedup delta records
+    LeafItemBloomFilter delta_set{delta_set_data_p,
+                                  key_eq_obj,
+                                  key_hash_obj};
+#endif
                                         
     /////////////////////////////////////////////////////////////////
     // Prepare Small Sorted Set
@@ -5163,7 +5215,7 @@ abort_traverse:
   void
   CollectAllValuesOnLeafRecursive(const BaseNode *node_p,
                                   T &sss,
-                                  KeyValuePairBloomFilter &delta_set,
+                                  LeafItemBloomFilter &delta_set,
                                   LeafNode *new_leaf_node_p) const {
     // The top node is used to derive high key
     // NOTE: Low key for Leaf node and its delta chain is nullptr
@@ -5296,11 +5348,19 @@ abort_traverse:
           const LeafInsertNode *insert_node_p = \
             static_cast<const LeafInsertNode *>(node_p);
 
+#ifndef BWTREE_UNIQUE_KEY
           if(delta_set.Exists(insert_node_p->item) == false) {
             delta_set.Insert(insert_node_p->item);
 
             sss.InsertNoDedup(insert_node_p);
           }
+#else
+          if(delta_set.Exists(insert_node_p->item.first) == false) {
+            delta_set.Insert(insert_node_p->item.first);
+
+            sss.InsertNoDedup(insert_node_p);
+          }
+#endif
 
           node_p = insert_node_p->child_node_p;
 
@@ -5310,11 +5370,19 @@ abort_traverse:
           const LeafDeleteNode *delete_node_p = \
             static_cast<const LeafDeleteNode *>(node_p);
 
+#ifndef BWTREE_UNIQUE_KEY
           if(delta_set.Exists(delete_node_p->item) == false) {
             delta_set.Insert(delete_node_p->item);
 
             sss.InsertNoDedup(delete_node_p);
           }
+#else
+          if(delta_set.Exists(delete_node_p->item.first) == false) {
+            delta_set.Insert(delete_node_p->item.first);
+
+            sss.InsertNoDedup(delete_node_p);
+          }
+#endif
 
           node_p = delete_node_p->child_node_p;
 
@@ -5324,6 +5392,7 @@ abort_traverse:
           const LeafUpdateNode *update_node_p = \
             static_cast<const LeafUpdateNode *>(node_p);
           
+#ifndef BWTREE_UNIQUE_KEY
           if(delta_set.Exists(update_node_p->item) == false) {
             delta_set.Insert(update_node_p->item);
 
@@ -5333,6 +5402,17 @@ abort_traverse:
           if(delta_set.Exists(update_node_p->old_item) == false) {
             delta_set.Insert(update_node_p->old_item);
           }
+#else
+          if(delta_set.Exists(update_node_p->item.first) == false) {
+            delta_set.Insert(update_node_p->item.first);
+
+            sss.InsertNoDedup(update_node_p);
+          }
+            
+          if(delta_set.Exists(update_node_p->old_item.first) == false) {
+            delta_set.Insert(update_node_p->old_item.first);
+          }
+#endif
 
           node_p = update_node_p->child_node_p;
 
@@ -7696,7 +7776,7 @@ before_switch:
    * If we append insert delta then return true; Otherwise return false
    */
   bool Upsert(const KeyType &key, 
-#ifndef UNIQUE_KEY
+#ifndef BWTREE_UNIQUE_KEY
               const ValueType &old_value,
 #endif
               const ValueType &new_value) {
@@ -7709,7 +7789,7 @@ before_switch:
       Context context{key};
       std::pair<int, bool> index_pair;
 
-#ifndef UNIQUE_KEY
+#ifndef BWTREE_UNIQUE_KEY
       // Check whether the key-value pair exists
       // Also if the key previously exists in the delta chain
       // then return the position of the node using next_key_p

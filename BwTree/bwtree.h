@@ -3418,6 +3418,42 @@ class BwTree : public BwTreeBase {
     assert(false);
     return 0;
   }
+  
+  /*
+   * DebugConsolidateAllRecursive() - This function traverses and consolidates
+   *                                  all delta chains
+   */
+  void DebugConsolidateAllRecursive(NodeID node_id) {
+    BaseNode *node_p = GetNode(node_id);
+    NodeType type = node_p->GetType();
+    NodeSnapshot snapshot{node_id, node_p};
+    
+    if(node_p->IsOnLeafDeltaChain() == true) {
+      if(type == NodeType::LeafSplitType ||
+         type == NodeType::LeafMergeType ||
+         type == NodeType::LeafRemoveType) {
+        fprintf(stderr,
+                "Unexpected leaf node type: %d\n",
+                static_cast<int>(type));
+        exit(1);
+      }
+      
+      LeafNode *leaf_node_p = CollectAllValuesOnLeaf(&snapshot);
+      mapping_table[node_id] = leaf_node_p;
+    } else {
+      if(type == NodeType::InnerSplitType ||
+         type == NodeType::InnerMergeType ||
+         type == NodeType::InnerRemoveType ||
+         type == NodeType::InnerAbortType) {
+        fprintf(stderr,
+                "Unexpected leaf node type: %d\n",
+                static_cast<int>(type));
+        exit(1);
+      }
+    }
+    
+    return;
+  }
 
   /*
    * InitNodeLayout() - Initialize the nodes required to start BwTree
@@ -7143,7 +7179,7 @@ before_switch:
         // Note that although split node only stores the new node ID
         // we still need its pointer to compute item_count
         const LeafSplitNode *split_node_p = \
-          LeafInlineAllocateOfType(LeafSplitNode, 
+          LeafInlineAllocateOfType(LeafSplitNode,
                                    node_p, 
                                    std::make_pair(split_key, new_node_id),
                                    node_p,

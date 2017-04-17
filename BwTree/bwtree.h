@@ -198,6 +198,12 @@ static constexpr int PREALLOCATE_THREAD_NUM = 1024;
 // Whether BwTree supports non-unique key
 #define BWTREE_UNIQUE_KEY
 
+// Whether or not to collect statistics information and save them in
+// the thread-local storage for each thread
+// The driver program is responsible for clearing them after thread
+// finishes
+#define BWTREE_COLLECT_STATISTICS
+
 /*
  * InnerInlineAllocateOfType() - allocates a chunk of memory from base node and
  *                               initialize it using placement new and then 
@@ -300,6 +306,30 @@ class BwTreeBase {
     // We use this as a threshold to trigger GC
     uint64_t node_count;
     
+#ifdef BWTREE_COLLECT_STATISTICS
+    // The type of counter values
+    using CounterValueType = int;
+
+    /*
+     * enum CounterType - Type of counters used to collect statistics
+     */
+    enum CounterType {
+      INSERT = 0,
+      DELETE,
+      READ,
+      LEAF_SPLIT,
+      INNER_SPLIT,
+      READ_ABORT,
+      MODIFY_ABORT,
+      
+      // This is the number of counters
+      COUNTER_COUNT,
+    };
+    
+    // This is an array holding information about counters
+    CounterValueType counters[CounterType::COUNTER_COUNT];
+#endif
+    
     /*
      * Default constructor
      */
@@ -307,13 +337,16 @@ class BwTreeBase {
       last_active_epoch{0UL},
       header{},
       last_p{&header},
-      node_count{0UL}
-    {}
+      node_count{0UL} {
+#ifdef BWTREE_COLLECT_STATISTICS
+      // Also initialize counters for statistical purpose
+      // They are all initialized to 0
+      memset(counters, sizeof(counters), static_cast<CounterValueType>(0));
+#endif
+
+      return;
+    }
   };
-  
-  // Make sure class Data does not exceed one cache line
-  static_assert(sizeof(GCMetaData) < CACHE_LINE_SIZE,
-                "class Data size exceeds cache line length!");
   
   /*
    * class PaddedData - Padded data to the length of a cache line 
@@ -337,12 +370,12 @@ class BwTreeBase {
     {}
     
    private:
-    char padding[ALIGNMENT - sizeof(DataType)];  
+    char padding[ALIGNMENT - (sizeof(DataType) % ALIGNMENT)];
   };
   
   using PaddedGCMetadata = PaddedData<GCMetaData, CACHE_LINE_SIZE>;
   
-  static_assert(sizeof(PaddedGCMetadata) == PaddedGCMetadata::ALIGNMENT, 
+  static_assert(sizeof(PaddedGCMetadata) % PaddedGCMetadata::ALIGNMENT == 0,
                 "class PaddedGCMetadata size does"
                 " not conform to the alignment!");
  

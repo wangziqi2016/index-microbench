@@ -3436,7 +3436,9 @@ class BwTree : public BwTreeBase {
                                    int *inner_depth_total,
                                    int *leaf_depth_total,
                                    int *inner_node_total,
-                                   int *leaf_node_total) {
+                                   int *leaf_node_total,
+                                   int *inner_size_total,
+                                   int *leaf_size_total) {
     const BaseNode *node_p = GetNode(node_id);
     NodeType type = node_p->GetType();
     NodeSnapshot snapshot{node_id, node_p};
@@ -3460,6 +3462,7 @@ class BwTree : public BwTreeBase {
       
       ret = 1;
       (*leaf_node_total)++;
+      (*leaf_size_total) += leaf_node_p->GetItemCount();
     } else {
       if(type == NodeType::InnerSplitType ||
          type == NodeType::InnerMergeType ||
@@ -3484,6 +3487,7 @@ class BwTree : public BwTreeBase {
       
       ret++;
       (*inner_node_total)++;
+      (*inner_size_total) += inner_node_p->GetItemCount();
       
       // All node IDs must be unique because we use the inner node
       // after consolidation, so there will not be invalid
@@ -3495,7 +3499,9 @@ class BwTree : public BwTreeBase {
                                             inner_depth_total,
                                             leaf_depth_total,
                                             inner_node_total,
-                                            leaf_node_total);
+                                            leaf_node_total,
+                                            inner_size_total,
+                                            leaf_size_total);
       }
     }
     

@@ -341,7 +341,7 @@ class BwTreeBase {
 #ifdef BWTREE_COLLECT_STATISTICS
       // Also initialize counters for statistical purpose
       // They are all initialized to 0
-      memset(counters, sizeof(counters), static_cast<CounterValueType>(0));
+      memset(counters, static_cast<CounterValueType>(0), sizeof(counters));
 #endif
 
       return;

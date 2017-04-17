@@ -23,6 +23,8 @@
   #endif
 #endif
 
+//#define INTERLEAVED_INSERT
+
 typedef uint64_t keytype;
 typedef std::less<uint64_t> keycomp;
 
@@ -279,6 +281,11 @@ inline void exec(int wl,
   tbb::parallel_for(tbb::blocked_range<size_t>(0, count), func);
   idx->UpdateThreadLocal(1);
 #else
+
+#ifdef INTERLEAVED_INSERT
+  fprintf(stderr, "    Interleaved insert\n");
+#endif
+
   auto func = [idx, &init_keys, num_thread, &values](uint64_t thread_id, bool) {
     size_t total_num_key = init_keys.size();
     size_t key_per_thread = total_num_key / num_thread;
@@ -288,7 +295,11 @@ inline void exec(int wl,
     threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
 
     int gc_counter = 0;
+#ifdef INTERLEAVED_INSERT
+    for(size_t i = thread_id;i < total_num_key;i += num_thread) {
+#else
     for(size_t i = start_index;i < end_index;i++) {
+#endif
       idx->insert(init_keys[i], values[i], ti);
       gc_counter++;
       if(gc_counter % 4096 == 0) {

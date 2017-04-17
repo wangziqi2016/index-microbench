@@ -289,6 +289,8 @@ inline void exec(int wl,
   
   
   StartThreads(idx, num_thread, func, false);
+  
+  idx->AfterLoadCallback();
 #endif   
   /*
   while (count < (int)init_keys.size()) {

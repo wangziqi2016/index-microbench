@@ -3422,9 +3422,14 @@ class BwTree : public BwTreeBase {
   /*
    * DebugConsolidateAllRecursive() - This function traverses and consolidates
    *                                  all delta chains
+   *
+   * Note that currently this function leaks memory because it does not try to
+   * reclaim the freed delta chain
+   *
+   * This function must be called under single threaded environment
    */
   void DebugConsolidateAllRecursive(NodeID node_id) {
-    BaseNode *node_p = GetNode(node_id);
+    const BaseNode *node_p = GetNode(node_id);
     NodeType type = node_p->GetType();
     NodeSnapshot snapshot{node_id, node_p};
     
@@ -3446,9 +3451,21 @@ class BwTree : public BwTreeBase {
          type == NodeType::InnerRemoveType ||
          type == NodeType::InnerAbortType) {
         fprintf(stderr,
-                "Unexpected leaf node type: %d\n",
+                "Unexpected inner node type: %d\n",
                 static_cast<int>(type));
         exit(1);
+      }
+      
+      InnerNode *inner_node_p = CollectAllSepsOnInner(&snapshot);
+      mapping_table[node_id] = inner_node_p;
+      
+      // All node IDs must be unique because we use the inner node
+      // after consolidation, so there will not be invalid
+      // node IDs which have been slited to the sibling
+      for(NodeID *p = inner_node_p->NodeIDBegin(); \
+          p != inner_node_p->NodeIDEnd(); \
+          p++) {
+        DebugConsolidateAllRecursive(*p);
       }
     }
     

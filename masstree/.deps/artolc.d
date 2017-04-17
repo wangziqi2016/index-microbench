@@ -51,25 +51,40 @@ artolc.o: ARTOLC/Tree.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/bits/nested_exception.h \
  /usr/include/c++/5/ext/alloc_traits.h \
  /usr/include/c++/5/bits/alloc_traits.h \
- /usr/include/c++/5/bits/memoryfwd.h \
- /usr/include/c++/5/bits/uniform_int_dist.h /usr/include/c++/5/limits \
- ARTOLC/Tree.h ARTOLC/N.h \
+ /usr/include/c++/5/bits/memoryfwd.h /usr/include/c++/5/random \
+ /usr/include/c++/5/cmath /usr/include/math.h \
+ /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+ /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_val.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_valf.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_vall.h \
+ /usr/include/x86_64-linux-gnu/bits/inf.h \
+ /usr/include/x86_64-linux-gnu/bits/nan.h \
+ /usr/include/x86_64-linux-gnu/bits/mathdef.h \
+ /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+ /usr/include/x86_64-linux-gnu/bits/mathinline.h \
+ /usr/include/x86_64-linux-gnu/bits/math-finite.h \
+ /usr/include/c++/5/string /usr/include/c++/5/bits/stringfwd.h \
+ /usr/include/c++/5/bits/char_traits.h /usr/include/c++/5/bits/postypes.h \
+ /usr/include/c++/5/cwchar /usr/include/wchar.h /usr/include/stdio.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar2.h /usr/include/c++/5/cstdint \
  /usr/lib/gcc/x86_64-linux-gnu/5/include/stdint.h /usr/include/stdint.h \
- /usr/include/x86_64-linux-gnu/bits/wchar.h /usr/include/c++/5/atomic \
- /usr/include/c++/5/bits/atomic_base.h /usr/include/string.h \
- /usr/include/x86_64-linux-gnu/bits/string3.h ARTOLC/Key.h \
- /usr/include/c++/5/cstring /usr/include/c++/5/memory \
  /usr/include/c++/5/bits/allocator.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/c++allocator.h \
  /usr/include/c++/5/ext/new_allocator.h \
- /usr/include/c++/5/bits/stl_uninitialized.h \
- /usr/include/c++/5/bits/stl_raw_storage_iter.h \
- /usr/include/c++/5/typeinfo /usr/include/c++/5/bits/hash_bytes.h \
- /usr/include/c++/5/iosfwd /usr/include/c++/5/bits/stringfwd.h \
- /usr/include/c++/5/bits/postypes.h /usr/include/c++/5/cwchar \
- /usr/include/wchar.h /usr/include/stdio.h \
- /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
- /usr/include/x86_64-linux-gnu/bits/wchar2.h \
+ /usr/include/c++/5/bits/localefwd.h \
+ /usr/include/x86_64-linux-gnu/c++/5/bits/c++locale.h \
+ /usr/include/c++/5/clocale /usr/include/locale.h \
+ /usr/include/x86_64-linux-gnu/bits/locale.h /usr/include/c++/5/iosfwd \
+ /usr/include/c++/5/cctype /usr/include/ctype.h \
+ /usr/include/c++/5/bits/ostream_insert.h \
+ /usr/include/c++/5/bits/cxxabi_forced.h \
+ /usr/include/c++/5/bits/stl_function.h \
+ /usr/include/c++/5/backward/binders.h \
+ /usr/include/c++/5/bits/range_access.h \
+ /usr/include/c++/5/bits/basic_string.h \
  /usr/include/c++/5/ext/atomicity.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/gthr.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/gthr-default.h \
@@ -78,21 +93,6 @@ artolc.o: ARTOLC/Tree.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/x86_64-linux-gnu/bits/timex.h \
  /usr/include/x86_64-linux-gnu/bits/setjmp.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/atomic_word.h \
- /usr/include/c++/5/ext/concurrence.h \
- /usr/include/c++/5/bits/stl_function.h \
- /usr/include/c++/5/backward/binders.h \
- /usr/include/c++/5/bits/uses_allocator.h /usr/include/c++/5/functional \
- /usr/include/c++/5/tuple /usr/include/c++/5/array \
- /usr/include/c++/5/stdexcept /usr/include/c++/5/string \
- /usr/include/c++/5/bits/char_traits.h /usr/include/c++/5/cstdint \
- /usr/include/c++/5/bits/localefwd.h \
- /usr/include/x86_64-linux-gnu/c++/5/bits/c++locale.h \
- /usr/include/c++/5/clocale /usr/include/locale.h \
- /usr/include/x86_64-linux-gnu/bits/locale.h /usr/include/c++/5/cctype \
- /usr/include/ctype.h /usr/include/c++/5/bits/ostream_insert.h \
- /usr/include/c++/5/bits/cxxabi_forced.h \
- /usr/include/c++/5/bits/range_access.h \
- /usr/include/c++/5/bits/basic_string.h \
  /usr/include/c++/5/ext/string_conversions.h /usr/include/c++/5/cstdio \
  /usr/include/libio.h /usr/include/_G_config.h \
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
@@ -103,27 +103,93 @@ artolc.o: ARTOLC/Tree.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/linux/errno.h /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
  /usr/include/c++/5/bits/functional_hash.h \
- /usr/include/c++/5/bits/basic_string.tcc \
- /usr/include/c++/5/bits/unique_ptr.h \
+ /usr/include/c++/5/bits/hash_bytes.h \
+ /usr/include/c++/5/bits/basic_string.tcc /usr/include/c++/5/limits \
+ /usr/include/c++/5/bits/random.h /usr/include/c++/5/vector \
+ /usr/include/c++/5/bits/stl_uninitialized.h \
+ /usr/include/c++/5/bits/stl_vector.h \
+ /usr/include/c++/5/bits/stl_bvector.h /usr/include/c++/5/bits/vector.tcc \
+ /usr/include/c++/5/bits/uniform_int_dist.h \
+ /usr/include/x86_64-linux-gnu/c++/5/bits/opt_random.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/x86intrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/ia32intrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/mmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/mm_malloc.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/emmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/pmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/tmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/ammintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/smmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/popcntintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/wmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/immintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avxintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx2intrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512fintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512erintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512pfintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512cdintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vlintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512bwintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512dqintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vlbwintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vldqintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512ifmaintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512ifmavlintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vbmiintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vbmivlintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/shaintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/lzcntintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/bmiintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/bmi2intrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/fmaintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/f16cintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/rtmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xtestintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/mm3dnow.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/prfchwintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/fma4intrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xopintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/lwpintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/tbmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/rdseedintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/fxsrintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xsaveintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xsaveoptintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/adxintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/clwbintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/pcommitintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/clflushoptintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xsavesintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xsavecintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/mwaitxintrin.h \
+ /usr/include/c++/5/bits/random.tcc /usr/include/c++/5/numeric \
+ /usr/include/c++/5/bits/stl_numeric.h ARTOLC/Tree.h ARTOLC/N.h \
+ /usr/include/c++/5/atomic /usr/include/c++/5/bits/atomic_base.h \
+ /usr/include/string.h /usr/include/x86_64-linux-gnu/bits/string3.h \
+ ARTOLC/Key.h /usr/include/c++/5/cstring /usr/include/c++/5/memory \
+ /usr/include/c++/5/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/5/typeinfo /usr/include/c++/5/ext/concurrence.h \
+ /usr/include/c++/5/bits/uses_allocator.h /usr/include/c++/5/functional \
+ /usr/include/c++/5/tuple /usr/include/c++/5/array \
+ /usr/include/c++/5/stdexcept /usr/include/c++/5/bits/unique_ptr.h \
  /usr/include/c++/5/bits/shared_ptr.h \
  /usr/include/c++/5/bits/shared_ptr_base.h \
  /usr/include/c++/5/bits/allocated_ptr.h \
  /usr/include/c++/5/ext/aligned_buffer.h \
  /usr/include/c++/5/bits/shared_ptr_atomic.h \
  /usr/include/c++/5/backward/auto_ptr.h ARTOLC/Epoche.h \
- /usr/include/tbb/enumerable_thread_specific.h \
- /usr/include/tbb/concurrent_vector.h /usr/include/tbb/tbb_stddef.h \
- /usr/include/tbb/tbb_config.h /usr/include/c++/5/cstddef \
- /usr/include/tbb/tbb_exception.h /usr/include/tbb/tbb_allocator.h \
- /usr/include/tbb/atomic.h /usr/include/tbb/tbb_machine.h \
- /usr/include/tbb/machine/linux_intel64.h \
- /usr/include/tbb/machine/gcc_ia32_common.h \
- /usr/include/tbb/machine/gcc_itsx.h \
- /usr/include/tbb/machine/linux_common.h /usr/include/unistd.h \
+ /usr/include/tbb/enumerable_thread_specific.h /usr/include/tbb/atomic.h \
+ /usr/include/c++/5/cstddef /usr/include/tbb/tbb_machine.h \
+ /usr/include/tbb/tbb_stddef.h /usr/include/tbb/tbb_config.h \
+ /usr/include/tbb/machine/gcc_generic.h /usr/include/unistd.h \
  /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
  /usr/include/x86_64-linux-gnu/bits/environments.h \
  /usr/include/x86_64-linux-gnu/bits/confname.h /usr/include/getopt.h \
  /usr/include/x86_64-linux-gnu/bits/unistd.h \
+ /usr/include/tbb/machine/gcc_itsx.h \
+ /usr/include/tbb/machine/linux_common.h \
  /usr/include/x86_64-linux-gnu/sys/syscall.h \
  /usr/include/x86_64-linux-gnu/asm/unistd.h \
  /usr/include/x86_64-linux-gnu/asm/unistd_64.h \
@@ -135,10 +201,13 @@ artolc.o: ARTOLC/Tree.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/linux/limits.h \
  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
+ /usr/include/tbb/concurrent_vector.h /usr/include/tbb/tbb_exception.h \
+ /usr/include/tbb/tbb_allocator.h \
  /usr/include/tbb/cache_aligned_allocator.h \
  /usr/include/tbb/blocked_range.h /usr/include/tbb/tbb_profiling.h \
- /usr/include/c++/5/iterator /usr/include/c++/5/ostream \
- /usr/include/c++/5/ios /usr/include/c++/5/bits/ios_base.h \
+ /usr/include/tbb/internal/_tbb_strings.h /usr/include/c++/5/iterator \
+ /usr/include/c++/5/ostream /usr/include/c++/5/ios \
+ /usr/include/c++/5/bits/ios_base.h \
  /usr/include/c++/5/bits/locale_classes.h \
  /usr/include/c++/5/bits/locale_classes.tcc \
  /usr/include/c++/5/system_error \
@@ -155,14 +224,14 @@ artolc.o: ARTOLC/Tree.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/bits/ostream.tcc /usr/include/c++/5/istream \
  /usr/include/c++/5/bits/istream.tcc \
  /usr/include/c++/5/bits/stream_iterator.h /usr/include/tbb/tbb_thread.h \
+ /usr/include/tbb/internal/_tbb_hash_compare_impl.h \
  /usr/include/tbb/tick_count.h /usr/include/c++/5/ctime \
- /usr/include/tbb/aligned_space.h /usr/include/tbb/combinable.h \
+ /usr/include/tbb/aligned_space.h \
+ /usr/include/tbb/internal/_template_helpers.h \
+ /usr/include/tbb/combinable.h \
  /usr/include/tbb/enumerable_thread_specific.h ARTOLC/N.cpp ARTOLC/N4.cpp \
- ARTOLC/N16.cpp /usr/lib/gcc/x86_64-linux-gnu/5/include/emmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/5/include/xmmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/5/include/mmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/5/include/mm_malloc.h ARTOLC/N48.cpp \
- ARTOLC/N256.cpp ARTOLC/Epoche.cpp /usr/include/c++/5/iostream
+ ARTOLC/N16.cpp ARTOLC/N48.cpp ARTOLC/N256.cpp ARTOLC/Epoche.cpp \
+ /usr/include/c++/5/iostream
 
 /usr/include/stdc-predef.h:
 
@@ -302,51 +371,39 @@ masstree/config.h:
 
 /usr/include/c++/5/bits/memoryfwd.h:
 
-/usr/include/c++/5/bits/uniform_int_dist.h:
+/usr/include/c++/5/random:
 
-/usr/include/c++/5/limits:
+/usr/include/c++/5/cmath:
 
-ARTOLC/Tree.h:
+/usr/include/math.h:
 
-ARTOLC/N.h:
+/usr/include/x86_64-linux-gnu/bits/math-vector.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/5/include/stdint.h:
+/usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h:
 
-/usr/include/stdint.h:
+/usr/include/x86_64-linux-gnu/bits/huge_val.h:
 
-/usr/include/x86_64-linux-gnu/bits/wchar.h:
+/usr/include/x86_64-linux-gnu/bits/huge_valf.h:
 
-/usr/include/c++/5/atomic:
+/usr/include/x86_64-linux-gnu/bits/huge_vall.h:
 
-/usr/include/c++/5/bits/atomic_base.h:
+/usr/include/x86_64-linux-gnu/bits/inf.h:
 
-/usr/include/string.h:
+/usr/include/x86_64-linux-gnu/bits/nan.h:
 
-/usr/include/x86_64-linux-gnu/bits/string3.h:
+/usr/include/x86_64-linux-gnu/bits/mathdef.h:
 
-ARTOLC/Key.h:
+/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
 
-/usr/include/c++/5/cstring:
+/usr/include/x86_64-linux-gnu/bits/mathinline.h:
 
-/usr/include/c++/5/memory:
+/usr/include/x86_64-linux-gnu/bits/math-finite.h:
 
-/usr/include/c++/5/bits/allocator.h:
-
-/usr/include/x86_64-linux-gnu/c++/5/bits/c++allocator.h:
-
-/usr/include/c++/5/ext/new_allocator.h:
-
-/usr/include/c++/5/bits/stl_uninitialized.h:
-
-/usr/include/c++/5/bits/stl_raw_storage_iter.h:
-
-/usr/include/c++/5/typeinfo:
-
-/usr/include/c++/5/bits/hash_bytes.h:
-
-/usr/include/c++/5/iosfwd:
+/usr/include/c++/5/string:
 
 /usr/include/c++/5/bits/stringfwd.h:
+
+/usr/include/c++/5/bits/char_traits.h:
 
 /usr/include/c++/5/bits/postypes.h:
 
@@ -358,7 +415,49 @@ ARTOLC/Key.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h:
 
+/usr/include/x86_64-linux-gnu/bits/wchar.h:
+
 /usr/include/x86_64-linux-gnu/bits/wchar2.h:
+
+/usr/include/c++/5/cstdint:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/stdint.h:
+
+/usr/include/stdint.h:
+
+/usr/include/c++/5/bits/allocator.h:
+
+/usr/include/x86_64-linux-gnu/c++/5/bits/c++allocator.h:
+
+/usr/include/c++/5/ext/new_allocator.h:
+
+/usr/include/c++/5/bits/localefwd.h:
+
+/usr/include/x86_64-linux-gnu/c++/5/bits/c++locale.h:
+
+/usr/include/c++/5/clocale:
+
+/usr/include/locale.h:
+
+/usr/include/x86_64-linux-gnu/bits/locale.h:
+
+/usr/include/c++/5/iosfwd:
+
+/usr/include/c++/5/cctype:
+
+/usr/include/ctype.h:
+
+/usr/include/c++/5/bits/ostream_insert.h:
+
+/usr/include/c++/5/bits/cxxabi_forced.h:
+
+/usr/include/c++/5/bits/stl_function.h:
+
+/usr/include/c++/5/backward/binders.h:
+
+/usr/include/c++/5/bits/range_access.h:
+
+/usr/include/c++/5/bits/basic_string.h:
 
 /usr/include/c++/5/ext/atomicity.h:
 
@@ -377,50 +476,6 @@ ARTOLC/Key.h:
 /usr/include/x86_64-linux-gnu/bits/setjmp.h:
 
 /usr/include/x86_64-linux-gnu/c++/5/bits/atomic_word.h:
-
-/usr/include/c++/5/ext/concurrence.h:
-
-/usr/include/c++/5/bits/stl_function.h:
-
-/usr/include/c++/5/backward/binders.h:
-
-/usr/include/c++/5/bits/uses_allocator.h:
-
-/usr/include/c++/5/functional:
-
-/usr/include/c++/5/tuple:
-
-/usr/include/c++/5/array:
-
-/usr/include/c++/5/stdexcept:
-
-/usr/include/c++/5/string:
-
-/usr/include/c++/5/bits/char_traits.h:
-
-/usr/include/c++/5/cstdint:
-
-/usr/include/c++/5/bits/localefwd.h:
-
-/usr/include/x86_64-linux-gnu/c++/5/bits/c++locale.h:
-
-/usr/include/c++/5/clocale:
-
-/usr/include/locale.h:
-
-/usr/include/x86_64-linux-gnu/bits/locale.h:
-
-/usr/include/c++/5/cctype:
-
-/usr/include/ctype.h:
-
-/usr/include/c++/5/bits/ostream_insert.h:
-
-/usr/include/c++/5/bits/cxxabi_forced.h:
-
-/usr/include/c++/5/bits/range_access.h:
-
-/usr/include/c++/5/bits/basic_string.h:
 
 /usr/include/c++/5/ext/string_conversions.h:
 
@@ -454,7 +509,173 @@ ARTOLC/Key.h:
 
 /usr/include/c++/5/bits/functional_hash.h:
 
+/usr/include/c++/5/bits/hash_bytes.h:
+
 /usr/include/c++/5/bits/basic_string.tcc:
+
+/usr/include/c++/5/limits:
+
+/usr/include/c++/5/bits/random.h:
+
+/usr/include/c++/5/vector:
+
+/usr/include/c++/5/bits/stl_uninitialized.h:
+
+/usr/include/c++/5/bits/stl_vector.h:
+
+/usr/include/c++/5/bits/stl_bvector.h:
+
+/usr/include/c++/5/bits/vector.tcc:
+
+/usr/include/c++/5/bits/uniform_int_dist.h:
+
+/usr/include/x86_64-linux-gnu/c++/5/bits/opt_random.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/x86intrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/ia32intrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/mmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/mm_malloc.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/emmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/pmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/tmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/ammintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/smmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/popcntintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/wmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/immintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avxintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx2intrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512fintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512erintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512pfintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512cdintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vlintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512bwintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512dqintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vlbwintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vldqintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512ifmaintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512ifmavlintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vbmiintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vbmivlintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/shaintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/lzcntintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/bmiintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/bmi2intrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/fmaintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/f16cintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/rtmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xtestintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/mm3dnow.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/prfchwintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/fma4intrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xopintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/lwpintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/tbmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/rdseedintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/fxsrintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xsaveintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xsaveoptintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/adxintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/clwbintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/pcommitintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/clflushoptintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xsavesintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xsavecintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/mwaitxintrin.h:
+
+/usr/include/c++/5/bits/random.tcc:
+
+/usr/include/c++/5/numeric:
+
+/usr/include/c++/5/bits/stl_numeric.h:
+
+ARTOLC/Tree.h:
+
+ARTOLC/N.h:
+
+/usr/include/c++/5/atomic:
+
+/usr/include/c++/5/bits/atomic_base.h:
+
+/usr/include/string.h:
+
+/usr/include/x86_64-linux-gnu/bits/string3.h:
+
+ARTOLC/Key.h:
+
+/usr/include/c++/5/cstring:
+
+/usr/include/c++/5/memory:
+
+/usr/include/c++/5/bits/stl_raw_storage_iter.h:
+
+/usr/include/c++/5/typeinfo:
+
+/usr/include/c++/5/ext/concurrence.h:
+
+/usr/include/c++/5/bits/uses_allocator.h:
+
+/usr/include/c++/5/functional:
+
+/usr/include/c++/5/tuple:
+
+/usr/include/c++/5/array:
+
+/usr/include/c++/5/stdexcept:
 
 /usr/include/c++/5/bits/unique_ptr.h:
 
@@ -474,29 +695,17 @@ ARTOLC/Epoche.h:
 
 /usr/include/tbb/enumerable_thread_specific.h:
 
-/usr/include/tbb/concurrent_vector.h:
+/usr/include/tbb/atomic.h:
+
+/usr/include/c++/5/cstddef:
+
+/usr/include/tbb/tbb_machine.h:
 
 /usr/include/tbb/tbb_stddef.h:
 
 /usr/include/tbb/tbb_config.h:
 
-/usr/include/c++/5/cstddef:
-
-/usr/include/tbb/tbb_exception.h:
-
-/usr/include/tbb/tbb_allocator.h:
-
-/usr/include/tbb/atomic.h:
-
-/usr/include/tbb/tbb_machine.h:
-
-/usr/include/tbb/machine/linux_intel64.h:
-
-/usr/include/tbb/machine/gcc_ia32_common.h:
-
-/usr/include/tbb/machine/gcc_itsx.h:
-
-/usr/include/tbb/machine/linux_common.h:
+/usr/include/tbb/machine/gcc_generic.h:
 
 /usr/include/unistd.h:
 
@@ -509,6 +718,10 @@ ARTOLC/Epoche.h:
 /usr/include/getopt.h:
 
 /usr/include/x86_64-linux-gnu/bits/unistd.h:
+
+/usr/include/tbb/machine/gcc_itsx.h:
+
+/usr/include/tbb/machine/linux_common.h:
 
 /usr/include/x86_64-linux-gnu/sys/syscall.h:
 
@@ -534,11 +747,19 @@ ARTOLC/Epoche.h:
 
 /usr/include/x86_64-linux-gnu/bits/xopen_lim.h:
 
+/usr/include/tbb/concurrent_vector.h:
+
+/usr/include/tbb/tbb_exception.h:
+
+/usr/include/tbb/tbb_allocator.h:
+
 /usr/include/tbb/cache_aligned_allocator.h:
 
 /usr/include/tbb/blocked_range.h:
 
 /usr/include/tbb/tbb_profiling.h:
+
+/usr/include/tbb/internal/_tbb_strings.h:
 
 /usr/include/c++/5/iterator:
 
@@ -588,11 +809,15 @@ ARTOLC/Epoche.h:
 
 /usr/include/tbb/tbb_thread.h:
 
+/usr/include/tbb/internal/_tbb_hash_compare_impl.h:
+
 /usr/include/tbb/tick_count.h:
 
 /usr/include/c++/5/ctime:
 
 /usr/include/tbb/aligned_space.h:
+
+/usr/include/tbb/internal/_template_helpers.h:
 
 /usr/include/tbb/combinable.h:
 
@@ -603,14 +828,6 @@ ARTOLC/N.cpp:
 ARTOLC/N4.cpp:
 
 ARTOLC/N16.cpp:
-
-/usr/lib/gcc/x86_64-linux-gnu/5/include/emmintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/5/include/xmmintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/5/include/mmintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/5/include/mm_malloc.h:
 
 ARTOLC/N48.cpp:
 

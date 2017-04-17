@@ -31,6 +31,11 @@ class Index
   virtual void UpdateThreadLocal(size_t thread_num) = 0;
   virtual void AssignGCID(size_t thread_id) = 0;
   virtual void UnregisterThread(size_t thread_id) = 0;
+  
+  // After insert phase perform this action
+  // By default it is empty
+  // This will be called in the main thread
+  virtual void AfterLoadCallback() {}
 };
 
 template<typename KeyType, class KeyComparator>
@@ -180,6 +185,10 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
     (void)kt;
 
     return;
+  }
+  
+  void AfterLoadCallback() {
+    index_p->DebugConsolidateAllRecursive(index_p->root_id.load());
   }
   
   void UpdateThreadLocal(size_t thread_num) { 

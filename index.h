@@ -188,7 +188,9 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
   }
   
   void AfterLoadCallback() {
-    index_p->DebugConsolidateAllRecursive(index_p->root_id.load());
+    fprintf(stderr, "BwTree - Start consolidating delta chains...\n");
+    int ret = index_p->DebugConsolidateAllRecursive(index_p->root_id.load());
+    fprintf(stderr, "BwTree - Finished consolidating %d delta chains\n", ret);
   }
   
   void UpdateThreadLocal(size_t thread_num) { 

@@ -3428,10 +3428,12 @@ class BwTree : public BwTreeBase {
    *
    * This function must be called under single threaded environment
    */
-  void DebugConsolidateAllRecursive(NodeID node_id) {
+  int DebugConsolidateAllRecursive(NodeID node_id) {
     const BaseNode *node_p = GetNode(node_id);
     NodeType type = node_p->GetType();
     NodeSnapshot snapshot{node_id, node_p};
+    
+    int ret = 0;
     
     if(node_p->IsOnLeafDeltaChain() == true) {
       if(type == NodeType::LeafSplitType ||
@@ -3445,6 +3447,8 @@ class BwTree : public BwTreeBase {
       
       LeafNode *leaf_node_p = CollectAllValuesOnLeaf(&snapshot);
       mapping_table[node_id] = leaf_node_p;
+      
+      ret = 1;
     } else {
       if(type == NodeType::InnerSplitType ||
          type == NodeType::InnerMergeType ||
@@ -3459,17 +3463,19 @@ class BwTree : public BwTreeBase {
       InnerNode *inner_node_p = CollectAllSepsOnInner(&snapshot);
       mapping_table[node_id] = inner_node_p;
       
+      ret++;
+      
       // All node IDs must be unique because we use the inner node
       // after consolidation, so there will not be invalid
       // node IDs which have been slited to the sibling
       for(NodeID *p = inner_node_p->NodeIDBegin(); \
           p != inner_node_p->NodeIDEnd(); \
           p++) {
-        DebugConsolidateAllRecursive(*p);
+        ret += DebugConsolidateAllRecursive(*p);
       }
     }
     
-    return;
+    return ret;
   }
 
   /*

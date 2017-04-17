@@ -450,7 +450,7 @@ class BwTreeBase {
     // We allocate one more element than requested as the buffer
     // for doing alignment
     original_p = static_cast<unsigned char *>(
-      malloc(sizeof(PaddedGCMetadata) * (thread_num + 1)));
+      malloc(sizeof(PaddedGCMetadata) * thread_num + CACHE_LINE_SIZE));
     assert(original_p != nullptr);
     
     // Align the address to cache line boundary

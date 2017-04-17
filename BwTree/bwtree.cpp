@@ -30,6 +30,7 @@ thread_local int BwTreeBase::gc_id = -1;
 
 std::atomic<size_t> BwTreeBase::total_thread_num{0UL};
 
+#ifdef BWTREE_COLLECT_STATISTICS
 const char *BwTreeBase::GCMetaData::COUNTER_NAME_LIST[] = {
       "INSERT",
       "UPSERT",
@@ -49,6 +50,7 @@ const char *BwTreeBase::GCMetaData::COUNTER_NAME_LIST[] = {
       "ADD_TO_GC",
       "SCAN_GC_CHAIN",
     };
+#endif
 
 }  // End index/bwtree namespace
 }  // End peloton/wangziqi2013 namespace

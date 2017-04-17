@@ -3427,8 +3427,16 @@ class BwTree : public BwTreeBase {
    * reclaim the freed delta chain
    *
    * This function must be called under single threaded environment
+   *
+   * This function also accepts statistical information about delta chain depth
+   * and node count. These information are passed through pointers in the
+   * argument list
    */
-  int DebugConsolidateAllRecursive(NodeID node_id) {
+  int DebugConsolidateAllRecursive(NodeID node_id,
+                                   int *inner_depth_total,
+                                   int *leaf_depth_total,
+                                   int *inner_node_total,
+                                   int *leaf_node_total) {
     const BaseNode *node_p = GetNode(node_id);
     NodeType type = node_p->GetType();
     NodeSnapshot snapshot{node_id, node_p};
@@ -3445,10 +3453,13 @@ class BwTree : public BwTreeBase {
         exit(1);
       }
       
+      (*leaf_depth_total) += node_p->GetDepth();
+      
       LeafNode *leaf_node_p = CollectAllValuesOnLeaf(&snapshot);
       mapping_table[node_id] = leaf_node_p;
       
       ret = 1;
+      (*leaf_node_total)++;
     } else {
       if(type == NodeType::InnerSplitType ||
          type == NodeType::InnerMergeType ||
@@ -3460,10 +3471,19 @@ class BwTree : public BwTreeBase {
         exit(1);
       }
       
+      // For inner nodes since we could see inner node
+      // with non-zero depth this should be hardcoded
+      if(type == NodeType::InnerNode) {
+        (*inner_depth_total) += 0;
+      } else {
+        (*inner_depth_total) += node_p->GetDepth();
+      }
+      
       InnerNode *inner_node_p = CollectAllSepsOnInner(&snapshot);
       mapping_table[node_id] = inner_node_p;
       
       ret++;
+      (*inner_node_total)++;
       
       // All node IDs must be unique because we use the inner node
       // after consolidation, so there will not be invalid
@@ -3471,7 +3491,11 @@ class BwTree : public BwTreeBase {
       for(NodeID *p = inner_node_p->NodeIDBegin(); \
           p != inner_node_p->NodeIDEnd(); \
           p++) {
-        ret += DebugConsolidateAllRecursive(*p);
+        ret += DebugConsolidateAllRecursive(*p,
+                                            inner_depth_total,
+                                            leaf_depth_total,
+                                            inner_node_total,
+                                            leaf_node_total);
       }
     }
     

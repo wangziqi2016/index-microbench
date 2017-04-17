@@ -341,7 +341,7 @@ class BwTreeBase {
 #ifdef BWTREE_COLLECT_STATISTICS
       // Also initialize counters for statistical purpose
       // They are all initialized to 0
-      memset(counters, static_cast<CounterValueType>(0), sizeof(counters));
+      memset(counters, 0x00, sizeof(counters));
 #endif
 
       return;
@@ -450,7 +450,7 @@ class BwTreeBase {
     // We allocate one more element than requested as the buffer
     // for doing alignment
     original_p = static_cast<unsigned char *>(
-      malloc(CACHE_LINE_SIZE * (thread_num + 1)));
+      malloc(sizeof(PaddedGCMetadata) * (thread_num + 1)));
     assert(original_p != nullptr);
     
     // Align the address to cache line boundary

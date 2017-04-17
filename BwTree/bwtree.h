@@ -329,8 +329,14 @@ class BwTreeBase {
       UPSERT,
       DELETE,
       READ,
+      
       LEAF_SPLIT,
       INNER_SPLIT,
+      LEAF_MERGE,
+      INNER_MERGE,
+      LEAF_CONSOLIDATE,
+      INNER_CONSOLIDATE,
+      
       READ_ABORT,
       MODIFY_ABORT,
       
@@ -4425,6 +4431,7 @@ abort_traverse:
    */
   InnerNode *CollectAllSepsOnInner(NodeSnapshot *snapshot_p,
                                    int p_depth = 0) {
+    INC_COUNTER(INNER_CONSOLIDATE, 1);
 
     // Note that in the recursive call node_p might change
     // but we should not change the metadata
@@ -5546,6 +5553,8 @@ abort_traverse:
   LeafNode *CollectAllValuesOnLeaf(NodeSnapshot *snapshot_p,
                                    LeafNode *leaf_node_p=nullptr) {
     assert(snapshot_p->IsLeafLevel() == true);
+
+    INC_COUNTER(LEAF_CONSOLIDATE, 1);
 
     const BaseNode *node_p = snapshot_p->node_p;
     
@@ -7307,6 +7316,8 @@ before_switch:
                      node_id,
                      new_node_id);
 
+          INC_COUNTER(LEAF_SPLIT, 1);
+          
           // TODO: WE ABORT HERE TO AVOID THIS THREAD POSTING ANYTHING
           // ON TOP OF IT WITHOUT HELPING ALONG AND ALSO BLOCKING OTHER
           // THREAD TO HELP ALONG
@@ -7466,6 +7477,7 @@ before_switch:
           bwt_printf("Inner split delta (from %lu to %lu) CAS succeeds."
                      " ABORT\n", node_id, new_node_id);
 
+          INC_COUNTER(INNER_SPLIT, 1);
           // Same reason as in leaf node
           context_p->abort_flag = true;
 
@@ -8093,6 +8105,7 @@ before_switch:
     if(ret == false) {
       merge_node_p->~InnerMergeNode();
     } else {
+      INC_COUNTER(INNER_MERGE, 1);
       *node_p_p = merge_node_p;
     }
 
@@ -8131,6 +8144,7 @@ before_switch:
     if(ret == false) {
       merge_node_p->~LeafMergeNode();
     } else {
+      INC_COUNTER(LEAF_MERGE, 1);
       *node_p_p = merge_node_p;
     }
 

@@ -3458,7 +3458,7 @@ class BwTree : public BwTreeBase {
       (*leaf_depth_total) += node_p->GetDepth();
       
       LeafNode *leaf_node_p = CollectAllValuesOnLeaf(&snapshot);
-      mapping_table[node_id] = leaf_node_p;
+      mapping_table[node_id].store(leaf_node_p);
       
       ret = 1;
       (*leaf_node_total)++;
@@ -3483,7 +3483,7 @@ class BwTree : public BwTreeBase {
       }
       
       InnerNode *inner_node_p = CollectAllSepsOnInner(&snapshot);
-      mapping_table[node_id] = inner_node_p;
+      mapping_table[node_id].store(inner_node_p);
       
       ret++;
       (*inner_node_total)++;

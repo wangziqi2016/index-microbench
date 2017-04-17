@@ -1972,11 +1972,11 @@ class BwTree : public BwTreeBase {
     NodeSnapshot() {}
 
     /*
-     * IsLeaf() - Test whether current snapshot is on leaf delta chain
+     * IsLeafLevel() - Test whether current snapshot is on leaf delta chain
      *
      * This function is just a wrapper of IsOnLeafDeltaChain() in BaseNode
      */
-    inline bool IsLeaf() const {
+    inline bool IsLeafLevel() const {
       return node_p->IsOnLeafDeltaChain();
     }
   };
@@ -3188,8 +3188,8 @@ class BwTree : public BwTreeBase {
                p_thread_num);
     
     // 1. Frees all pending memory chunks
-    // 2. Frees the thread local array
     ClearThreadLocalGarbage(); 
+    // 2. Frees the thread local array
     DestroyThreadLocal();
     
     SetThreadNum(p_thread_num);
@@ -3708,7 +3708,7 @@ retry_traverse:
       // This is the node we have just loaded
       NodeSnapshot *snapshot_p = GetLatestNodeSnapshot(context_p);
 
-      if(snapshot_p->IsLeaf() == true) {
+      if(snapshot_p->IsLeafLevel() == true) {
         bwt_printf("The next node is a leaf\n");
 
         break;
@@ -3974,7 +3974,7 @@ abort_traverse:
     const BaseNode *node_p = snapshot_p->node_p;
 
     // Make sure the structure is valid
-    assert(snapshot_p->IsLeaf() == false);
+    assert(snapshot_p->IsLeafLevel() == false);
     assert(snapshot_p->node_p != nullptr);
     
     // For read only workload this is always true since we do not need
@@ -4157,7 +4157,7 @@ abort_traverse:
     NodeSnapshot *snapshot_p = GetLatestNodeSnapshot(context_p);
     const BaseNode *node_p = snapshot_p->node_p;
 
-    assert(snapshot_p->IsLeaf() == false);
+    assert(snapshot_p->IsLeafLevel() == false);
     assert(snapshot_p->node_p != nullptr);
     bwt_printf("Navigating inner node delta chain for BI...\n");
 
@@ -4688,7 +4688,7 @@ abort_traverse:
     NodeSnapshot *snapshot_p = GetLatestNodeSnapshot(context_p);
     const BaseNode *node_p = snapshot_p->node_p;
 
-    assert(snapshot_p->IsLeaf() == true);
+    assert(snapshot_p->IsLeafLevel() == true);
 
     // We only collect values for this key
     const KeyType &search_key = context_p->search_key;
@@ -4972,7 +4972,7 @@ abort_traverse:
     // Snapshot pointer, node pointer, and metadata reference all need
     // updating once LoadNodeID() returns with success
     NodeSnapshot *snapshot_p = GetLatestNodeSnapshot(context_p);
-    assert(snapshot_p->IsLeaf() == true);
+    assert(snapshot_p->IsLeafLevel() == true);
 
     const BaseNode *node_p = snapshot_p->node_p;
 
@@ -5232,7 +5232,7 @@ abort_traverse:
     NodeSnapshot *snapshot_p = GetLatestNodeSnapshot(context_p);
     const BaseNode *node_p = snapshot_p->node_p;
 
-    assert(snapshot_p->IsLeaf() == true);
+    assert(snapshot_p->IsLeafLevel() == true);
 
     const KeyType &search_key = context_p->search_key;
 
@@ -5406,7 +5406,7 @@ abort_traverse:
    */
   LeafNode *CollectAllValuesOnLeaf(NodeSnapshot *snapshot_p,
                                    LeafNode *leaf_node_p=nullptr) {
-    assert(snapshot_p->IsLeaf() == true);
+    assert(snapshot_p->IsLeafLevel() == true);
 
     const BaseNode *node_p = snapshot_p->node_p;
     
@@ -5884,7 +5884,7 @@ abort_traverse:
 
     // Get its parent node
     NodeSnapshot *parent_snapshot_p = GetLatestParentNodeSnapshot(context_p);
-    assert(parent_snapshot_p->IsLeaf() == false);
+    assert(parent_snapshot_p->IsLeafLevel() == false);
     
     // If the parent has changed then abort
     // This is to avoid missing InnerInsertNode which is fatal in our case
@@ -6002,7 +6002,7 @@ abort_traverse:
 
     // Assume we always use this function to traverse on the same
     // level
-    assert(node_p->IsOnLeafDeltaChain() == snapshot_p->IsLeaf());
+    assert(node_p->IsOnLeafDeltaChain() == snapshot_p->IsLeafLevel());
 
     // Make sure we are not switching to itself
     assert(snapshot_p->node_id != node_id);
@@ -6222,7 +6222,7 @@ retry_traverse:
       }
 
       NodeSnapshot *snapshot_p = GetLatestNodeSnapshot(context_p);
-      if(snapshot_p->IsLeaf() == true) {
+      if(snapshot_p->IsLeafLevel() == true) {
         bwt_printf("The next node is a leaf (BI)\n");
 
         // After reaching leaf level just traverse the sibling chain
@@ -6307,7 +6307,7 @@ retry_traverse:
       // This is the node we have just loaded
       NodeSnapshot *snapshot_p = GetLatestNodeSnapshot(context_p);
 
-      if(snapshot_p->IsLeaf() == true) {
+      if(snapshot_p->IsLeafLevel() == true) {
         bwt_printf("The next node is a leaf (RO)\n");
 
         NavigateLeafNode(context_p, *value_list_p);
@@ -6590,7 +6590,7 @@ before_switch:
         bool ret;
 
         // If we are currently on leaf, just post leaf merge delta
-        if(left_snapshot_p->IsLeaf() == true) {
+        if(left_snapshot_p->IsLeafLevel() == true) {
           ret = \
             PostLeafMergeNode(left_snapshot_p,
                               &merge_key,
@@ -7046,7 +7046,7 @@ before_switch:
     // If depth does not exceed threshold then we check recommendation flag
     int depth = node_p->GetDepth();
 
-    if(snapshot_p->IsLeaf() == true) {
+    if(snapshot_p->IsLeafLevel() == true) {
       if(depth < LEAF_DELTA_CHAIN_LENGTH_THRESHOLD) {
         return;
       }
@@ -7092,7 +7092,7 @@ before_switch:
 
     NodeID node_id = snapshot_p->node_id;
 
-    if(snapshot_p->IsLeaf() == true) {
+    if(snapshot_p->IsLeafLevel() == true) {
       const LeafNode *leaf_node_p = \
         static_cast<const LeafNode *>(node_p);
 

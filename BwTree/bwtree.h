@@ -3473,7 +3473,7 @@ class BwTree : public BwTreeBase {
       
       // For inner nodes since we could see inner node
       // with non-zero depth this should be hardcoded
-      if(type == NodeType::InnerNode) {
+      if(type == NodeType::InnerType) {
         (*inner_depth_total) += 0;
       } else {
         (*inner_depth_total) += node_p->GetDepth();

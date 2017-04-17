@@ -9,6 +9,14 @@
 #include "tbb/tbb.h"
 #endif
 
+#define BWTREE_CONSOLIDATE_AFTER_INSERT
+
+#ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
+  #ifdef USE_TBB
+  #warning "Could not use TBB and BwTree consolidate together"
+  #endif
+#endif
+
 typedef uint64_t keytype;
 typedef std::less<uint64_t> keycomp;
 
@@ -289,8 +297,12 @@ inline void exec(int wl,
   
   
   StartThreads(idx, num_thread, func, false);
-  
+
+  // Only execute consolidation if BwTree delta chain is used
+#ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
   idx->AfterLoadCallback();
+#endif
+
 #endif   
   /*
   while (count < (int)init_keys.size()) {

@@ -204,6 +204,15 @@ static constexpr int PREALLOCATE_THREAD_NUM = 1024;
 // finishes
 #define BWTREE_COLLECT_STATISTICS
 
+#ifdef BWTREE_COLLECT_STATISTICS
+#define INC_COUNTER(name, value) do { \
+                                   GetCurrentGCMetaData()->counters[ \
+                                     GCMetaData::CounterType::name] += \
+                                       value; } while(false);
+#else
+#define INC_COUNTER(name, value) do {} while(false);
+#endif
+
 /*
  * InnerInlineAllocateOfType() - allocates a chunk of memory from base node and
  *                               initialize it using placement new and then 
@@ -315,6 +324,7 @@ class BwTreeBase {
      */
     enum CounterType {
       INSERT = 0,
+      UPSERT,
       DELETE,
       READ,
       LEAF_SPLIT,
@@ -447,7 +457,7 @@ class BwTreeBase {
     bwt_printf("Preparing %lu thread local slots\n", thread_num);
     
     // This is the unaligned base address
-    // We allocate one more element than requested as the buffer
+    // We allocate one more cache line than requested size as the buffer
     // for doing alignment
     original_p = static_cast<unsigned char *>(
       malloc(sizeof(PaddedGCMetadata) * thread_num + CACHE_LINE_SIZE));
@@ -3881,6 +3891,11 @@ abort_traverse:
     
     #endif
     
+    // Only do this if we are not doing iteration
+    if(value_p != nullptr) {
+      INC_COUNTER(MODIFY_ABORT, 1);
+    }
+    
     // This is used to identify root node
     context_p->current_snapshot.node_id = INVALID_NODE_ID;
 
@@ -6376,6 +6391,9 @@ abort_traverse:
     return;
   }
   
+  /*
+   * TraverseReadOptimized() - Traverse the tree without handling any SMO
+   */
   void TraverseReadOptimized(Context *context_p,
                              std::vector<ValueType> *value_list_p) {
 retry_traverse:
@@ -6466,6 +6484,10 @@ abort_traverse:
     context_p->abort_counter++;
     
     #endif
+    
+    // If read operation aborts above we need to add it to
+    // statistics counters
+    INC_COUNTER(READ_ABORT, 1);
     
     context_p->current_snapshot.node_id = INVALID_NODE_ID;
 
@@ -8122,9 +8144,8 @@ before_switch:
   bool Insert(const KeyType &key, const ValueType &value) {
     bwt_printf("Insert called\n");
 
-    #ifdef BWTREE_DEBUG
-    insert_op_count.fetch_add(1);
-    #endif
+    // If staitics is turned on this will increament INSERT counter
+    INC_COUNTER(INSERT, 1);
 
     EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
 
@@ -8171,26 +8192,9 @@ before_switch:
       } else {
         bwt_printf("Leaf insert delta CAS failed\n");
 
-        #ifdef BWTREE_DEBUG
-
-        context.abort_counter++;
-        
-        #endif
-
+        INC_COUNTER(MODIFY_ABORT, 1);
         insert_node_p->~LeafInsertNode();
       }
-
-      #ifdef BWTREE_DEBUG
-      
-      // Update abort counter
-      // NOTE 1: We could not do this before return since the context
-      // object is cleared at the end of loop
-      // NOTE 2: Since Traverse() might abort due to other CAS failures
-      // context.abort_counter might be larger than 1 when
-      // LeafInsertNode installation fails
-      insert_abort_count.fetch_add(context.abort_counter);
-      
-      #endif
 
       // We reach here only because CAS failed
       bwt_printf("Retry installing leaf insert delta from the root\n");
@@ -8212,6 +8216,8 @@ before_switch:
 #endif
               const ValueType &new_value) {
     bwt_printf("Upsert called\n");
+
+    INC_COUNTER(UPSERT, 1);
 
     EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
     bool new_key;
@@ -8258,6 +8264,7 @@ before_switch:
           break;
         } else {
           update_node_p->~LeafUpdateNode();
+          INC_COUNTER(MODIFY_ABORT, 1);
         }
       } else {
         new_key = true; 
@@ -8277,6 +8284,7 @@ before_switch:
           break;
         } else {
           insert_node_p->~LeafInsertNode();
+          INC_COUNTER(MODIFY_ABORT, 1);
         }
       }
     }
@@ -8410,9 +8418,7 @@ before_switch:
   bool Delete(const KeyType &key, const ValueType &value) {
     bwt_printf("Delete called\n");
 
-    #ifdef BWTREE_DEBUG
-    delete_op_count.fetch_add(1);
-    #endif
+    INC_COUNTER(DELETE, 1);
 
     EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
 
@@ -8459,21 +8465,10 @@ before_switch:
         break;
       } else {
         bwt_printf("Leaf Delete delta CAS failed\n");
-
-        delete_node_p->~LeafDeleteNode();
-
-        #ifdef BWTREE_DEBUG
-
-        context.abort_counter++;
         
-        #endif
+        delete_node_p->~LeafDeleteNode();
+        INC_COUNTER(MODIFY_ABORT, 1);
       }
-
-      #ifdef BWTREE_DEBUG
-
-      delete_abort_count.fetch_add(context.abort_counter);
-      
-      #endif
 
       // We reach here only because CAS failed
       bwt_printf("Retry installing leaf delete delta from the root\n");
@@ -8497,10 +8492,11 @@ before_switch:
                 std::vector<ValueType> &value_list) {
     bwt_printf("GetValue()\n");
 
+    INC_COUNTER(READ, 1);
+
     EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
 
     Context context{search_key};
-
     TraverseReadOptimized(&context, &value_list);
 
     epoch_manager.LeaveEpoch(epoch_node_p);

@@ -188,9 +188,31 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
   }
   
   void AfterLoadCallback() {
+    int inner_depth_total = 0,
+        leaf_depth_total = 0,
+        inner_node_total = 0,
+        leaf_node_total = 0;
+
     fprintf(stderr, "BwTree - Start consolidating delta chains...\n");
-    int ret = index_p->DebugConsolidateAllRecursive(index_p->root_id.load());
+    int ret = index_p->DebugConsolidateAllRecursive(
+      index_p->root_id.load(),
+      &inner_depth_total,
+      &leaf_depth_total,
+      &inner_node_total,
+      &leaf_node_total);
     fprintf(stderr, "BwTree - Finished consolidating %d delta chains\n", ret);
+    fprintf(stderr,
+            "    Inner Avg. Depth: %f (%d / %d)\n",
+            (double)inner_depth_total / (double)inner_node_total,
+            inner_depth_total,
+            inner_node_total);
+    fprintf(stderr,
+            "    Leaf Avg. Depth: %f (%d / %d)\n",
+            (double)leaf_depth_total / (double)leaf_node_total,
+            leaf_depth_total,
+            leaf_node_total);
+
+    return;
   }
   
   void UpdateThreadLocal(size_t thread_num) { 

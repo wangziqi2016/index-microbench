@@ -45,6 +45,9 @@ const char *BwTreeBase::GCMetaData::COUNTER_NAME_LIST[] = {
 
       "MODIFY_ABORT",
       "READ_ABORT",
+      
+      "ADD_TO_GC",
+      "SCAN_GC_CHAIN",
     };
 
 }  // End index/bwtree namespace

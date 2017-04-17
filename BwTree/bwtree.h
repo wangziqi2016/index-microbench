@@ -342,6 +342,9 @@ class BwTreeBase {
       MODIFY_ABORT,
       READ_ABORT,
       
+      ADD_TO_GC,
+      SCAN_GC_CHAIN,
+      
       // This is the number of counters
       COUNTER_COUNT,
     };
@@ -10274,6 +10277,8 @@ try_join_again:
    * do not have to worry about thread identity issues
    */
   void AddGarbageNode(const BaseNode *node_p) {
+    INC_COUNTER(ADD_TO_GC, 1);
+
     GarbageNode *garbage_node_p = \
       new GarbageNode{GetGlobalEpoch(), (void *)(node_p)};
     assert(garbage_node_p != nullptr);
@@ -10310,6 +10315,8 @@ try_join_again:
    * GetCurrentGCMetaData()
    */
   void PerformGC(int thread_id) {
+    INC_COUNTER(SCAN_GC_CHAIN, 1);
+
     // First of all get the minimum epoch of all active threads
     // This is the upper bound for deleted epoch in garbage node
     uint64_t min_epoch = SummarizeGCEpoch();

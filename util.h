@@ -101,6 +101,11 @@ void StartThreads(Index<keytype, keycomp> *tree_p,
     thread_group[thread_itr].join();
   }
 
+  // Print statistical data before we destruct thread local data
+#ifdef BWTREE_COLLECT_STATISTICS
+  tree_p->CollectStatisticalCounter(num_threads);
+#endif
+
   if(tree_p != nullptr) {
     tree_p->UpdateThreadLocal(1);
   }

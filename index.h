@@ -36,6 +36,10 @@ class Index
   // By default it is empty
   // This will be called in the main thread
   virtual void AfterLoadCallback() {}
+  
+  // This is called after threads finish but before the thread local are
+  // destroied by the thread manager
+  virtual void CollectStatisticalCounter(int) {}
 };
 
 template<typename KeyType, class KeyComparator>
@@ -186,6 +190,33 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
 
     return;
   }
+
+#ifdef BWTREE_COLLECT_STATISTICS
+  void CollectStatisticalCounter(int thread_num) {
+    static constexpr int counter_count = \
+      BwTreeBase::GCMetaData::CounterType::COUNTER_COUNT;
+    int counters[counter_count];
+    
+    // Aggregate on the array of counters
+    memset(counters, 0x00, sizeof(counters));
+    
+    for(int i = 0;i < thread_num;i++) {
+      for(int j = 0;j < counter_count;j++) {
+        counters[j] += index_p->GetGCMetaData(i)->counters[j];
+      }
+    }
+
+    fprintf(stderr, "Statistical counters:\n");
+    for(int j = 0;j < counter_count;j++) {
+      fprintf(stderr,
+              "    counter %d = %d\n",
+              j,
+              counters[j]);
+    }
+    
+    return;
+  }
+#endif
   
   void AfterLoadCallback() {
     int inner_depth_total = 0,

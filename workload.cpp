@@ -17,6 +17,12 @@
   #endif
 #endif
 
+#ifdef BWTREE_COLLECT_STATISTICS
+  #ifdef USE_TBB
+  #warning "Could not use TBB and BwTree statistics together"
+  #endif
+#endif
+
 typedef uint64_t keytype;
 typedef std::less<uint64_t> keycomp;
 

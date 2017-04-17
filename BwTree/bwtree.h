@@ -287,6 +287,8 @@ class BwTreeBase {
       next_p{nullptr}
     {}
   };
+
+ public:
   
   /*
    * class GCMetaData - Metadata for performing GC on per-thread basis

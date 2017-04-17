@@ -214,8 +214,9 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/unordered_set /usr/include/c++/5/bits/hashtable.h \
  /usr/include/c++/5/bits/hashtable_policy.h \
  /usr/include/c++/5/bits/unordered_set.h BwTree/sorted_small_set.h \
- BwTree/bloom_filter.h BwTree/atomic_stack.h /usr/include/byteswap.h \
- masstree/mtIndexAPI.hh /usr/include/x86_64-linux-gnu/sys/socket.h \
+ BwTree/bloom_filter.h BwTree/atomic_stack.h BwTree/thread_local.h \
+ /usr/include/byteswap.h masstree/mtIndexAPI.hh \
+ /usr/include/x86_64-linux-gnu/sys/socket.h \
  /usr/include/x86_64-linux-gnu/sys/uio.h \
  /usr/include/x86_64-linux-gnu/bits/uio.h \
  /usr/include/x86_64-linux-gnu/bits/socket.h \
@@ -856,6 +857,8 @@ BwTree/sorted_small_set.h:
 BwTree/bloom_filter.h:
 
 BwTree/atomic_stack.h:
+
+BwTree/thread_local.h:
 
 /usr/include/byteswap.h:
 

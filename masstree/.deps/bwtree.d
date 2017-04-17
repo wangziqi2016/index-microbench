@@ -117,7 +117,8 @@ bwtree.o: BwTree/bwtree.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/bits/stl_bvector.h /usr/include/c++/5/bits/vector.tcc \
  BwTree/sorted_small_set.h BwTree/bloom_filter.h \
  /usr/include/c++/5/cstring /usr/include/string.h \
- /usr/include/x86_64-linux-gnu/bits/string3.h BwTree/atomic_stack.h
+ /usr/include/x86_64-linux-gnu/bits/string3.h BwTree/atomic_stack.h \
+ BwTree/thread_local.h
 
 /usr/include/stdc-predef.h:
 
@@ -456,3 +457,5 @@ BwTree/bloom_filter.h:
 /usr/include/x86_64-linux-gnu/bits/string3.h:
 
 BwTree/atomic_stack.h:
+
+BwTree/thread_local.h:

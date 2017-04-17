@@ -62,6 +62,7 @@ using NodeID = uint64_t;
 #include "sorted_small_set.h"
 #include "bloom_filter.h"
 #include "atomic_stack.h"
+#include "thread_local.h"
 
 // Copied from Linux kernel code to facilitate branch prediction unit on CPU
 // if there is one
@@ -548,6 +549,15 @@ class BwTreeBase {
     GetCurrentGCMetaData()->last_active_epoch = GetGlobalEpoch();
     
     return;
+  }
+  
+  /*
+   * LeaveEpoch() - Let the thread exit current epoch such that it does
+   *                not block other threads
+   */
+  inline void LeaveEpoch() {
+    // This will make ie never be counted as active for GC
+    GetCurrentGCMetaData()->last_active_epoch = static_cast<uint64_t>(-1);
   }
   
   /*
@@ -4334,6 +4344,9 @@ abort_traverse:
     assert(final_item_count != -1);
     // The size after consolidation must equal the original node size
     assert(final_item_count == inner_node_p->GetSize());
+
+    // Avoid warning in release mode
+    (void)final_item_count;
 
     return inner_node_p;
   }
@@ -8888,8 +8901,10 @@ try_join_again:
     }
     
     inline void LeaveEpoch(EpochNode *epoch_p) {
-      tree_p->UpdateLastActiveEpoch();
+      //tree_p->UpdateLastActiveEpoch();
+      tree_p->LeaveEpoch();
       
+      assert(epoch_p == nullptr);
       (void)epoch_p;
       return;
     }
@@ -8918,7 +8933,7 @@ try_join_again:
      */
     void FreeEpochDeltaChain(const BaseNode *node_p) {
       const BaseNode *next_node_p = node_p;
-
+      
       while(1) {
         node_p = next_node_p;
         assert(node_p != nullptr);

@@ -321,6 +321,8 @@ class BwTreeBase {
     // The type of counter values
     using CounterValueType = int;
 
+    static const char *COUNTER_NAME_LIST[];
+
     /*
      * enum CounterType - Type of counters used to collect statistics
      */
@@ -337,8 +339,8 @@ class BwTreeBase {
       LEAF_CONSOLIDATE,
       INNER_CONSOLIDATE,
       
-      READ_ABORT,
       MODIFY_ABORT,
+      READ_ABORT,
       
       // This is the number of counters
       COUNTER_COUNT,

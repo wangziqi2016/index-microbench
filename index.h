@@ -209,8 +209,8 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
     fprintf(stderr, "Statistical counters:\n");
     for(int j = 0;j < counter_count;j++) {
       fprintf(stderr,
-              "    counter %d = %d\n",
-              j,
+              "    counter %s = %d\n",
+              BwTreeBase::GCMetaData::COUNTER_NAME_LIST[j],
               counters[j]);
     }
     

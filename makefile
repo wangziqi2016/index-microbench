@@ -40,7 +40,7 @@ workload_string: workload_string.o bwtree.o artolc.o ./masstree/mtIndexAPI.a
 bwtree.o: ./BwTree/bwtree.h ./BwTree/bwtree.cpp
 	$(CXX) $(CFLAGS) -c -o bwtree.o ./BwTree/bwtree.cpp
 
-artolc.o:
+artolc.o: ./ARTOLC/*.cpp ./ARTOLC/*.h
 	$(CXX) $(CFLAGS) ./ARTOLC/Tree.cpp -c -o artolc.o $(MEMMGR) -lpthread -lm -ltbb
 
 generate_workload:

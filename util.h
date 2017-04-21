@@ -52,11 +52,15 @@ struct timeval tv;
   return tv.tv_sec + tv.tv_usec / 1000000.0; 
 } 
 
+// This is the maximum number of cores possible on this
+// system
+static constexpr int MAX_CPU_COUNT = 40;
+
 template <bool hyperthreading=false>
 void PinToCore(size_t core_id) {
   cpu_set_t cpu_set;
   CPU_ZERO(&cpu_set);
-  CPU_SET(core_id * (hyperthreading ? 1 : 2), &cpu_set);
+  CPU_SET(core_id * (hyperthreading ? 1 : 2) % MAX_CPU_COUNT, &cpu_set);
 
   int ret = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set), &cpu_set);
   if(ret != 0) {

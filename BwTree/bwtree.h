@@ -2262,7 +2262,7 @@ class BwTree : public BwTreeBase {
       while(alloc_meta_p != nullptr) {
         // If the next is nullptr then the current one 
         // may not be fully utilized
-        const AM *next_meta_p = next.load();
+        const AM *next_meta_p = alloc_meta_p->next.load();
 
         // This is always added as long as we process a 
         // new meta object
@@ -2276,12 +2276,12 @@ class BwTree : public BwTreeBase {
           (*used_size_p) += chunk_size;
         } else {
           // Must only load once otherwise this might be 
-          const char *tail_p_temp = tail.load();
+          const char *tail_p_temp = alloc_meta_p->tail.load();
 
-          if(tail_p_temp < limit) {
+          if(tail_p_temp < alloc_meta_p->limit) {
             (*used_size_p) += chunk_size;
           } else {
-            (*used_size_p) += (tail_p_temp - limit);
+            (*used_size_p) += (tail_p_temp - alloc_meta_p->limit);
           }
         }
 

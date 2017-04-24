@@ -2258,11 +2258,11 @@ class BwTree : public BwTreeBase {
      * This function will only accumulate values onto the original value.
      */
     void GetStatistics(size_t *total_size_p, size_t *used_size_p) const {
-      AM *alloc_meta_p = this;
+      const AM *alloc_meta_p = this;
       while(alloc_meta_p != nullptr) {
         // If the next is nullptr then the current one 
         // may not be fully utilized
-        AM *next_meta_p = next.load();
+        const AM *next_meta_p = next.load();
 
         // This is always added as long as we process a 
         // new meta object

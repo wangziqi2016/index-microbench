@@ -224,6 +224,8 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
         inner_node_total = 0,
         leaf_node_total = 0;
     int inner_size_total = 0, leaf_size_total = 0;
+    size_t inner_alloc_total = 0, inner_used_total = 0;
+    size_t leaf_alloc_total = 0, leaf_used_total = 0;
 
     fprintf(stderr, "BwTree - Start consolidating delta chains...\n");
     int ret = index_p->DebugConsolidateAllRecursive(
@@ -233,7 +235,11 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
       &inner_node_total,
       &leaf_node_total,
       &inner_size_total,
-      &leaf_size_total);
+      &leaf_size_total,
+      &inner_alloc_total,
+      &inner_used_total,
+      &leaf_alloc_total,
+      &leaf_used_total);
     fprintf(stderr, "BwTree - Finished consolidating %d delta chains\n", ret);
     fprintf(stderr,
             "    Inner Avg. Depth: %f (%d / %d)\n",
@@ -255,6 +261,18 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
             (double)leaf_size_total / (double)leaf_node_total,
             leaf_size_total,
             leaf_node_total);
+    
+    fprintf(stderr,
+            "Inner Alloc. Util: %f (%lu / %lu)\n",
+            (double)inner_used_total / (double)inner_alloc_total,
+            inner_used_total,
+            inner_alloc_total);
+    
+    fprintf(stderr,
+            "Leaf Alloc. Util: %f (%lu / %lu)\n",
+            (double)leaf_used_total / (double)leaf_alloc_total,
+            leaf_used_total,
+            leaf_alloc_total);
 
     return;
   }

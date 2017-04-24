@@ -3574,10 +3574,10 @@ class BwTree : public BwTreeBase {
                                    int *leaf_node_total,
                                    int *inner_size_total,
                                    int *leaf_size_total,
-                                   int *inner_alloc_total,
-                                   int *inner_used_total,
-                                   int *leaf_alloc_total,
-                                   int *leaf_used_total) {
+                                   size_t *inner_alloc_total,
+                                   size_t *inner_used_total,
+                                   size_t *leaf_alloc_total,
+                                   size_t *leaf_used_total) {
     const BaseNode *node_p = GetNode(node_id);
     NodeType type = node_p->GetType();
     NodeSnapshot snapshot{node_id, node_p};

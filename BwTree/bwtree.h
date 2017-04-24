@@ -2241,21 +2241,55 @@ class BwTree : public BwTreeBase {
     }
 
     /*
-     * GetTotalSize() - This function returns the total size of the allocation
-     *                  managed by this allocation meta
+     * GetStatistics() - This function returns the allocation statistics
      *
      * We traverse the linked list of allocation meta objects using the 
      * next atomic pointer, and use the number of elements multiplied
      * by the chunk size (which is a constant) to compute the total
-     * allocation size
+     * allocation size; For used sizes since all previous chunks must
+     * have been exhausted so we only need to compute the last chunk
      *
      * Note that if this function is called in multithreaded environment
      * then the result is undefined because as it scans the linked list
      * there might be another thread coming and adds another element
      * to the end of the linked list
      */
-    void GetTotalSize() const {
+    void GetStatistics(size_t *total_size_p, size_t *used_size_p) const {
+      AM *alloc_meta_p = this;
+      *total_size_p = 0;
+      *used_size_p = 0;
+      while(alloc_meta_p != nullptr) {
+        // If the next is nullptr then the current one 
+        // may not be fully utilized
+        AM *next_meta_p = next_p.load();
 
+        // This is always added as long as we process a 
+        // new meta object
+        (*total_size_p) += chunk_size;
+
+        // If the next meta is present then the current meta
+        // must also be fully utilized
+        // Otherwise need to compute the difference between
+        // tail and limit
+        if(next_meta_p != nullptr) {
+          (*used_size_p) += chunk_size;
+        } else {
+          // Must only load once otherwise this might be 
+          tail_p_temp = tail_p.load();
+
+          if(tail_p_temp < limit_p) {
+            (*used_size_p) += chunk_size;
+          } else {
+            (*used_size_p) += (tail_p_temp - limit_p);
+          }
+        }
+
+        // Start processing the next meta object or break
+        // depening on its value
+        alloc_meta_p = next_meta_p;
+      }
+
+      return;
     }
   };
   

@@ -2253,11 +2253,12 @@ class BwTree : public BwTreeBase {
      * then the result is undefined because as it scans the linked list
      * there might be another thread coming and adds another element
      * to the end of the linked list
+     *
+     * The caller should set all arguments to 0 prior to calling this function.
+     * This function will only accumulate values onto the original value.
      */
     void GetStatistics(size_t *total_size_p, size_t *used_size_p) const {
       AM *alloc_meta_p = this;
-      *total_size_p = 0;
-      *used_size_p = 0;
       while(alloc_meta_p != nullptr) {
         // If the next is nullptr then the current one 
         // may not be fully utilized
@@ -2504,6 +2505,32 @@ class BwTree : public BwTreeBase {
       assert(p != nullptr);
       
       return p;
+    }
+
+    /*
+     * GetAllocationStatistics() - Gets the allocation statistics of the
+     *                             preallocated space
+     *
+     * This function is simply a wrapper over the allocation meta
+     * object's method. It requires a low key of the current ealstic node
+     * in order to locate the node header and then the allocation header.
+     *
+     * Note that this function has two versions, one for leaf delta chain
+     * and another for inner delta chain, via template instantiation. Please
+     * use the correct version otherwise the allocation meta's address will
+     * be wrong.
+     */
+    static void GetAllocationStatistics(const KeyNodeIDPair *low_key_p,
+                                        size_t *alloc_size_p, 
+                                        size_t *used_size_p) {
+      // This is copied and pasted from InlineAllocate()
+      const EN *node_p = EN::GetNodeHeader(low_key_p);
+      AM *meta_p = EN::GetAllocationHeader(node_p);
+
+      // This is the statistics of allocation meta
+      meta_p->GetStatistics(alloc_size_p, used_size_p);
+
+      return;
     }
   };
   
@@ -3568,6 +3595,7 @@ class BwTree : public BwTreeBase {
       }
       
       (*leaf_depth_total) += node_p->GetDepth();
+      
       
       LeafNode *leaf_node_p = CollectAllValuesOnLeaf(&snapshot);
       mapping_table[node_id].store(leaf_node_p);

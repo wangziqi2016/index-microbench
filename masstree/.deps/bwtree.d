@@ -50,9 +50,19 @@ bwtree.o: BwTree/bwtree.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/bits/nested_exception.h \
  /usr/include/c++/5/ext/alloc_traits.h \
  /usr/include/c++/5/bits/alloc_traits.h \
- /usr/include/c++/5/bits/memoryfwd.h \
- /usr/include/c++/5/bits/uniform_int_dist.h /usr/include/c++/5/limits \
- /usr/include/c++/5/array /usr/include/c++/5/stdexcept \
+ /usr/include/c++/5/bits/memoryfwd.h /usr/include/c++/5/random \
+ /usr/include/c++/5/cmath /usr/include/math.h \
+ /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+ /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_val.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_valf.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_vall.h \
+ /usr/include/x86_64-linux-gnu/bits/inf.h \
+ /usr/include/x86_64-linux-gnu/bits/nan.h \
+ /usr/include/x86_64-linux-gnu/bits/mathdef.h \
+ /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+ /usr/include/x86_64-linux-gnu/bits/mathinline.h \
+ /usr/include/x86_64-linux-gnu/bits/math-finite.h \
  /usr/include/c++/5/string /usr/include/c++/5/bits/stringfwd.h \
  /usr/include/c++/5/bits/char_traits.h /usr/include/c++/5/bits/postypes.h \
  /usr/include/c++/5/cwchar /usr/include/wchar.h /usr/include/stdio.h \
@@ -93,14 +103,75 @@ bwtree.o: BwTree/bwtree.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
  /usr/include/c++/5/bits/functional_hash.h \
  /usr/include/c++/5/bits/hash_bytes.h \
- /usr/include/c++/5/bits/basic_string.tcc /usr/include/c++/5/atomic \
+ /usr/include/c++/5/bits/basic_string.tcc /usr/include/c++/5/limits \
+ /usr/include/c++/5/bits/random.h /usr/include/c++/5/vector \
+ /usr/include/c++/5/bits/stl_uninitialized.h \
+ /usr/include/c++/5/bits/stl_vector.h \
+ /usr/include/c++/5/bits/stl_bvector.h /usr/include/c++/5/bits/vector.tcc \
+ /usr/include/c++/5/bits/uniform_int_dist.h \
+ /usr/include/x86_64-linux-gnu/c++/5/bits/opt_random.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/x86intrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/ia32intrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/mmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/mm_malloc.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/emmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/pmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/tmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/ammintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/smmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/popcntintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/wmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/immintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avxintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx2intrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512fintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512erintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512pfintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512cdintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vlintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512bwintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512dqintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vlbwintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vldqintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512ifmaintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512ifmavlintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vbmiintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vbmivlintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/shaintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/lzcntintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/bmiintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/bmi2intrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/fmaintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/f16cintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/rtmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xtestintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/mm3dnow.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/prfchwintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/fma4intrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xopintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/lwpintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/tbmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/rdseedintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/fxsrintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xsaveintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xsaveoptintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/adxintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/clwbintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/pcommitintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/clflushoptintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xsavesintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/xsavecintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/mwaitxintrin.h \
+ /usr/include/c++/5/bits/random.tcc /usr/include/c++/5/numeric \
+ /usr/include/c++/5/bits/stl_numeric.h /usr/include/c++/5/array \
+ /usr/include/c++/5/stdexcept /usr/include/c++/5/atomic \
  /usr/include/c++/5/bits/atomic_base.h /usr/include/c++/5/cassert \
  /usr/include/assert.h /usr/include/c++/5/chrono /usr/include/c++/5/ratio \
  /usr/include/c++/5/ctime /usr/include/c++/5/bits/parse_numbers.h \
  /usr/include/c++/5/thread /usr/include/c++/5/functional \
  /usr/include/c++/5/typeinfo /usr/include/c++/5/tuple \
  /usr/include/c++/5/bits/uses_allocator.h /usr/include/c++/5/memory \
- /usr/include/c++/5/bits/stl_uninitialized.h \
  /usr/include/c++/5/bits/stl_raw_storage_iter.h \
  /usr/include/c++/5/ext/concurrence.h \
  /usr/include/c++/5/bits/unique_ptr.h \
@@ -113,8 +184,6 @@ bwtree.o: BwTree/bwtree.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/bits/hashtable.h \
  /usr/include/c++/5/bits/hashtable_policy.h \
  /usr/include/c++/5/bits/unordered_set.h /usr/include/c++/5/cstddef \
- /usr/include/c++/5/vector /usr/include/c++/5/bits/stl_vector.h \
- /usr/include/c++/5/bits/stl_bvector.h /usr/include/c++/5/bits/vector.tcc \
  BwTree/sorted_small_set.h BwTree/bloom_filter.h \
  /usr/include/c++/5/cstring /usr/include/string.h \
  /usr/include/x86_64-linux-gnu/bits/string3.h BwTree/atomic_stack.h \
@@ -258,13 +327,33 @@ BwTree/bwtree.h:
 
 /usr/include/c++/5/bits/memoryfwd.h:
 
-/usr/include/c++/5/bits/uniform_int_dist.h:
+/usr/include/c++/5/random:
 
-/usr/include/c++/5/limits:
+/usr/include/c++/5/cmath:
 
-/usr/include/c++/5/array:
+/usr/include/math.h:
 
-/usr/include/c++/5/stdexcept:
+/usr/include/x86_64-linux-gnu/bits/math-vector.h:
+
+/usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h:
+
+/usr/include/x86_64-linux-gnu/bits/huge_val.h:
+
+/usr/include/x86_64-linux-gnu/bits/huge_valf.h:
+
+/usr/include/x86_64-linux-gnu/bits/huge_vall.h:
+
+/usr/include/x86_64-linux-gnu/bits/inf.h:
+
+/usr/include/x86_64-linux-gnu/bits/nan.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathdef.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathinline.h:
+
+/usr/include/x86_64-linux-gnu/bits/math-finite.h:
 
 /usr/include/c++/5/string:
 
@@ -380,6 +469,140 @@ BwTree/bwtree.h:
 
 /usr/include/c++/5/bits/basic_string.tcc:
 
+/usr/include/c++/5/limits:
+
+/usr/include/c++/5/bits/random.h:
+
+/usr/include/c++/5/vector:
+
+/usr/include/c++/5/bits/stl_uninitialized.h:
+
+/usr/include/c++/5/bits/stl_vector.h:
+
+/usr/include/c++/5/bits/stl_bvector.h:
+
+/usr/include/c++/5/bits/vector.tcc:
+
+/usr/include/c++/5/bits/uniform_int_dist.h:
+
+/usr/include/x86_64-linux-gnu/c++/5/bits/opt_random.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/x86intrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/ia32intrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/mmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/mm_malloc.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/emmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/pmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/tmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/ammintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/smmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/popcntintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/wmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/immintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avxintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx2intrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512fintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512erintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512pfintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512cdintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vlintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512bwintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512dqintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vlbwintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vldqintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512ifmaintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512ifmavlintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vbmiintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/avx512vbmivlintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/shaintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/lzcntintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/bmiintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/bmi2intrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/fmaintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/f16cintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/rtmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xtestintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/mm3dnow.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/prfchwintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/fma4intrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xopintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/lwpintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/tbmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/rdseedintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/fxsrintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xsaveintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xsaveoptintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/adxintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/clwbintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/pcommitintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/clflushoptintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xsavesintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/xsavecintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/mwaitxintrin.h:
+
+/usr/include/c++/5/bits/random.tcc:
+
+/usr/include/c++/5/numeric:
+
+/usr/include/c++/5/bits/stl_numeric.h:
+
+/usr/include/c++/5/array:
+
+/usr/include/c++/5/stdexcept:
+
 /usr/include/c++/5/atomic:
 
 /usr/include/c++/5/bits/atomic_base.h:
@@ -408,8 +631,6 @@ BwTree/bwtree.h:
 
 /usr/include/c++/5/memory:
 
-/usr/include/c++/5/bits/stl_uninitialized.h:
-
 /usr/include/c++/5/bits/stl_raw_storage_iter.h:
 
 /usr/include/c++/5/ext/concurrence.h:
@@ -437,14 +658,6 @@ BwTree/bwtree.h:
 /usr/include/c++/5/bits/unordered_set.h:
 
 /usr/include/c++/5/cstddef:
-
-/usr/include/c++/5/vector:
-
-/usr/include/c++/5/bits/stl_vector.h:
-
-/usr/include/c++/5/bits/stl_bvector.h:
-
-/usr/include/c++/5/bits/vector.tcc:
 
 BwTree/sorted_small_set.h:
 

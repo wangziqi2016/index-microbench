@@ -2261,7 +2261,7 @@ class BwTree : public BwTreeBase {
       while(alloc_meta_p != nullptr) {
         // If the next is nullptr then the current one 
         // may not be fully utilized
-        AM *next_meta_p = next_p.load();
+        AM *next_meta_p = next.load();
 
         // This is always added as long as we process a 
         // new meta object
@@ -2275,12 +2275,12 @@ class BwTree : public BwTreeBase {
           (*used_size_p) += chunk_size;
         } else {
           // Must only load once otherwise this might be 
-          tail_p_temp = tail_p.load();
+          const char *tail_p_temp = tail.load();
 
-          if(tail_p_temp < limit_p) {
+          if(tail_p_temp < limit) {
             (*used_size_p) += chunk_size;
           } else {
-            (*used_size_p) += (tail_p_temp - limit_p);
+            (*used_size_p) += (tail_p_temp - limit);
           }
         }
 
@@ -3546,7 +3546,11 @@ class BwTree : public BwTreeBase {
                                    int *inner_node_total,
                                    int *leaf_node_total,
                                    int *inner_size_total,
-                                   int *leaf_size_total) {
+                                   int *leaf_size_total,
+                                   int *inner_alloc_total,
+                                   int *inner_used_total,
+                                   int *leaf_alloc_total,
+                                   int *leaf_used_total) {
     const BaseNode *node_p = GetNode(node_id);
     NodeType type = node_p->GetType();
     NodeSnapshot snapshot{node_id, node_p};
@@ -3609,7 +3613,11 @@ class BwTree : public BwTreeBase {
                                             inner_node_total,
                                             leaf_node_total,
                                             inner_size_total,
-                                            leaf_size_total);
+                                            leaf_size_total,
+                                            inner_alloc_total,
+                                            inner_used_total,
+                                            leaf_alloc_total,
+                                            leaf_used_total);
       }
     }
     

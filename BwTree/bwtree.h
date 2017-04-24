@@ -3595,6 +3595,9 @@ class BwTree : public BwTreeBase {
       }
       
       (*leaf_depth_total) += node_p->GetDepth();
+      LeafNode::GetAllocationStatistics(&node_p->GetLowKeyPair(), 
+                                        leaf_alloc_total,
+                                        leaf_used_total); 
       
       
       LeafNode *leaf_node_p = CollectAllValuesOnLeaf(&snapshot);
@@ -3621,6 +3624,10 @@ class BwTree : public BwTreeBase {
       } else {
         (*inner_depth_total) += node_p->GetDepth();
       }
+
+      InnerNode::GetAllocationStatistics(&node_p->GetLowKeyPair(), 
+                                         inner_alloc_total,
+                                         inner_used_total);
       
       InnerNode *inner_node_p = CollectAllSepsOnInner(&snapshot);
       mapping_table[node_id].store(inner_node_p);

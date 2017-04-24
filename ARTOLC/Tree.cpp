@@ -20,9 +20,20 @@ namespace ART_OLC {
         return ThreadInfo(this->epoche);
     }
 
+
+    void yield(int count) {
+       if (count>3)
+          sched_yield();
+       else
+          _mm_pause();
+    }
+
     TID Tree::lookup(const Key &k, ThreadInfo &threadEpocheInfo) const {
         EpocheGuardReadonly epocheGuard(threadEpocheInfo);
-        restart:
+        int restartCount = 0;
+    restart:
+        if (restartCount++)
+           yield(restartCount);
         bool needRestart = false;
 
         N *node;
@@ -245,7 +256,11 @@ namespace ART_OLC {
             }
         };
 
-        restart:
+
+        int restartCount = 0;
+    restart:
+        if (restartCount++)
+           yield(restartCount);
         bool needRestart = false;
 
         resultsFound = 0;
@@ -334,7 +349,10 @@ namespace ART_OLC {
 
     void Tree::insert(const Key &k, TID tid, ThreadInfo &epocheInfo) {
         EpocheGuard epocheGuard(epocheInfo);
-        restart:
+        int restartCount = 0;
+    restart:
+        if (restartCount++)
+           yield(restartCount);
         bool needRestart = false;
 
         N *node = nullptr;
@@ -440,7 +458,10 @@ namespace ART_OLC {
 
     void Tree::remove(const Key &k, TID tid, ThreadInfo &threadInfo) {
         EpocheGuard epocheGuard(threadInfo);
-        restart:
+        int restartCount = 0;
+    restart:
+        if (restartCount++)
+           yield(restartCount);
         bool needRestart = false;
 
         N *node = nullptr;

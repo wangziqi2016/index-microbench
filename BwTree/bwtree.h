@@ -529,7 +529,7 @@ class BwTreeBase {
     // Frees all metadata
     DestroyThreadLocal();
     
-    bwt_printf("Finished destroying class BwTreeBase\n")
+    bwt_printf("Finished destroying class BwTreeBase\n");
     
     return;
   }
@@ -2238,6 +2238,24 @@ class BwTree : public BwTreeBase {
       }
       
       return;
+    }
+
+    /*
+     * GetTotalSize() - This function returns the total size of the allocation
+     *                  managed by this allocation meta
+     *
+     * We traverse the linked list of allocation meta objects using the 
+     * next atomic pointer, and use the number of elements multiplied
+     * by the chunk size (which is a constant) to compute the total
+     * allocation size
+     *
+     * Note that if this function is called in multithreaded environment
+     * then the result is undefined because as it scans the linked list
+     * there might be another thread coming and adds another element
+     * to the end of the linked list
+     */
+    void GetTotalSize() const {
+
     }
   };
   

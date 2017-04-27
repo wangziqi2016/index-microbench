@@ -9,7 +9,7 @@
 #include "tbb/tbb.h"
 #endif
 
-//#define BWTREE_CONSOLIDATE_AFTER_INSERT
+#define BWTREE_CONSOLIDATE_AFTER_INSERT
 
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
   #ifdef USE_TBB
@@ -463,9 +463,42 @@ inline void exec(int wl,
 /*
  * run_rdtsc_benchmark() - This function runs the RDTSC benchmark which is a high
  *                         contention insert-only benchmark
+ *
+ * Note that key num is the total key num
  */
-void run_rdtsc_benchmark(int wl, int index_type, int thread_num) {
-  return 0;
+void run_rdtsc_benchmark(int wl, int index_type, int thread_num, int key_num) {
+  auto func = [idx](uint64_t thread_id, bool) {
+    size_t key_per_thread = key_num / num_thread;
+
+    threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
+
+    int gc_counter = 0;
+    for(size_t i = 0;i < key_per_thread;i++) {
+      idx->insert(Rdtsc(), 0, ti);
+      gc_counter++;
+      if(gc_counter % 4096 == 0) {
+        ti->rcu_quiesce();
+      }
+    }
+
+    ti->rcu_quiesce();
+
+    return;
+  };
+
+  double start_time = get_now();
+  StartThreads(idx, num_thread, func, false);
+  double end_time = get_now();
+
+  // Only execute consolidation if BwTree delta chain is used
+#ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
+  idx->AfterLoadCallback();
+#endif
+  
+  double tput = key_num * 1.0 / (end_time - start_time) / 1000000; //Mops/sec
+  std::cout << "insert " << tput << "\n";
+
+  return;
 }
 
 int main(int argc, char *argv[]) {

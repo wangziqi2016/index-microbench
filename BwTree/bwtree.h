@@ -3585,7 +3585,7 @@ class BwTree : public BwTreeBase {
     int ret = 0;
     
     if(node_p->IsOnLeafDeltaChain() == true) {
-      if(type == NodeType::LeafSplitType ||
+      if(//type == NodeType::LeafSplitType ||
          type == NodeType::LeafMergeType ||
          type == NodeType::LeafRemoveType) {
         fprintf(stderr,
@@ -3607,7 +3607,7 @@ class BwTree : public BwTreeBase {
       (*leaf_node_total)++;
       (*leaf_size_total) += leaf_node_p->GetItemCount();
     } else {
-      if(type == NodeType::InnerSplitType ||
+      if(//type == NodeType::InnerSplitType ||
          type == NodeType::InnerMergeType ||
          type == NodeType::InnerRemoveType ||
          type == NodeType::InnerAbortType) {

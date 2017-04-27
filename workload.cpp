@@ -9,7 +9,7 @@
 #include "tbb/tbb.h"
 #endif
 
-#define BWTREE_CONSOLIDATE_AFTER_INSERT
+//#define BWTREE_CONSOLIDATE_AFTER_INSERT
 
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
   #ifdef USE_TBB
@@ -23,7 +23,7 @@
   #endif
 #endif
 
-//#define INTERLEAVED_INSERT
+#define INTERLEAVED_INSERT
 
 typedef uint64_t keytype;
 typedef std::less<uint64_t> keycomp;
@@ -460,6 +460,14 @@ inline void exec(int wl,
   }
 }
 
+/*
+ * run_rdtsc_benchmark() - This function runs the RDTSC benchmark which is a high
+ *                         contention insert-only benchmark
+ */
+void run_rdtsc_benchmark(int wl, int index_type, int thread_num) {
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
 
   if (argc != 5) {
@@ -494,6 +502,8 @@ int main(int argc, char *argv[]) {
     kt = 0;
   else if (strcmp(argv[2], "mono") == 0)
     kt = 1;
+  else if (strcmp(argv[2], "rdtsc") == 0)
+    kt = 2;
   else
     kt = 0;
 
@@ -523,16 +533,22 @@ int main(int argc, char *argv[]) {
 
   fprintf(stderr, "index type = %d\n", index_type);
 
-  std::vector<keytype> init_keys;
-  std::vector<keytype> keys;
-  std::vector<uint64_t> values;
-  std::vector<int> ranges;
-  std::vector<int> ops; //INSERT = 0, READ = 1, UPDATE = 2
+  // If the key type is RDTSC we just run the special function
+  if(kt != 2) {
+    std::vector<keytype> init_keys;
+    std::vector<keytype> keys;
+    std::vector<uint64_t> values;
+    std::vector<int> ranges;
+    std::vector<int> ops; //INSERT = 0, READ = 1, UPDATE = 2
 
-  load(wl, kt, index_type, init_keys, keys, values, ranges, ops);
-  printf("Finished loading workload file (mem = %lu)\n", MemUsage());
-  exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
-  printf("Finished running benchmark (mem = %lu)\n", MemUsage());
+    load(wl, kt, index_type, init_keys, keys, values, ranges, ops);
+    printf("Finished loading workload file (mem = %lu)\n", MemUsage());
+    exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
+    printf("Finished running benchmark (mem = %lu)\n", MemUsage());
+  } else {
+    fprintf(stderr, "Running RDTSC benchmark...\n");
+    run_rdtsc_benchmark(wl, index_type, num_thread);
+  }
 
   return 0;
 }

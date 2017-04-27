@@ -52,6 +52,17 @@ struct timeval tv;
   return tv.tv_sec + tv.tv_usec / 1000000.0; 
 } 
 
+/*
+ * Rdtsc() - This function returns the value of the time stamp counter
+ *           on the current core
+ */
+inline uint64_t Rdtsc()
+{
+    uint32_t lo, hi;
+    asm volatile("rdtsc" : "=a" (lo), "=d" (hi));
+    return (((uint64_t) hi << 32) | lo);
+}
+
 // This is the maximum number of cores possible on this
 // system
 static constexpr int MAX_CPU_COUNT = 40;

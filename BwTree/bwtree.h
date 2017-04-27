@@ -161,7 +161,7 @@ static constexpr NodeID FIRST_LEAF_NODE_ID = static_cast<NodeID>(2UL);
 /////////////////////////////////////////////////////////////////////
 
 // The maximum number of nodes we could map in this index
-static constexpr size_t MAPPING_TABLE_SIZE = 0x1 << 20;
+static constexpr size_t MAPPING_TABLE_SIZE = 0x1 << 24;
 
 // If the length of delta chain exceeds ( >= ) this then we consolidate 
 // the node

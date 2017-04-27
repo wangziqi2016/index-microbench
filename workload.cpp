@@ -467,8 +467,10 @@ inline void exec(int wl,
  * Note that key num is the total key num
  */
 void run_rdtsc_benchmark(int wl, int index_type, int thread_num, int key_num) {
-  auto func = [idx](uint64_t thread_id, bool) {
-    size_t key_per_thread = key_num / num_thread;
+  Index<keytype, keycomp> *idx = getInstance<keytype, keycomp>(index_type, key_type);
+
+  auto func = [idx, thread_num, key_num](uint64_t thread_id, bool) {
+    size_t key_per_thread = key_num / thread_num;
 
     threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
 
@@ -487,7 +489,7 @@ void run_rdtsc_benchmark(int wl, int index_type, int thread_num, int key_num) {
   };
 
   double start_time = get_now();
-  StartThreads(idx, num_thread, func, false);
+  StartThreads(idx, thread_num, func, false);
   double end_time = get_now();
 
   // Only execute consolidation if BwTree delta chain is used
@@ -580,7 +582,7 @@ int main(int argc, char *argv[]) {
     printf("Finished running benchmark (mem = %lu)\n", MemUsage());
   } else {
     fprintf(stderr, "Running RDTSC benchmark...\n");
-    run_rdtsc_benchmark(wl, index_type, num_thread);
+    run_rdtsc_benchmark(wl, index_type, num_thread, 50 * 1024 * 1024);
   }
 
   return 0;

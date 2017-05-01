@@ -223,7 +223,7 @@ static constexpr int PREALLOCATE_THREAD_NUM = 1024;
 #define InnerInlineAllocateOfType(T, node_p, ...) (static_cast<T *>( \
                                                      new(InnerNode::InlineAllocate( \
                                                          &node_p->GetLowKeyPair(), \
-                                                         sizeof(T)) \
+                                                         sizeof(InnerDeltaNodeUnion)) \
                                                      ) T{ __VA_ARGS__ } ))
                                                      
 /*
@@ -236,7 +236,7 @@ static constexpr int PREALLOCATE_THREAD_NUM = 1024;
 #define LeafInlineAllocateOfType(T, node_p, ...) (static_cast<T *>( \
                                                     new(LeafNode::InlineAllocate( \
                                                         &node_p->GetLowKeyPair(), \
-                                                        sizeof(T)) \
+                                                        sizeof(LeafDeltaNodeUnion)) \
                                                     ) T{__VA_ARGS__} ))
 
 /*
@@ -2038,8 +2038,8 @@ class BwTree : public BwTreeBase {
   };
   
   /*
-   * union DeltaNodeUnion - The union of all delta nodes - we use this to 
-   *                        precllocate memory on the base node for delta nodes
+   * union InnerDeltaNodeUnion - The union of all delta nodes - we use this to 
+   *                             precllocate memory on the base node for delta nodes
    */
   union InnerDeltaNodeUnion {
     InnerInsertNode inner_insert_node;
@@ -2051,8 +2051,8 @@ class BwTree : public BwTreeBase {
   };
   
   /*
-   * LeafDeltaNodeUnion - This is used to determine the preallocation size
-   *                      for leaf level delta chains
+   * union LeafDeltaNodeUnion - This is used to determine the preallocation size
+   *                            for leaf level delta chains
    */
   union LeafDeltaNodeUnion {
     LeafInsertNode leaf_insert_node;

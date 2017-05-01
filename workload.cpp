@@ -9,7 +9,7 @@
 #include "tbb/tbb.h"
 #endif
 
-#define BWTREE_CONSOLIDATE_AFTER_INSERT
+//#define BWTREE_CONSOLIDATE_AFTER_INSERT
 
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
   #ifdef USE_TBB
@@ -23,7 +23,7 @@
   #endif
 #endif
 
-#define INTERLEAVED_INSERT
+//#define INTERLEAVED_INSERT
 
 typedef uint64_t keytype;
 typedef std::less<uint64_t> keycomp;
@@ -146,8 +146,8 @@ inline void load(int wl, int kt, int index_type, std::vector<keytype> &init_keys
     txn_file = "workloads/mono_inc_txnse_zipf_int_100M.dat";
   }
   else {
-    init_file = "workloads/loada_zipf_int_100M.dat";
-    txn_file = "workloads/txnsa_zipf_int_100M.dat";
+    fprintf(stderr, "Unknown workload type or key type\n");
+    exit(1);
   }
 
   std::ifstream infile_load(init_file);
@@ -476,7 +476,12 @@ void run_rdtsc_benchmark(int wl, int index_type, int thread_num, int key_num) {
 
     int gc_counter = 0;
     for(size_t i = 0;i < key_per_thread;i++) {
-      idx->insert(Rdtsc(), 0, ti);
+      // Note that RDTSC may return duplicated keys from different cores
+      // to counter this we combine RDTSC with thread IDs to make it unique
+      // The counter value on a single core is always unique, though
+      uint64_t key = Rdtsc() << 5 | thread_id;
+      fprintf(stderr, "%lu\n", key);
+      idx->insert(key, 0, ti);
       gc_counter++;
       if(gc_counter % 4096 == 0) {
         ti->rcu_quiesce();
@@ -582,7 +587,7 @@ int main(int argc, char *argv[]) {
     printf("Finished running benchmark (mem = %lu)\n", MemUsage());
   } else {
     fprintf(stderr, "Running RDTSC benchmark...\n");
-    run_rdtsc_benchmark(wl, index_type, num_thread, 50 * 1024 * 1024);
+    run_rdtsc_benchmark(wl, index_type, num_thread, 50 * 1000 * 1000);
   }
 
   return 0;

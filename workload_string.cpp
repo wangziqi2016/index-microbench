@@ -12,6 +12,29 @@ static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
 
 #include "util.h"
 
+/*
+ * MemUsage() - Reads memory usage from /proc file system
+ */
+size_t MemUsage() {
+  FILE *fp = fopen("/proc/self/statm", "r");
+  if(fp == nullptr) {
+    fprintf(stderr, "Could not open /proc/self/statm to read memory usage\n");
+    exit(1);
+  }
+
+  unsigned long unused;
+  unsigned long rss;
+  if (fscanf(fp, "%ld %ld %ld %ld %ld %ld %ld", &unused, &rss, &unused, &unused, &unused, &unused, &unused) != 7) {
+    perror("");
+    exit(1);
+  }
+  (void)unused;
+  fclose(fp);
+
+  return rss * (4096 / 1024); // in KiB (not kB)
+}
+
+
 //==============================================================
 // LOAD
 //==============================================================
@@ -133,9 +156,16 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
 
     threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
 
+    int counter = 0;
     for(size_t i = start_index;i < end_index;i++) {
       idx->insert(init_keys[i], values[i], ti);
+      counter++;
+      if(counter % 4096 == 0) {
+        ti->rcu_quiesce();
+      }
     }
+
+    ti->rcu_quiesce();
 
     return;
   };
@@ -212,7 +242,8 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
     v.reserve(10);
 
     threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
-
+    
+    int counter = 0;
     for(size_t i = start_index;i < end_index;i++) {
       int op = ops[i];
 
@@ -229,7 +260,14 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
       else if (op == OP_SCAN) { //SCAN
         idx->scan(keys[i], ranges[i], ti);
       }
+
+      counter++;
+      if(counter % 4096 == 0) {
+        ti->rcu_quiesce();
+      }
     }
+
+    ti->rcu_quiesce();
 
     return;
   };
@@ -374,8 +412,9 @@ int main(int argc, char *argv[]) {
   std::vector<int> ops; //INSERT = 0, READ = 1, UPDATE = 2
 
   load(wl, kt, index_type, init_keys, keys, values, ranges, ops);
-  printf("Finish loading\n");
+  fprintf(stderr, "Finish loading (Mem = %lu)\n", MemUsage());
   exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
+  fprintf(stderr, "Finished execution (Mem = %lu)\n", MemUsage());
 
   return 0;
 }

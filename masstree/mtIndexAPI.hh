@@ -202,6 +202,35 @@ public:
     return true;
   }
 
+  //#################################################################################
+  // Get Next N (ordered)
+  //#################################################################################
+  struct scanner {
+    Str *values;
+    int range;
+
+    scanner(Str *values, int range)
+      : values(values), range(range) {
+    }
+
+    template <typename SS2, typename K2>
+    void visit_leaf(const SS2&, const K2&, threadinfo&) {}
+    bool visit_value(Str key, const row_type* row, threadinfo&) {
+        *values = row->col(0);
+        ++values;
+        --range;
+        return range > 0;
+    }
+  };
+  int get_next_n(Str *values, char *cur_key, int *cur_keylen, int range, threadinfo *ti) {
+    if (range == 0)
+      return 0;
+
+    scanner s(values, range);
+    int count = table_->table().scan(Str(cur_key, *cur_keylen), true, s, *ti);
+    return count;
+  }
+
 private:
   T *table_;
   query<row_type> q_[1];

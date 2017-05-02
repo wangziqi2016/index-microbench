@@ -390,17 +390,28 @@ class MassTreeIndex : public Index<KeyType, KeyComparator>
     return true;
   }
 
+  // uint64_t scan(KeyType key, int range, threadinfo *ti) {
+  //   Str val;
+
+  //   swap_endian(key);
+  //   int key_len = sizeof(KeyType);
+
+  //   for (int i = 0; i < range; i++) {
+  //     idx->dynamic_get_next(val, (char *)&key, &key_len, ti);
+  //   }
+
+  //   return 0UL;
+  // }
+
   uint64_t scan(KeyType key, int range, threadinfo *ti) {
-    Str val;
+    Str results[range];
 
     swap_endian(key);
     int key_len = sizeof(KeyType);
 
-    for (int i = 0; i < range; i++) {
-      idx->dynamic_get_next(val, (char *)&key, &key_len, ti);
-    } 
-
-    return 0UL;
+    int resultCount = idx->get_next_n(results, (char *)&key, &key_len, range, ti);
+    //printf("scan: requested: %d, actual: %d\n", range, resultCount);
+    return resultCount;
   }
 
   int64_t getMemory() const {

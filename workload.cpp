@@ -28,7 +28,7 @@
 //#define INTERLEAVED_INSERT
 
 // Whether read operatoin miss will be counted
-#define COUNT_READ_MISS
+//#define COUNT_READ_MISS
 
 typedef uint64_t keytype;
 typedef std::less<uint64_t> keycomp;
@@ -444,14 +444,17 @@ void run_rdtsc_benchmark(int wl, int index_type, int thread_num, int key_num) {
 
     threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
 
+    uint64_t *values = new uint64_t[key_per_thread];
+
     int gc_counter = 0;
     for(size_t i = 0;i < key_per_thread;i++) {
       // Note that RDTSC may return duplicated keys from different cores
       // to counter this we combine RDTSC with thread IDs to make it unique
       // The counter value on a single core is always unique, though
-      uint64_t key = Rdtsc() << 6 | thread_id;
-      fprintf(stderr, "%lu\n", key);
-      idx->insert(key, 0, ti);
+      uint64_t key = (Rdtsc() << 6) | thread_id;
+      values[i] = key;
+      //fprintf(stderr, "%lx\n", key);
+      idx->insert(key, reinterpret_cast<uint64_t>(values + i), ti);
       gc_counter++;
       if(gc_counter % 4096 == 0) {
         ti->rcu_quiesce();
@@ -459,6 +462,8 @@ void run_rdtsc_benchmark(int wl, int index_type, int thread_num, int key_num) {
     }
 
     ti->rcu_quiesce();
+
+    delete [] values;
 
     return;
   };

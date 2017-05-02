@@ -1,5 +1,5 @@
-CC = gcc
-CXX = g++ -std=gnu++0x
+CC = gcc-5
+CXX = g++-5 -std=gnu++0x
 DEPSDIR := masstree/.deps
 DEPCFLAGS = -MD -MF $(DEPSDIR)/$*.d -MP
 MEMMGR = -ltcmalloc_minimal -lpapi

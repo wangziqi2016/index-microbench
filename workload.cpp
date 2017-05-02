@@ -287,10 +287,6 @@ inline void exec(int wl,
   idx->UpdateThreadLocal(1);
 #else
 
-#ifdef INTERLEAVED_INSERT
-  fprintf(stderr, "    Interleaved insert\n");
-#endif
-
   auto func = [idx, &init_keys, num_thread, &values](uint64_t thread_id, bool) {
     size_t total_num_key = init_keys.size();
     size_t key_per_thread = total_num_key / num_thread;
@@ -384,12 +380,14 @@ inline void exec(int wl,
   fprintf(stderr, "# of Txn: %d\n", txn_num);
   
   // This is used to count how many read misses we have found
-  std::atomic<size_t> read_miss_counter{};
+  std::atomic<size_t> read_miss_counter{}, read_hit_counter{};
   read_miss_counter.store(0UL);
+  read_hit_counter.store(0UL);
 
   auto func2 = [num_thread, 
                 idx, 
                 &read_miss_counter,
+                &read_hit_counter,
                 &keys,
                 &values,
                 &ranges,
@@ -419,6 +417,8 @@ inline void exec(int wl,
 #ifdef COUNT_READ_MISS
         if(v.size() == 0UL) {  
           read_miss_counter.fetch_add(1);
+        } else {
+          read_hit_counter.fetch_add(1);
         }
 #endif
       }
@@ -436,6 +436,14 @@ inline void exec(int wl,
   StartThreads(idx, num_thread, func2, false);
   
   end_time = get_now();
+
+  // Print out how many reads have missed in the index (do not have a value)
+#ifdef COUNT_READ_MISS
+  fprintf(stderr, 
+          "  Read misses: %lu; Read hits: %lu\n", 
+          read_miss_counter.load(),
+          read_hit_counter.load());
+#endif
 
 #ifdef PAPI_IPC
   if((retval = PAPI_ipc(&real_time, &proc_time, &ins, &ipc)) < PAPI_OK) {    
@@ -476,6 +484,8 @@ inline void exec(int wl,
   else {
     std::cout << "read/update " << (tput + (sum - sum)) << "\n";
   }
+
+  return;
 }
 
 /*
@@ -592,15 +602,23 @@ int main(int argc, char *argv[]) {
   fprintf(stderr, "index type = %d\n", index_type);
 
 #ifdef COUNT_READ_MISS
-  fprintf(stderr, "Counting read misses\n");
+  fprintf(stderr, "  Counting read misses\n");
 #endif
 
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
-  fprintf(stderr, "BwTree will considate after insert phase\n");
+  fprintf(stderr, "  BwTree will considate after insert phase\n");
 #endif
 
 #ifdef USE_TBB
-  fprintf(stderr, "Using Intel TBB to run concurrent tasks\n");
+  fprintf(stderr, "  Using Intel TBB to run concurrent tasks\n");
+#endif
+
+#ifdef INTERLEAVED_INSERT
+  fprintf(stderr, "  Interleaved insert\n");
+#endif
+
+#ifdef BWTREE_COLLECT_STATISTICS
+  fprintf(stderr, "  BwTree will collect statistics\n");
 #endif
 
   // If the key type is RDTSC we just run the special function

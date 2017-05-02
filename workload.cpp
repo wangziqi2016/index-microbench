@@ -44,7 +44,7 @@ static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
 size_t MemUsage() {
   FILE *fp = fopen("/proc/self/statm", "r");
   if(fp == nullptr) {
-    fprintf(stderr, "Could not open /proc/meminfo to read memory usage\n");
+    fprintf(stderr, "Could not open /proc/self/statm to read memory usage\n");
     exit(1);
   }
 

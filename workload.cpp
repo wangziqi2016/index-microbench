@@ -60,7 +60,6 @@ size_t MemUsage() {
   return rss * (4096 / 1024); // in KiB (not kB)
 }
 
-
 //==============================================================
 // LOAD
 //==============================================================
@@ -577,6 +576,10 @@ int main(int argc, char *argv[]) {
   fprintf(stderr, "  BwTree will collect statistics\n");
 #endif
 
+#ifdef HYPERTHREADING
+  fprintf(stderr, "  Hyperthreading for thread 10 - 19, 30 - 39\n");
+#endif
+
   // If the key type is RDTSC we just run the special function
   if(kt != 2) {
     std::vector<keytype> init_keys;
@@ -584,6 +587,18 @@ int main(int argc, char *argv[]) {
     std::vector<uint64_t> values;
     std::vector<int> ranges;
     std::vector<int> ops; //INSERT = 0, READ = 1, UPDATE = 2
+
+    init_keys.reserve(50000000);
+    keys.reserve(10000000);
+    values.reserve(10000000);
+    ranges.reserve(10000000);
+    ops.reserve(10000000);
+
+    memset(&init_keys[0], 0x00, 50000000 * sizeof(keytype));
+    memset(&keys[0], 0x00, 10000000 * sizeof(keytype));
+    memset(&values[0], 0x00, 10000000 * sizeof(uint64_t));
+    memset(&ranges[0], 0x00, 10000000 * sizeof(int));
+    memset(&ops[0], 0x00, 10000000 * sizeof(int));
 
     load(wl, kt, index_type, init_keys, keys, values, ranges, ops);
     printf("Finished loading workload file (mem = %lu)\n", MemUsage());

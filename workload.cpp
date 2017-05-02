@@ -55,6 +55,7 @@ size_t MemUsage() {
     exit(1);
   }
   (void)unused;
+  fclose(fp);
 
   return rss * (4096 / 1024); // in KiB (not kB)
 }

@@ -42,80 +42,21 @@ static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
  * MemUsage() - Reads memory usage from /proc file system
  */
 size_t MemUsage() {
-  const char *reason = nullptr;
-  size_t usage = 0UL;
-  size_t file_size = 0UL;
-
-  char *start_p, *end_p;
-  int ret = 0;
-
-  static constexpr size_t PROC_MEM_BUFFER_SIZE = 4096UL;
-  char buffer[PROC_MEM_BUFFER_SIZE];
-
-  FILE *fp = fopen("/proc/meminfo", "rb");
+  FILE *fp = fopen("/proc/self/statm", "r");
   if(fp == nullptr) {
     fprintf(stderr, "Could not open /proc/meminfo to read memory usage\n");
     exit(1);
   }
 
-  int offset = 0;
-  while((offset < PROC_MEM_BUFFER_SIZE - 1) && (feof(fp) == false)) {
-    buffer[offset] = fgetc(fp);
-    offset++;
-  }
-
-  buffer[offset] = '\0';
-
-  static constexpr const char *pattern1 = "MemFree:";
-  static constexpr const char *pattern2 = "kB";
-  
-  start_p = strstr(buffer, pattern1);
-  if(start_p == nullptr) {
-    fprintf(stderr, "Could not find \"%s\"\n", pattern1);
+  unsigned long unused;
+  unsigned long rss;
+  if (fscanf(fp, "%ld %ld %ld %ld %ld %ld %ld", &unused, &rss, &unused, &unused, &unused, &unused, &unused) != 7) {
+    perror("");
     exit(1);
-  } else {
-    start_p += strlen(pattern1);
   }
+  (void)unused;
 
-  end_p = strstr(start_p + strlen(pattern1), pattern2);
-  if(end_p == nullptr) {
-    fprintf(stderr, "Could not find \"%s\"\n", pattern2);
-    exit(1);
-  } else {
-    end_p--;
-  }
-
-  while((start_p <= end_p) && (isdigit(*start_p) == false)) {
-    start_p++;
-  }
-
-  while((end_p >= start_p) && (isdigit(*end_p) == false)) {
-    end_p--;
-  }
-
-  while((start_p <= end_p)) {
-    if(isdigit(*start_p) == false) {
-      fprintf(stderr, "Unrecognized digit: %c\n", *start_p);
-      exit(1);
-    }
-
-    size_t digit = static_cast<size_t>(*start_p - '0');
-    usage = usage * 10 + digit;
-
-    start_p++;
-  }
-
-  ret = fclose(fp);
-  if(ret != 0) {
-    reason = "fclose";
-    goto syscall_error;
-  }
-
-  return usage;
-
-syscall_error:
-  fprintf(stderr, "System call failed (%s)\n", reason);
-  exit(1);
+  return rss * (4096 / 1024); // in KiB (not kB)
 }
 
 

@@ -449,7 +449,7 @@ void run_rdtsc_benchmark(int wl, int index_type, int thread_num, int key_num) {
       // Note that RDTSC may return duplicated keys from different cores
       // to counter this we combine RDTSC with thread IDs to make it unique
       // The counter value on a single core is always unique, though
-      uint64_t key = Rdtsc() << 5 | thread_id;
+      uint64_t key = Rdtsc() << 6 | thread_id;
       fprintf(stderr, "%lu\n", key);
       idx->insert(key, 0, ti);
       gc_counter++;

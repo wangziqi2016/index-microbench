@@ -6,6 +6,8 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
+#define HYPERTHREADING
+
 //This enum enumerates index types we support
 enum {
   TYPE_BWTREE = 0,
@@ -63,15 +65,35 @@ inline uint64_t Rdtsc()
     return (((uint64_t) hi << 32) | lo);
 }
 
-// This is the maximum number of cores possible on this
-// system
-static constexpr int MAX_CPU_COUNT = 40;
+// This is the order of allocation
 
-template <bool hyperthreading=false>
-void PinToCore(size_t core_id) {
+#ifdef HYPERTHREADING
+static int core_alloc_map[] = {
+  0, 2, 4, 6, 8, 10, 12, 14, 16, 18,
+  20, 22, 24, 26, 28, 30, 32, 34, 36, 38,
+  1, 3, 5, 7 ,9, 11, 13, 15, 17, 19,
+  21, 23, 25, 27, 29, 31, 33, 35, 37, 39,  
+};
+
+#else
+
+static int core_alloc_map[] = {
+  0, 2, 4, 6, 8, 10, 12, 14, 16, 18,
+  1, 3, 5, 7 ,9, 11, 13, 15, 17, 19,
+  20, 22, 24, 26, 28, 30, 32, 34, 36, 38,
+  21, 23, 25, 27, 29, 31, 33, 35, 37, 39,  
+};
+
+#endif
+
+constexpr static size_t MAX_CORE_NUM = sizeof(core_alloc_map) / sizeof(core_alloc_map[0]);
+
+inline void PinToCore(size_t thread_id) {
   cpu_set_t cpu_set;
   CPU_ZERO(&cpu_set);
-  CPU_SET(core_id * (hyperthreading ? 1 : 2) % MAX_CPU_COUNT, &cpu_set);
+
+  size_t core_id = thread_id % MAX_CORE_NUM;
+  CPU_SET(core_alloc_map[core_id], &cpu_set);
 
   int ret = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set), &cpu_set);
   if(ret != 0) {

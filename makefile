@@ -44,7 +44,7 @@ artolc.o: ./ARTOLC/*.cpp ./ARTOLC/*.h
 	$(CXX) $(CFLAGS) ./ARTOLC/Tree.cpp -c -o artolc.o $(MEMMGR) -lpthread -lm -ltbb
 
 generate_workload:
-	python gen_workload.py workload_config.inp
+	./generate_all_workloads.sh
 
 clean:
 	$(RM) workload workload_string *.o *~ *.d

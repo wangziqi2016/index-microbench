@@ -344,6 +344,7 @@ inline void exec(int wl,
  
     threadinfo *ti = threadinfo::make(threadinfo::TI_MAIN, -1);
 
+    int counter = 0;
     for(size_t i = start_index;i < end_index;i++) {
       int op = ops[i];
       
@@ -370,7 +371,15 @@ inline void exec(int wl,
       else if (op == OP_SCAN) { //SCAN
         idx->scan(keys[i], ranges[i], ti);
       }
+
+      counter++;
+      if(counter % 4096 == 0) {
+        ti->rcu_quiesce();
+      }
     }
+
+    // Perform GC after all operations
+    ti->rcu_quiesce();
     
     return;
   };

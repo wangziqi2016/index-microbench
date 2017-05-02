@@ -1,3 +1,4 @@
+
 #include "microbench.h"
 
 #include <cstring>
@@ -23,7 +24,11 @@
   #endif
 #endif
 
+// Whether insert interleaves
 //#define INTERLEAVED_INSERT
+
+// Whether read operatoin miss will be counted
+#define COUNT_READ_MISS
 
 typedef uint64_t keytype;
 typedef std::less<uint64_t> keycomp;
@@ -378,8 +383,13 @@ inline void exec(int wl,
 
   fprintf(stderr, "# of Txn: %d\n", txn_num);
   
+  // This is used to count how many read misses we have found
+  std::atomic<size_t> read_miss_counter{};
+  read_miss_counter.store(0UL);
+
   auto func2 = [num_thread, 
                 idx, 
+                &read_miss_counter,
                 &keys,
                 &values,
                 &ranges,
@@ -398,11 +408,19 @@ inline void exec(int wl,
       int op = ops[i];
       
       if (op == OP_INSERT) { //INSERT
-        idx->insert(keys[i] + 1, values[i], ti);
+        idx->insert(keys[i], values[i], ti);
       }
       else if (op == OP_READ) { //READ
         v.clear();
         idx->find(keys[i], &v, ti);
+        
+        // If we count read misses then increment the 
+        // counter here if the vetor is empty
+#ifdef COUNT_READ_MISS
+        if(v.size() == 0UL) {  
+          read_miss_counter.fetch_add(1);
+        }
+#endif
       }
       else if (op == OP_UPSERT) { //UPDATE
         idx->upsert(keys[i], reinterpret_cast<uint64_t>(&keys[i]), ti);
@@ -572,6 +590,18 @@ int main(int argc, char *argv[]) {
   }
 
   fprintf(stderr, "index type = %d\n", index_type);
+
+#ifdef COUNT_READ_MISS
+  fprintf(stderr, "Counting read misses\n");
+#endif
+
+#ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
+  fprintf(stderr, "BwTree will considate after insert phase\n");
+#endif
+
+#ifdef USE_TBB
+  fprintf(stderr, "Using Intel TBB to run concurrent tasks\n");
+#endif
 
   // If the key type is RDTSC we just run the special function
   if(kt != 2) {

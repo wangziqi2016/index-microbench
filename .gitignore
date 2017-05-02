@@ -1,7 +1,6 @@
 *.bak
 *~
 *.o
-masstree/.deps
 workload
 workload_string
 workloads

@@ -378,7 +378,8 @@ class MassTreeIndex : public Index<KeyType, KeyComparator>
     idx->get((const char*)&key, sizeof(KeyType), val, ti);
 
     v->clear();
-    v->push_back(*(uint64_t *)val.s);
+    if (val.s)
+      v->push_back(*(uint64_t *)val.s);
 
     return 0;
   }

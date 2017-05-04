@@ -405,7 +405,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Number of threads: %d\n", num_thread);
   }
 
-  if(strcmp(argv[5], "--hyper") == 0) {
+  if(argc > 5 && strcmp(argv[5], "--hyper") == 0) {
     hyperthreading = true;
   }
 

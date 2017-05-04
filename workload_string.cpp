@@ -4,6 +4,8 @@
 typedef GenericKey<31> keytype;
 typedef GenericComparator<31> keycomp;
 
+extern bool hyperthreading;
+
 using KeyEuqalityChecker = GenericEqualityChecker<31>;
 using KeyHashFunc = GenericHasher<31>;
 
@@ -350,7 +352,7 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
 
 int main(int argc, char *argv[]) {
 
-  if (argc != 5) {
+  if (argc < 5) {
     std::cout << "Usage:\n";
     std::cout << "1. workload type: a, c, e\n";
     std::cout << "2. key distribution: email\n";
@@ -401,6 +403,14 @@ int main(int argc, char *argv[]) {
     return 1;
   } else {
     fprintf(stderr, "Number of threads: %d\n", num_thread);
+  }
+
+  if(strcmp(argv[5], "--hyper") == 0) {
+    hyperthreading = true;
+  }
+
+  if(hyperthreading == true) {
+    fprintf(stderr, "Hyperthreading enabled\n");
   }
 
   fprintf(stderr, "index type = %d\n", index_type);

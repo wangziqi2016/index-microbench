@@ -2,7 +2,7 @@ CC = gcc-5
 CXX = g++-5 -std=gnu++0x
 DEPSDIR := masstree/.deps
 DEPCFLAGS = -MD -MF $(DEPSDIR)/$*.d -MP
-MEMMGR = -ltcmalloc_minimal -lpapi
+MEMMGR = -lpapi -ltcmalloc_minimal
 CFLAGS = -g -Ofast -Wno-invalid-offsetof -mcx16 -DNDEBUG -DBWTREE_NODEBUG $(DEPCFLAGS) -include masstree/config.h
 
 # By default just use 1 thread. Override this option to allow running the

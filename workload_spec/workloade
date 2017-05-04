@@ -28,7 +28,7 @@
 
 fieldcount=0
 recordcount=50000000
-operationcount=100000000
+operationcount=10000000
 fieldlength=0
 workload=com.yahoo.ycsb.workloads.CoreWorkload
 

@@ -114,7 +114,7 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/bits/fstream.tcc /usr/include/c++/5/iostream \
  /usr/include/string.h /usr/include/x86_64-linux-gnu/bits/string3.h \
  /usr/include/c++/5/utility /usr/include/c++/5/bits/stl_relops.h \
- /usr/include/x86_64-linux-gnu/sys/time.h /usr/include/papi.h \
+ /usr/include/x86_64-linux-gnu/sys/time.h /usr/local/include/papi.h \
  /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/limits.h \
  /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/syslimits.h \
  /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
@@ -122,7 +122,7 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/linux/limits.h \
  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
- /usr/include/papiStdEventDefs.h /usr/include/signal.h \
+ /usr/local/include/papiStdEventDefs.h /usr/include/signal.h \
  /usr/include/x86_64-linux-gnu/bits/signum.h \
  /usr/include/x86_64-linux-gnu/bits/siginfo.h \
  /usr/include/x86_64-linux-gnu/bits/sigaction.h \
@@ -584,7 +584,7 @@ microbench.h:
 
 /usr/include/x86_64-linux-gnu/sys/time.h:
 
-/usr/include/papi.h:
+/usr/local/include/papi.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/limits.h:
 
@@ -602,7 +602,7 @@ microbench.h:
 
 /usr/include/x86_64-linux-gnu/bits/xopen_lim.h:
 
-/usr/include/papiStdEventDefs.h:
+/usr/local/include/papiStdEventDefs.h:
 
 /usr/include/signal.h:
 

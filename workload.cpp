@@ -36,6 +36,8 @@ typedef std::less<uint64_t> keycomp;
 static const uint64_t key_type=0;
 static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
 
+extern bool hyperthreading;
+
 #include "util.h"
 
 /*
@@ -493,7 +495,7 @@ void run_rdtsc_benchmark(int wl, int index_type, int thread_num, int key_num) {
 
 int main(int argc, char *argv[]) {
 
-  if (argc != 5) {
+  if (argc < 5) {
     std::cout << "Usage:\n";
     std::cout << "1. workload type: a, c, e\n";
     std::cout << "2. key distribution: rand, mono\n";
@@ -556,6 +558,13 @@ int main(int argc, char *argv[]) {
 
   fprintf(stderr, "index type = %d\n", index_type);
 
+  char **argv_end = argv + argc;
+  for(char **v = argv + 5;v != argv_end;v++) {
+    if(strcmp(*v, "--hyper") == 0) {
+      hyperthreading = true;
+    }
+  }
+
 #ifdef COUNT_READ_MISS
   fprintf(stderr, "  Counting read misses\n");
 #endif
@@ -576,9 +585,10 @@ int main(int argc, char *argv[]) {
   fprintf(stderr, "  BwTree will collect statistics\n");
 #endif
 
-#ifdef HYPERTHREADING
-  fprintf(stderr, "  Hyperthreading for thread 10 - 19, 30 - 39\n");
-#endif
+  // If we do not interleave threads on two sockets then this will be printed
+  if(hyperthreading == true) {
+    fprintf(stderr, "  Hyperthreading for thread 10 - 19, 30 - 39\n");
+  }
 
   // If the key type is RDTSC we just run the special function
   if(kt != 2) {

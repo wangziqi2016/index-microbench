@@ -445,8 +445,7 @@ struct BTree {
     for (unsigned i=pos; i<leaf->count; i++) {
       if (count==range)
 	break;
-      output[count] = leaf->payloads[pos+i];
-      count++;
+      output[count++] = leaf->payloads[i];
     }
 
     if (parent) {

@@ -35,6 +35,7 @@ enum {
 enum {
   RAND_KEY,
   MONO_KEY,
+  RDTSC_KEY,
   EMAIL_KEY,
 }
 

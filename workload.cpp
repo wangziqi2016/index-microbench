@@ -65,7 +65,14 @@ size_t MemUsage() {
 //==============================================================
 // LOAD
 //==============================================================
-inline void load(int wl, int kt, int index_type, std::vector<keytype> &init_keys, std::vector<keytype> &keys, std::vector<uint64_t> &values, std::vector<int> &ranges, std::vector<int> &ops) {
+inline void load(int wl, 
+                 int kt, 
+                 int index_type, 
+                 std::vector<keytype> &init_keys, 
+                 std::vector<keytype> &keys, 
+                 std::vector<uint64_t> &values, 
+                 std::vector<int> &ranges, 
+                 std::vector<int> &ops) {
   std::string init_file;
   std::string txn_file;
   // 0 = a, 1 = c, 2 = e
@@ -505,34 +512,33 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  int wl = 0;
-  // 0 = a
-  // 1 = c
-  // 2 = e
-  if (strcmp(argv[1], "a") == 0)
-    wl = 0;
-  else if (strcmp(argv[1], "c") == 0)
-    wl = 1;
-  else if (strcmp(argv[1], "e") == 0)
-    wl = 2;
-  else
-    wl = 0;
+  // Then read the workload type
+  int wl;
+  if (strcmp(argv[1], "a") == 0) {
+    wl = WORKLOAD_A;
+  } else if (strcmp(argv[1], "c") == 0) {
+    wl = WORKLOAD_C;
+  } else if (strcmp(argv[1], "e") == 0) {
+    wl = WORKLOAD_E;
+  } else {
+    fprintf(stderr, "Unknown workload: %s\n", argv[1]);
+    exit(1);
+  }
 
-  fprintf(stderr, "Workload type: %d\n", wl);
+  // Then read key type
+  int kt;
+  if (strcmp(argv[2], "rand") == 0) {
+    kt = RAND_KEY;
+  } else if (strcmp(argv[2], "mono") == 0) {
+    kt = MONO_KEY;
+  } else if (strcmp(argv[2], "rdtsc") == 0) {
+    kt = RDTSC_KEY;
+  } else {
+    fprintf(stderr, "Unknown key type: %s\n", argv[2]);
+    exit(1);
+  }
 
-  int kt = 0;
-  // 0 = rand
-  // 1 = mono
-  if (strcmp(argv[2], "rand") == 0)
-    kt = 0;
-  else if (strcmp(argv[2], "mono") == 0)
-    kt = 1;
-  else if (strcmp(argv[2], "rdtsc") == 0)
-    kt = 2;
-  else
-    kt = 0;
-
-  int index_type = 0;
+  int index_type;
   if (strcmp(argv[3], "bwtree") == 0)
     index_type = TYPE_BWTREE;
   else if (strcmp(argv[3], "masstree") == 0)
@@ -550,14 +556,12 @@ int main(int argc, char *argv[]) {
   int num_thread = atoi(argv[4]);
   if(num_thread < 1 || num_thread > 40) {
     fprintf(stderr, "Do not support %d threads\n", num_thread);
-    
-    return 1; 
+    exit(1);
   } else {
     fprintf(stderr, "Number of threads: %d\n", num_thread);
   }
-
-  fprintf(stderr, "index type = %d\n", index_type);
-
+  
+  // Then read all remianing arguments
   char **argv_end = argv + argc;
   for(char **v = argv + 5;v != argv_end;v++) {
     if(strcmp(*v, "--hyper") == 0) {

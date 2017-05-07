@@ -56,6 +56,7 @@ size_t MemUsage() {
     perror("");
     exit(1);
   }
+
   (void)unused;
   fclose(fp);
 
@@ -75,7 +76,7 @@ inline void load(int wl,
                  std::vector<int> &ops) {
   std::string init_file;
   std::string txn_file;
-  // 0 = a, 1 = c, 2 = e
+
   if (kt == RAND_KEY && wl == WORKLOAD_A) {
     init_file = "workloads/loada_zipf_int_100M.dat";
     txn_file = "workloads/txnsa_zipf_int_100M.dat";
@@ -95,7 +96,7 @@ inline void load(int wl,
     init_file = "workloads/mono_inc_loade_zipf_int_100M.dat";
     txn_file = "workloads/mono_inc_txnse_zipf_int_100M.dat";
   } else {
-    fprintf(stderr, "Unknown workload type or key type\n");
+    fprintf(stderr, "Unknown workload type or key type: %d, %d\n", wl, kt);
     exit(1);
   }
 
@@ -266,15 +267,6 @@ inline void exec(int wl,
 #endif
 
 #endif   
-  /*
-  while (count < (int)init_keys.size()) {
-    if (!idx->insert(init_keys[count], values[count])) {
-      std::cout << "LOAD FAIL!\n";
-      return;
-    }
-    count++;
-  }
-  */
   
   double end_time = get_now();
   double tput = count / (end_time - start_time) / 1000000; //Mops/sec
@@ -425,17 +417,15 @@ inline void exec(int wl,
 
   std::cout << "sum = " << sum << "\n";
 
-  if (wl == 0) {  
+  if (wl == WORKLOAD_A) {  
     std::cout << "read/update " << (tput + (sum - sum)) << "\n";
-  }
-  else if (wl == 1) {
+  } else if (wl == WORKLOAD_C) {
     std::cout << "read " << (tput + (sum - sum)) << "\n";
-  }
-  else if (wl == 2) {
+  } else if (wl == WORKLOAD_E) {
     std::cout << "insert/scan " << (tput + (sum - sum)) << "\n";
-  }
-  else {
-    std::cout << "read/update " << (tput + (sum - sum)) << "\n";
+  } else {
+    fprintf(stderr, "Unknown workload type: %d\n", wl);
+    exit(1);
   }
 
   return;

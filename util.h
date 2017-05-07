@@ -24,6 +24,20 @@ enum {
   OP_SCAN,
 };
 
+// These are YCSB workloads
+enum {
+  WORKLOAD_A,
+  WORKLOAD_C,
+  WORKLOAD_E,
+};
+
+// These are key types we use for running the benchmark
+enum {
+  RAND_KEY,
+  MONO_KEY,
+  EMAIL_KEY,
+}
+
 //==============================================================
 // GET INSTANCE
 //==============================================================

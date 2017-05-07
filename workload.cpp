@@ -437,7 +437,7 @@ inline void exec(int wl,
  *
  * Note that key num is the total key num
  */
-void run_rdtsc_benchmark(int wl, int index_type, int thread_num, int key_num) {
+void run_rdtsc_benchmark(int index_type, int thread_num, int key_num) {
   Index<keytype, keycomp> *idx = getInstance<keytype, keycomp>(index_type, key_type);
 
   auto func = [idx, thread_num, key_num](uint64_t thread_id, bool) {
@@ -604,7 +604,7 @@ int main(int argc, char *argv[]) {
     printf("Finished running benchmark (mem = %lu)\n", MemUsage());
   } else {
     fprintf(stderr, "Running RDTSC benchmark...\n");
-    run_rdtsc_benchmark(wl, index_type, num_thread, 50 * 1000 * 1000);
+    run_rdtsc_benchmark(index_type, num_thread, 50 * 1000 * 1000);
   }
 
   return 0;

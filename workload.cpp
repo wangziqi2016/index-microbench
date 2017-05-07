@@ -76,31 +76,25 @@ inline void load(int wl,
   std::string init_file;
   std::string txn_file;
   // 0 = a, 1 = c, 2 = e
-  if (kt == 0 && wl == 0) {
+  if (kt == RAND_KEY && wl == WORKLOAD_A) {
     init_file = "workloads/loada_zipf_int_100M.dat";
     txn_file = "workloads/txnsa_zipf_int_100M.dat";
-  }
-  else if (kt == 0 && wl == 1) {
+  } else if (kt == RAND_KEY && wl == WORKLOAD_C) {
     init_file = "workloads/loadc_zipf_int_100M.dat";
     txn_file = "workloads/txnsc_zipf_int_100M.dat";
-  }
-  else if (kt == 0 && wl == 2) {
+  } else if (kt == RAND_KEY && wl == WORKLOAD_E) {
     init_file = "workloads/loade_zipf_int_100M.dat";
     txn_file = "workloads/txnse_zipf_int_100M.dat";
-  }
-  else if (kt == 1 && wl == 0) {
+  } else if (kt == MONO_KEY && wl == WORKLOAD_A) {
     init_file = "workloads/mono_inc_loada_zipf_int_100M.dat";
     txn_file = "workloads/mono_inc_txnsa_zipf_int_100M.dat";
-  }
-  else if (kt == 1 && wl == 1) {
+  } else if (kt == MONO_KEY && wl == WORKLOAD_C) {
     init_file = "workloads/mono_inc_loadc_zipf_int_100M.dat";
     txn_file = "workloads/mono_inc_txnsc_zipf_int_100M.dat";
-  }
-  else if (kt == 1 && wl == 2) {
+  } else if (kt == MONO_KEY && wl == WORKLOAD_E) {
     init_file = "workloads/mono_inc_loade_zipf_int_100M.dat";
     txn_file = "workloads/mono_inc_txnse_zipf_int_100M.dat";
-  }
-  else {
+  } else {
     fprintf(stderr, "Unknown workload type or key type\n");
     exit(1);
   }
@@ -595,7 +589,7 @@ int main(int argc, char *argv[]) {
   }
 
   // If the key type is RDTSC we just run the special function
-  if(kt != 2) {
+  if(kt != RDTSC_KEY) {
     std::vector<keytype> init_keys;
     std::vector<keytype> keys;
     std::vector<uint64_t> values;

@@ -272,8 +272,7 @@ inline void exec(int wl,
   double tput = count / (end_time - start_time) / 1000000; //Mops/sec
 
   std::cout << "\033[1;32m";
-  std::cout << "insert " << tput << "\n";
-  std::cout << "\033[0m";
+  std::cout << "insert " << tput << "\033[0m" << "\n";
 
   //READ/UPDATE/SCAN TEST----------------
   start_time = get_now();

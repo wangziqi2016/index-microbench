@@ -278,12 +278,9 @@ inline void exec(int wl,
   double end_time = get_now();
   double tput = count / (end_time - start_time) / 1000000; //Mops/sec
 
+  std::cout << "\033[1;32m";
   std::cout << "insert " << tput << "\n";
-  std::cout << "memory " << (idx->getMemory() / 1000000) << "\n\n";
-
-  //idx->merge();
-  std::cout << "static memory " << (idx->getMemory() / 1000000) << "\n\n";
-  //return;
+  std::cout << "\033[0m";
 
   //READ/UPDATE/SCAN TEST----------------
   start_time = get_now();
@@ -424,6 +421,8 @@ inline void exec(int wl,
 
   std::cout << "sum = " << sum << "\n";
 
+  std::cout << "\033[1;31m";
+
   if (wl == 0) {  
     std::cout << "read/update " << (tput + (sum - sum)) << "\n";
   }
@@ -436,6 +435,8 @@ inline void exec(int wl,
   else {
     std::cout << "read/update " << (tput + (sum - sum)) << "\n";
   }
+
+  std::cout << "\033[0m";
 
   return;
 }

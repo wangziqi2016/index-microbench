@@ -155,9 +155,14 @@ class BTreeOLCIndex : public Index<KeyType, KeyComparator>
   uint64_t scan(KeyType key, int range, threadinfo *ti) {
     uint64_t results[range];
     uint64_t count = idx.scan(key, range, results);
+    if (count==0)
+       return 0;
+
     while (count < range) {
-      incKey(key); // hack: this only works for fixed-size keys
-      uint64_t nextCount = idx.scan(key, range - count, results + count);
+      KeyType nextKey = *reinterpret_cast<KeyType*>(results[count-1]);
+      incKey(nextKey); // hack: this only works for fixed-size keys
+
+      uint64_t nextCount = idx.scan(nextKey, range - count, results + count);
       if (nextCount==0)
         break; // no more entries
       count += nextCount;

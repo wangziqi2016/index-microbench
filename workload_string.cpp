@@ -40,25 +40,29 @@ size_t MemUsage() {
 //==============================================================
 // LOAD
 //==============================================================
-inline void load(int wl, int kt, int index_type, std::vector<keytype> &init_keys, std::vector<keytype> &keys, std::vector<uint64_t> &values, std::vector<int> &ranges, std::vector<int> &ops) {
+inline void load(int wl, 
+                 int kt, 
+                 int index_type, 
+                 std::vector<keytype> &init_keys, 
+                 std::vector<keytype> &keys, 
+                 std::vector<uint64_t> &values, 
+                 std::vector<int> &ranges, 
+                 std::vector<int> &ops) {
   std::string init_file;
   std::string txn_file;
   // 0 = a, 1 = c, 2 = e
-  if (kt == 0 && wl == 0) {
+  if (kt == EMAIL_KEY && wl == WORKLOAD_A) {
     init_file = "workloads/email_loada_zipf_int_100M.dat";
     txn_file = "workloads/email_txnsa_zipf_int_100M.dat";
-  }
-  else if (kt == 0 && wl == 1) {
+  } else if (kt == EMAIL_KEY && wl == WORKLOAD_C) {
     init_file = "workloads/email_loadc_zipf_int_100M.dat";
     txn_file = "workloads/email_txnsc_zipf_int_100M.dat";
-  }
-  else if (kt == 0 && wl == 2) {
+  } else if (kt == EMAIL_KEY && wl == WORKLOAD_E) {
     init_file = "workloads/email_loade_zipf_int_100M.dat";
     txn_file = "workloads/email_txnse_zipf_int_100M.dat";
-  }
-  else {
-    init_file = "workloads/email_loada_zipf_int_100M.dat";
-    txn_file = "workloads/email_txnsa_zipf_int_100M.dat";
+  } else {
+    fprintf(stderr, "Unknown workload or key type: %d, %d\n", wl, kt);
+    exit(1);
   }
 
   std::ifstream infile_load(init_file);
@@ -143,9 +147,17 @@ inline void load(int wl, int kt, int index_type, std::vector<keytype> &init_keys
 //==============================================================
 // EXEC
 //==============================================================
-inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &init_keys, std::vector<keytype> &keys, std::vector<uint64_t> &values, std::vector<int> &ranges, std::vector<int> &ops) {
+inline void exec(int wl, 
+                 int index_type, 
+                 int num_thread, 
+                 std::vector<keytype> &init_keys, 
+                 std::vector<keytype> &keys, 
+                 std::vector<uint64_t> &values, 
+                 std::vector<int> &ranges, 
+                 std::vector<int> &ops) {
 
-  Index<keytype, keycomp> *idx = getInstance<keytype, keycomp, KeyEuqalityChecker, KeyHashFunc>(index_type, key_type);
+  Index<keytype, keycomp> *idx = \
+    getInstance<keytype, keycomp, KeyEuqalityChecker, KeyHashFunc>(index_type, key_type);
 
   // WRITE ONLY TEST--------------
   int count = (int)init_keys.size();
@@ -174,16 +186,6 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
 
   StartThreads(idx, num_thread, func, false);
 
-/*
-  //WRITE ONLY TEST-----------------
-  int count = 0;
-  double start_time = get_now();
-  while (count < (int)init_keys.size()) {
-    idx->insert(init_keys[count], values[count]);
-    }
-    count++;
-  }
-*/
   double end_time = get_now();
   double tput = count / (end_time - start_time) / 1000000; //Mops/sec
 
@@ -277,37 +279,6 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
   StartThreads(idx, num_thread, func2, false);
 
   end_time = get_now();
-/*
-  std::vector<uint64_t> v;
-  v.reserve(10);
-
-  while ((txn_num < LIMIT) && (txn_num < (int)ops.size())) {
-    if (ops[txn_num] == 0) { //INSERT
-      //idx->insert(keys[txn_num] + 1, values[txn_num]);
-      idx->insert(keys[txn_num], values[txn_num]);
-    }
-    else if (ops[txn_num] == 1) { //READ
-      v.clear();
-      sum += idx->find(keys[txn_num], &v);
-    }
-    else if (ops[txn_num] == 2) { //UPDATE
-      //std::cout << "\n=============================================\n";
-      //std::cout << "value before = " << idx->find(keys[txn_num]) << "\n";
-      //std::cout << "update value = " << values[txn_num] << "\n";
-      idx->upsert(keys[txn_num], values[txn_num]);
-      //std::cout << "value after = " << idx->find(keys[txn_num]) << "\n"; 
-      if(index_type == 2) txn_num += 2;
-    }
-    else if (ops[txn_num] == 3) { //SCAN
-      idx->scan(keys[txn_num], ranges[txn_num]);
-    }
-    else {
-      std::cout << "UNRECOGNIZED CMD!\n";
-      return;
-    }
-    txn_num++;
-  }
-*/
 
 #ifdef PAPI_IPC
   if((retval = PAPI_ipc(&real_time, &proc_time, &ins, &ipc)) < PAPI_OK) {    
@@ -336,13 +307,13 @@ inline void exec(int wl, int index_type, int num_thread, std::vector<keytype> &i
 
   std::cout << "sum = " << sum << "\n";
 
-  if (wl == 0) {  
+  if (wl == WORKLOAD_A) {  
     std::cout << "read/update " << (tput + (sum - sum)) << "\n";
   }
-  else if (wl == 1) {
+  else if (wl == WORKLOAD_C) {
     std::cout << "read " << (tput + (sum - sum)) << "\n";
   }
-  else if (wl == 2) {
+  else if (wl == WORKLOAD_E) {
     std::cout << "insert/scan " << (tput + (sum - sum)) << "\n";
   }
   else {
@@ -361,36 +332,35 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  int wl = 0;
-  // 0 = a
-  // 1 = c
-  // 2 = e
-  if (strcmp(argv[1], "a") == 0)
-    wl = 0;
-  else if (strcmp(argv[1], "c") == 0)
-    wl = 1;
-  else if (strcmp(argv[1], "e") == 0)
-    wl = 2;
-  else
-    wl = 0;
+  int wl;
+  if (strcmp(argv[1], "a") == 0) {
+    wl = WORKLOAD_A;
+  } else if (strcmp(argv[1], "c") == 0) {
+    wl = WORKLOAD_C;
+  } else if (strcmp(argv[1], "e") == 0) {
+    wl = WORKLOAD_E;
+  } else {
+    fprintf(stderr, "Unknown workload type: %s\n", argv[1]);
+    exit(1);
+  }
 
-  int kt = 0;
-  // 0 = email
-  if (strcmp(argv[2], "rand") == 0)
-    kt = 0;
-  else
-    kt = 0;
+  int kt = EMAIL_KEY;
+  // The second argument must be exactly "email"
+  if(strcmp(argv[2], "email") != 0) {
+    fprintf(stderr, "Unknown key type: %s\n", argv[2]);
+    exit(1);
+  }
 
-  int index_type = 0;
-  if (strcmp(argv[3], "bwtree") == 0)
+  int index_type;
+  if (strcmp(argv[3], "bwtree") == 0) {
     index_type = TYPE_BWTREE;
-  else if (strcmp(argv[3], "masstree") == 0)
+  } else if (strcmp(argv[3], "masstree") == 0) {
     index_type = TYPE_MASSTREE;
-  else if (strcmp(argv[3], "artolc") == 0)
+  } else if (strcmp(argv[3], "artolc") == 0) {
     index_type = TYPE_ARTOLC;
-  else if (strcmp(argv[3], "btreeolc") == 0)
+  } else if (strcmp(argv[3], "btreeolc") == 0) {
     index_type = TYPE_BTREEOLC;
-  else {
+  } else {
     fprintf(stderr, "Unknown index type: %d\n", index_type);
     exit(1);
   } 
@@ -410,7 +380,7 @@ int main(int argc, char *argv[]) {
   }
 
   if(hyperthreading == true) {
-    fprintf(stderr, "Hyperthreading enabled\n");
+    fprintf(stderr, "  Hyperthreading enabled\n");
   }
 
   fprintf(stderr, "index type = %d\n", index_type);

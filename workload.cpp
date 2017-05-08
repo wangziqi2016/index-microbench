@@ -56,6 +56,7 @@ size_t MemUsage() {
     perror("");
     exit(1);
   }
+
   (void)unused;
   fclose(fp);
 
@@ -65,36 +66,37 @@ size_t MemUsage() {
 //==============================================================
 // LOAD
 //==============================================================
-inline void load(int wl, int kt, int index_type, std::vector<keytype> &init_keys, std::vector<keytype> &keys, std::vector<uint64_t> &values, std::vector<int> &ranges, std::vector<int> &ops) {
+inline void load(int wl, 
+                 int kt, 
+                 int index_type, 
+                 std::vector<keytype> &init_keys, 
+                 std::vector<keytype> &keys, 
+                 std::vector<uint64_t> &values, 
+                 std::vector<int> &ranges, 
+                 std::vector<int> &ops) {
   std::string init_file;
   std::string txn_file;
-  // 0 = a, 1 = c, 2 = e
-  if (kt == 0 && wl == 0) {
+
+  if (kt == RAND_KEY && wl == WORKLOAD_A) {
     init_file = "workloads/loada_zipf_int_100M.dat";
     txn_file = "workloads/txnsa_zipf_int_100M.dat";
-  }
-  else if (kt == 0 && wl == 1) {
+  } else if (kt == RAND_KEY && wl == WORKLOAD_C) {
     init_file = "workloads/loadc_zipf_int_100M.dat";
     txn_file = "workloads/txnsc_zipf_int_100M.dat";
-  }
-  else if (kt == 0 && wl == 2) {
+  } else if (kt == RAND_KEY && wl == WORKLOAD_E) {
     init_file = "workloads/loade_zipf_int_100M.dat";
     txn_file = "workloads/txnse_zipf_int_100M.dat";
-  }
-  else if (kt == 1 && wl == 0) {
+  } else if (kt == MONO_KEY && wl == WORKLOAD_A) {
     init_file = "workloads/mono_inc_loada_zipf_int_100M.dat";
     txn_file = "workloads/mono_inc_txnsa_zipf_int_100M.dat";
-  }
-  else if (kt == 1 && wl == 1) {
+  } else if (kt == MONO_KEY && wl == WORKLOAD_C) {
     init_file = "workloads/mono_inc_loadc_zipf_int_100M.dat";
     txn_file = "workloads/mono_inc_txnsc_zipf_int_100M.dat";
-  }
-  else if (kt == 1 && wl == 2) {
+  } else if (kt == MONO_KEY && wl == WORKLOAD_E) {
     init_file = "workloads/mono_inc_loade_zipf_int_100M.dat";
     txn_file = "workloads/mono_inc_txnse_zipf_int_100M.dat";
-  }
-  else {
-    fprintf(stderr, "Unknown workload type or key type\n");
+  } else {
+    fprintf(stderr, "Unknown workload type or key type: %d, %d\n", wl, kt);
     exit(1);
   }
 
@@ -265,15 +267,6 @@ inline void exec(int wl,
 #endif
 
 #endif   
-  /*
-  while (count < (int)init_keys.size()) {
-    if (!idx->insert(init_keys[count], values[count])) {
-      std::cout << "LOAD FAIL!\n";
-      return;
-    }
-    count++;
-  }
-  */
   
   double end_time = get_now();
   double tput = count / (end_time - start_time) / 1000000; //Mops/sec
@@ -420,20 +413,17 @@ inline void exec(int wl,
   tput = txn_num / (end_time - start_time) / 1000000; //Mops/sec
 
   std::cout << "sum = " << sum << "\n";
-
   std::cout << "\033[1;31m";
 
-  if (wl == 0) {  
+  if (wl == WORKLOAD_A) {  
     std::cout << "read/update " << (tput + (sum - sum)) << "\n";
-  }
-  else if (wl == 1) {
+  } else if (wl == WORKLOAD_C) {
     std::cout << "read " << (tput + (sum - sum)) << "\n";
-  }
-  else if (wl == 2) {
+  } else if (wl == WORKLOAD_E) {
     std::cout << "insert/scan " << (tput + (sum - sum)) << "\n";
-  }
-  else {
-    std::cout << "read/update " << (tput + (sum - sum)) << "\n";
+  } else {
+    fprintf(stderr, "Unknown workload type: %d\n", wl);
+    exit(1);
   }
 
   std::cout << "\033[0m";
@@ -447,7 +437,7 @@ inline void exec(int wl,
  *
  * Note that key num is the total key num
  */
-void run_rdtsc_benchmark(int wl, int index_type, int thread_num, int key_num) {
+void run_rdtsc_benchmark(int index_type, int thread_num, int key_num) {
   Index<keytype, keycomp> *idx = getInstance<keytype, keycomp>(index_type, key_type);
 
   auto func = [idx, thread_num, key_num](uint64_t thread_id, bool) {
@@ -506,34 +496,33 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  int wl = 0;
-  // 0 = a
-  // 1 = c
-  // 2 = e
-  if (strcmp(argv[1], "a") == 0)
-    wl = 0;
-  else if (strcmp(argv[1], "c") == 0)
-    wl = 1;
-  else if (strcmp(argv[1], "e") == 0)
-    wl = 2;
-  else
-    wl = 0;
+  // Then read the workload type
+  int wl;
+  if (strcmp(argv[1], "a") == 0) {
+    wl = WORKLOAD_A;
+  } else if (strcmp(argv[1], "c") == 0) {
+    wl = WORKLOAD_C;
+  } else if (strcmp(argv[1], "e") == 0) {
+    wl = WORKLOAD_E;
+  } else {
+    fprintf(stderr, "Unknown workload: %s\n", argv[1]);
+    exit(1);
+  }
 
-  fprintf(stderr, "Workload type: %d\n", wl);
+  // Then read key type
+  int kt;
+  if (strcmp(argv[2], "rand") == 0) {
+    kt = RAND_KEY;
+  } else if (strcmp(argv[2], "mono") == 0) {
+    kt = MONO_KEY;
+  } else if (strcmp(argv[2], "rdtsc") == 0) {
+    kt = RDTSC_KEY;
+  } else {
+    fprintf(stderr, "Unknown key type: %s\n", argv[2]);
+    exit(1);
+  }
 
-  int kt = 0;
-  // 0 = rand
-  // 1 = mono
-  if (strcmp(argv[2], "rand") == 0)
-    kt = 0;
-  else if (strcmp(argv[2], "mono") == 0)
-    kt = 1;
-  else if (strcmp(argv[2], "rdtsc") == 0)
-    kt = 2;
-  else
-    kt = 0;
-
-  int index_type = 0;
+  int index_type;
   if (strcmp(argv[3], "bwtree") == 0)
     index_type = TYPE_BWTREE;
   else if (strcmp(argv[3], "masstree") == 0)
@@ -551,14 +540,12 @@ int main(int argc, char *argv[]) {
   int num_thread = atoi(argv[4]);
   if(num_thread < 1 || num_thread > 40) {
     fprintf(stderr, "Do not support %d threads\n", num_thread);
-    
-    return 1; 
+    exit(1);
   } else {
     fprintf(stderr, "Number of threads: %d\n", num_thread);
   }
-
-  fprintf(stderr, "index type = %d\n", index_type);
-
+  
+  // Then read all remianing arguments
   char **argv_end = argv + argc;
   for(char **v = argv + 5;v != argv_end;v++) {
     if(strcmp(*v, "--hyper") == 0) {
@@ -592,7 +579,7 @@ int main(int argc, char *argv[]) {
   }
 
   // If the key type is RDTSC we just run the special function
-  if(kt != 2) {
+  if(kt != RDTSC_KEY) {
     std::vector<keytype> init_keys;
     std::vector<keytype> keys;
     std::vector<uint64_t> values;
@@ -617,7 +604,7 @@ int main(int argc, char *argv[]) {
     printf("Finished running benchmark (mem = %lu)\n", MemUsage());
   } else {
     fprintf(stderr, "Running RDTSC benchmark...\n");
-    run_rdtsc_benchmark(wl, index_type, num_thread, 50 * 1000 * 1000);
+    run_rdtsc_benchmark(index_type, num_thread, 50 * 1000 * 1000);
   }
 
   return 0;

@@ -3,7 +3,7 @@ CXX = g++-5 -std=gnu++0x
 DEPSDIR := masstree/.deps
 DEPCFLAGS = -MD -MF $(DEPSDIR)/$*.d -MP
 MEMMGR = -lpapi -ltcmalloc_minimal
-CFLAGS = -g -Ofast -Wno-invalid-offsetof -mcx16 -DNDEBUG -DBWTREE_NODEBUG $(DEPCFLAGS) -include masstree/config.h
+CFLAGS = -g -O3 -Wno-invalid-offsetof -mcx16 -DNDEBUG -DBWTREE_NODEBUG $(DEPCFLAGS) -include masstree/config.h
 
 # By default just use 1 thread. Override this option to allow running the
 # benchmark with 20 threads. i.e. THREAD_NUM=20 make run_all_atrloc

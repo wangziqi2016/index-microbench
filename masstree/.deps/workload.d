@@ -249,8 +249,7 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/x86_64-linux-gnu/bits/nan.h \
  /usr/include/x86_64-linux-gnu/bits/mathdef.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
- /usr/include/x86_64-linux-gnu/bits/mathinline.h \
- /usr/include/x86_64-linux-gnu/bits/math-finite.h /usr/include/malloc.h \
+ /usr/include/x86_64-linux-gnu/bits/mathinline.h /usr/include/malloc.h \
  masstree/nodeversion.hh masstree/compiler.hh /usr/include/inttypes.h \
  /usr/include/arpa/inet.h masstree/kvstats.hh masstree/query_masstree.hh \
  masstree/masstree.hh masstree/str.hh masstree/string_base.hh \
@@ -943,8 +942,6 @@ masstree/mtIndexAPI.hh:
 /usr/include/x86_64-linux-gnu/bits/mathcalls.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathinline.h:
-
-/usr/include/x86_64-linux-gnu/bits/math-finite.h:
 
 /usr/include/malloc.h:
 

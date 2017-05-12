@@ -14,6 +14,7 @@ enum {
   TYPE_MASSTREE,
   TYPE_ARTOLC,
   TYPE_BTREEOLC,
+  TYPE_NONE,
 };
 
 // These are workload operations

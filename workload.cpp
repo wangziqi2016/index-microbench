@@ -530,6 +530,10 @@ int main(int argc, char *argv[]) {
     index_type = TYPE_ARTOLC;
   else if (strcmp(argv[3], "btreeolc") == 0)
     index_type = TYPE_BTREEOLC;
+  else if (strcmp(argv[3], "none") == 0)
+    // This is a special type used for measuring base cost (i.e.
+    // only loading the workload files but do not invoke the index)
+    index_type = TYPE_NONE;
   else {
     fprintf(stderr, "Unknown index type: %d\n", index_type);
     exit(1);
@@ -599,8 +603,12 @@ int main(int argc, char *argv[]) {
 
     load(wl, kt, index_type, init_keys, keys, values, ranges, ops);
     printf("Finished loading workload file (mem = %lu)\n", MemUsage());
-    exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
-    printf("Finished running benchmark (mem = %lu)\n", MemUsage());
+    if(index_type != TYPE_NONE) {
+      exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
+      printf("Finished running benchmark (mem = %lu)\n", MemUsage());
+    } else {
+      fprintf(stderr, "Type None is selected - no executioni phase\n");
+    }
   } else {
     fprintf(stderr, "Running RDTSC benchmark...\n");
     run_rdtsc_benchmark(index_type, num_thread, 50 * 1000 * 1000);

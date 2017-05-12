@@ -18,6 +18,6 @@
 #define LIMIT 10000000
 
 //#define PAPI_IPC 1
-#define PAPI_CACHE 1
+//#define PAPI_CACHE 1
 
 #endif

@@ -77,7 +77,15 @@ inline void load(int wl,
   std::string init_file;
   std::string txn_file;
 
-  if (kt == RAND_KEY && wl == WORKLOAD_A) {
+  // This is the special case - workload Z only loads the index
+  // but do not execute any transaction. In this case we do not 
+  if(kt == RAND_KEY && wl == WORKLOAD_Z) {
+    init_file = "workloads/loada_zipf_int_100M.dat";
+    txn_file = "";
+  } else if(kt == MONO_KEY && wl == WORKLOAD_Z) {
+    init_file = "workloads/mono_inc_loada_zipf_int_100M.dat";
+    txn_file = "";
+  } else if (kt == RAND_KEY && wl == WORKLOAD_A) {
     init_file = "workloads/loada_zipf_int_100M.dat";
     txn_file = "workloads/txnsa_zipf_int_100M.dat";
   } else if (kt == RAND_KEY && wl == WORKLOAD_C) {
@@ -101,7 +109,6 @@ inline void load(int wl,
   }
 
   std::ifstream infile_load(init_file);
-  std::ifstream infile_txn(txn_file);
 
   std::string op;
   keytype key;
@@ -147,6 +154,15 @@ inline void load(int wl,
     }
   }
 
+  if(txn_file.size() == 0) {
+    fprintf(stderr, "  Do not load transaction file\n");
+    return;
+  }
+
+  // If we also execute transaction then open the 
+  // transacton file here
+  std::ifstream infile_txn(txn_file);
+  
   count = 0;
   while ((count < LIMIT) && infile_txn.good()) {
     infile_txn >> op >> key;
@@ -273,6 +289,11 @@ inline void exec(int wl,
 
   std::cout << "\033[1;32m";
   std::cout << "insert " << tput << "\033[0m" << "\n";
+
+  // If the workload only executes load phase then we return here
+  if(wl == WORKLOAD_Z) {
+    return;
+  }
 
   //READ/UPDATE/SCAN TEST----------------
   start_time = get_now();
@@ -503,6 +524,9 @@ int main(int argc, char *argv[]) {
     wl = WORKLOAD_C;
   } else if (strcmp(argv[1], "e") == 0) {
     wl = WORKLOAD_E;
+  } else if (strcmp(argv[1], "z") == 0) {
+    // This is the special one - only perform insert
+    wl = WORKLOAD_Z;
   } else {
     fprintf(stderr, "Unknown workload: %s\n", argv[1]);
     exit(1);
@@ -607,7 +631,7 @@ int main(int argc, char *argv[]) {
       exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
       printf("Finished running benchmark (mem = %lu)\n", MemUsage());
     } else {
-      fprintf(stderr, "Type None is selected - no executioni phase\n");
+      fprintf(stderr, "Type None is selected - no execution phase\n");
     }
   } else {
     fprintf(stderr, "Running RDTSC benchmark...\n");

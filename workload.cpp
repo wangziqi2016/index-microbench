@@ -1,4 +1,6 @@
 
+#include "./pcm/pcm-memory.cpp"
+
 #include "microbench.h"
 
 #include <cstring>
@@ -210,8 +212,6 @@ inline void exec(int wl,
 
   //WRITE ONLY TEST-----------------
   int count = (int)init_keys.size();
-  double start_time = get_now();
-  
 
 #ifdef USE_TBB  
   tbb::task_scheduler_init init{num_thread};
@@ -274,8 +274,11 @@ inline void exec(int wl,
     return;
   };
   
-  
+  StartMemoryMonitor();
+  double start_time = get_now(); 
   StartThreads(idx, num_thread, func, false);
+  double end_time = get_now();
+  EndMemoryMonitor();
 
   // Only execute consolidation if BwTree delta chain is used
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
@@ -284,7 +287,6 @@ inline void exec(int wl,
 
 #endif   
   
-  double end_time = get_now();
   double tput = count / (end_time - start_time) / 1000000; //Mops/sec
 
   std::cout << "\033[1;32m";
@@ -296,7 +298,6 @@ inline void exec(int wl,
   }
 
   //READ/UPDATE/SCAN TEST----------------
-  start_time = get_now();
   int txn_num = GetTxnCount(ops, index_type);
   uint64_t sum = 0;
   uint64_t s = 0;
@@ -394,10 +395,12 @@ inline void exec(int wl,
     
     return;
   };
-  
+
+  StartMemoryMonitor();
+  start_time = get_now();  
   StartThreads(idx, num_thread, func2, false);
-  
   end_time = get_now();
+  EndMemoryMonitor();
 
   // Print out how many reads have missed in the index (do not have a value)
 #ifdef COUNT_READ_MISS

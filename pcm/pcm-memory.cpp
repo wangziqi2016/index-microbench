@@ -379,12 +379,13 @@ static PCM *m = nullptr;
 static ServerUncorePowerState *BeforeState = nullptr;
 static ServerUncorePowerState *AfterState = nullptr;
 
-void StartMemoryMonitor() {
-    uint32 no_columns = DEFAULT_DISPLAY_COLUMNS; // Default number of columns is 2
-    m = PCM::getInstance();
+static uint64_t BeforeTime = 0UL, AfterTime = 0UL;
 
+void StartMemoryMonitor() {
+    m = PCM::getInstance();
+    fprintf(stderr, "After getting PCM instance\n");
     m->disableJKTWorkaround();
-    PCM::ErrorCode status = m->programServerUncoreMemoryMetrics(rankA, rankB);
+    PCM::ErrorCode status = m->programServerUncoreMemoryMetrics(-1, -1);
     switch (status)
     {
         case PCM::Success:
@@ -425,8 +426,8 @@ void StartMemoryMonitor() {
 
     // Allocate memory and store them using the statuc global variable.
     // If the end routine is not called then we have a memory leak
-    ServerUncorePowerState * BeforeState = new ServerUncorePowerState[m->getNumSockets()];
-    ServerUncorePowerState * AfterState = new ServerUncorePowerState[m->getNumSockets()];
+    BeforeState = new ServerUncorePowerState[m->getNumSockets()];
+    AfterState = new ServerUncorePowerState[m->getNumSockets()];
 
     for(uint32 i=0; i<m->getNumSockets(); ++i) {
         BeforeState[i] = m->getServerUncorePowerState(i); 
@@ -443,10 +444,20 @@ void EndMemoryMonitor() {
       AfterState[i] = m->getServerUncorePowerState(i);
     }
 
-    calculate_bandwidth(m, BeforeState, AfterState, AfterTime-BeforeTime, no_columns);
+    calculate_bandwidth(m, BeforeState, AfterState, AfterTime-BeforeTime, 2);
 
     delete[] BeforeState;
     delete[] AfterState;
 
     return;
 }
+
+
+#undef READ
+#undef WRITE
+#undef READ_RANK_A
+#undef WRITE_RANK_A
+#undef READ_RANK_B
+#undef WRITE_RANK_B
+#undef PARTIAL
+

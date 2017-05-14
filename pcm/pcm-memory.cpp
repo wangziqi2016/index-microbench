@@ -383,7 +383,7 @@ static ServerUncorePowerState *AfterState = nullptr;
 
 static uint64_t BeforeTime = 0UL, AfterTime = 0UL;
 
-void StartMemoryMonitor() {
+void InitMemoryMonitor() {
     m = PCM::getInstance();
     fprintf(stderr, "After getting PCM instance\n");
     m->disableJKTWorkaround();
@@ -426,6 +426,10 @@ void StartMemoryMonitor() {
         exit(EXIT_FAILURE);
     }
 
+    return;
+}
+
+void StartMemoryMonitor() {
     // Allocate memory and store them using the statuc global variable.
     // If the end routine is not called then we have a memory leak
     BeforeState = new ServerUncorePowerState[m->getNumSockets()];

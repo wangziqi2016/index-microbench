@@ -654,6 +654,8 @@ int main(int argc, char *argv[]) {
     }
 
     fprintf(stderr, "  Measuring memory bandwidth\n");
+
+    PCM_memory::InitMemoryMonitor();
   }
 
   if(numa == true) {
@@ -663,6 +665,9 @@ int main(int argc, char *argv[]) {
     }
 
     fprintf(stderr, "  Measuring NUMA operations\n");
+
+    // Call init here to avoid calling it mutiple times
+    PCM_NUMA::InitNUMAMonitor();
   }
 
   // If the key type is RDTSC we just run the special function

@@ -1,5 +1,6 @@
 
 #include "./pcm/pcm-memory.cpp"
+#include "./pcm/pcm-numa.cpp"
 
 #include "microbench.h"
 
@@ -42,6 +43,7 @@ extern bool hyperthreading;
 
 // This is the flag for whather to measure memory bandwidth
 static bool memory_bandwidth = false;
+static bool numa = false;
 
 #include "util.h"
 
@@ -280,6 +282,10 @@ inline void exec(int wl,
   if(memory_bandwidth == true) {
     StartMemoryMonitor();
   }
+
+  if(numa == true) {
+    StartNUMAMonitor();
+  }
  
   double start_time = get_now(); 
   StartThreads(idx, num_thread, func, false);
@@ -287,6 +293,10 @@ inline void exec(int wl,
  
   if(memory_bandwidth == true) {
     EndMemoryMonitor();
+  }
+
+  if(numa == true) {
+    EndNUMAMonitor();
   }
 
   // Only execute consolidation if BwTree delta chain is used
@@ -409,12 +419,20 @@ inline void exec(int wl,
     StartMemoryMonitor();
   }
 
+  if(numa == true) {
+    StartNUMAMonitor();
+  }
+
   start_time = get_now();  
   StartThreads(idx, num_thread, func2, false);
   end_time = get_now();
 
   if(memory_bandwidth == true) {
     EndMemoryMonitor();
+  }
+
+  if(numa == true) {
+    EndNUMAMonitor();
   }
 
   // Print out how many reads have missed in the index (do not have a value)
@@ -599,6 +617,8 @@ int main(int argc, char *argv[]) {
     } else if(strcmp(*v, "--mem") == 0) {
       // Enable memory bandwidth measurement
       memory_bandwidth = true;
+    } else if(strcmp(*v, "--numa") == 0) {
+      numa = true;
     }
   }
 
@@ -634,6 +654,15 @@ int main(int argc, char *argv[]) {
     }
 
     fprintf(stderr, "  Measuring memory bandwidth\n");
+  }
+
+  if(numa == true) {
+    if(geteuid() != 0) {
+      fprintf(stderr, "Please run the program as root in order to measure NUMA operations\n");
+      exit(1);
+    }
+
+    fprintf(stderr, "  Measuring NUMA operations\n");
   }
 
   // If the key type is RDTSC we just run the special function

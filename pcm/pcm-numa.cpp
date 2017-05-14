@@ -43,6 +43,8 @@
 
 using namespace std;
 
+namespace PCM_NUMA {
+
 template <class StateType>
 void print_stats(const StateType & BeforeState, const StateType & AfterState) {
     uint64 cycles = getCycles(BeforeState, AfterState);
@@ -60,13 +62,15 @@ void print_stats(const StateType & BeforeState, const StateType & AfterState) {
 }
 
 static uint32_t ncores;
-static uint64 BeforeTime_NUMA = 0, AfterTime_NUMA = 0;
-static SystemCounterState SysBeforeState_NUMA, SysAfterState_NUMA;
-static std::vector<CoreCounterState> BeforeState_NUMA, AfterState_NUMA;
-static std::vector<SocketCounterState> DummySocketStates_NUMA;
+static uint64 BeforeTime = 0, AfterTime = 0;
+static SystemCounterState SysBeforeState, SysAfterState;
+static std::vector<CoreCounterState> BeforeState, AfterState;
+static std::vector<SocketCounterState> DummySocketStates;
 
-void StartNUMAMonitor() {
-    PCM *m = PCM::getInstance();
+static PCM *m = nullptr;
+
+void InitNUMAMonitor() {
+    m = PCM::getInstance();
 
     EventSelectRegister def_event_select_reg;
     def_event_select_reg.value = 0;
@@ -138,31 +142,36 @@ void StartNUMAMonitor() {
     cerr << "\nDetected " << m->getCPUBrandString() << " \"Intel(r) microarchitecture codename " << m->getUArchCodename() << "\"" << endl;
 
     ncores = m->getNumCores();
-    m->setBlocked(false);
 
-    BeforeTime_NUMA = m->getTickCount();
-    m->getAllCounterStates(SysBeforeState_NUMA, DummySocketStates_NUMA, BeforeState_NUMA);
+    return;
+}
+
+void StartNUMAMonitor() {
+    BeforeTime = m->getTickCount();
+    m->getAllCounterStates(SysBeforeState, DummySocketStates, BeforeState);
 
     return;
 }
 
 void EndNUMAMonitor() {
     AfterTime = m->getTickCount();
-    m->getAllCounterStates(SysAfterState_NUMA, DummySocketStates_NUMA, AfterState_NUMA);
+    m->getAllCounterStates(SysAfterState, DummySocketStates, AfterState);
 
     cout << "Core | IPC  | Instructions | Cycles  |  Local DRAM accesses | Remote DRAM Accesses \n";
 
     for (uint32 i = 0; i < ncores; ++i) {
       cout << " " << setw(3) << i << "   " << setw(2);
-      print_stats(BeforeState_NUMA[i], AfterState_NUMA[i]);
+      print_stats(BeforeState[i], AfterState[i]);
     }
 
 
     cout << "-------------------------------------------------------------------------------------------------------------------\n";
     cout << "   *   ";
 
-    print_stats(SysBeforeState_NUMA, SysAfterState_NUMA);
+    print_stats(SysBeforeState, SysAfterState);
     std::cout << std::endl;
 
     return;
 }
+
+} // namespace 

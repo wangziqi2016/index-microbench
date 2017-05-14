@@ -280,11 +280,11 @@ inline void exec(int wl,
   };
  
   if(memory_bandwidth == true) {
-    StartMemoryMonitor();
+    PCM_memory::StartMemoryMonitor();
   }
 
   if(numa == true) {
-    StartNUMAMonitor();
+    PCM_NUMA::StartNUMAMonitor();
   }
  
   double start_time = get_now(); 
@@ -292,11 +292,11 @@ inline void exec(int wl,
   double end_time = get_now();
  
   if(memory_bandwidth == true) {
-    EndMemoryMonitor();
+    PCM_memory::EndMemoryMonitor();
   }
 
   if(numa == true) {
-    EndNUMAMonitor();
+    PCM_NUMA::EndNUMAMonitor();
   }
 
   // Only execute consolidation if BwTree delta chain is used
@@ -416,11 +416,11 @@ inline void exec(int wl,
   };
 
   if(memory_bandwidth == true) {
-    StartMemoryMonitor();
+    PCM_memory::StartMemoryMonitor();
   }
 
   if(numa == true) {
-    StartNUMAMonitor();
+    PCM_NUMA::StartNUMAMonitor();
   }
 
   start_time = get_now();  
@@ -428,11 +428,11 @@ inline void exec(int wl,
   end_time = get_now();
 
   if(memory_bandwidth == true) {
-    EndMemoryMonitor();
+    PCM_memory::EndMemoryMonitor();
   }
 
   if(numa == true) {
-    EndNUMAMonitor();
+    PCM_NUMA::EndNUMAMonitor();
   }
 
   // Print out how many reads have missed in the index (do not have a value)

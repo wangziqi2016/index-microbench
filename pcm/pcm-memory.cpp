@@ -54,6 +54,8 @@
 
 using namespace std;
 
+namespace PCM_memory {
+
 const uint32 max_sockets = 256;
 const uint32 max_imc_channels = 8;
 const uint32 max_edc_channels = 8;
@@ -461,3 +463,4 @@ void EndMemoryMonitor() {
 #undef WRITE_RANK_B
 #undef PARTIAL
 
+} // namespace PCM_memory

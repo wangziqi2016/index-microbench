@@ -165,7 +165,8 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/basic_file.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/c++io.h \
  /usr/include/c++/5/bits/fstream.tcc /usr/include/c++/5/csignal \
- /usr/include/c++/5/cmath microbench.h /usr/local/include/papi.h \
+ /usr/include/c++/5/cmath pcm/pcm-numa.cpp microbench.h \
+ /usr/local/include/papi.h \
  /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/limits.h \
  /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/syslimits.h \
  /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
@@ -749,6 +750,8 @@ pcm/utils.h:
 /usr/include/c++/5/csignal:
 
 /usr/include/c++/5/cmath:
+
+pcm/pcm-numa.cpp:
 
 microbench.h:
 

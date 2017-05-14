@@ -40,6 +40,9 @@ static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
 
 extern bool hyperthreading;
 
+// This is the flag for whather to measure memory bandwidth
+static bool memory_bandwidth = false;
+
 #include "util.h"
 
 /*
@@ -273,12 +276,18 @@ inline void exec(int wl,
     
     return;
   };
-  
-  StartMemoryMonitor();
+ 
+  if(memory_bandwidth == true) {
+    StartMemoryMonitor();
+  }
+ 
   double start_time = get_now(); 
   StartThreads(idx, num_thread, func, false);
   double end_time = get_now();
-  EndMemoryMonitor();
+ 
+  if(memory_bandwidth == true) {
+    EndMemoryMonitor();
+  }
 
   // Only execute consolidation if BwTree delta chain is used
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
@@ -396,11 +405,17 @@ inline void exec(int wl,
     return;
   };
 
-  StartMemoryMonitor();
+  if(memory_bandwidth == true) {
+    StartMemoryMonitor();
+  }
+
   start_time = get_now();  
   StartThreads(idx, num_thread, func2, false);
   end_time = get_now();
-  EndMemoryMonitor();
+
+  if(memory_bandwidth == true) {
+    EndMemoryMonitor();
+  }
 
   // Print out how many reads have missed in the index (do not have a value)
 #ifdef COUNT_READ_MISS
@@ -579,7 +594,11 @@ int main(int argc, char *argv[]) {
   char **argv_end = argv + argc;
   for(char **v = argv + 5;v != argv_end;v++) {
     if(strcmp(*v, "--hyper") == 0) {
+      // Enable hyoerthreading for scheduling threads
       hyperthreading = true;
+    } else if(strcmp(*v, "--mem") == 0) {
+      // Enable memory bandwidth measurement
+      memory_bandwidth = true;
     }
   }
 
@@ -606,6 +625,15 @@ int main(int argc, char *argv[]) {
   // If we do not interleave threads on two sockets then this will be printed
   if(hyperthreading == true) {
     fprintf(stderr, "  Hyperthreading for thread 10 - 19, 30 - 39\n");
+  }
+
+  if(memory_bandwidth == true) {
+    if(geteuid() != 0) {
+      fprintf(stderr, "Please run the program as root in order to measure memory bandwidth\n");
+      exit(1);
+    }
+
+    fprintf(stderr, "  Measuring memory bandwidth\n");
   }
 
   // If the key type is RDTSC we just run the special function

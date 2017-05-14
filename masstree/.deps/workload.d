@@ -1,6 +1,5 @@
 workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
- microbench.h /usr/include/c++/5/vector \
- /usr/include/c++/5/bits/stl_algobase.h \
+ pcm/pcm-memory.cpp /usr/include/c++/5/iostream \
  /usr/include/x86_64-linux-gnu/c++/5/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/os_defines.h \
  /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
@@ -8,8 +7,21 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/cpu_defines.h \
- /usr/include/c++/5/bits/functexcept.h \
+ /usr/include/c++/5/ostream /usr/include/c++/5/ios \
+ /usr/include/c++/5/iosfwd /usr/include/c++/5/bits/stringfwd.h \
+ /usr/include/c++/5/bits/memoryfwd.h /usr/include/c++/5/bits/postypes.h \
+ /usr/include/c++/5/cwchar /usr/include/wchar.h /usr/include/stdio.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h /usr/include/xlocale.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar2.h /usr/include/c++/5/exception \
+ /usr/include/c++/5/bits/atomic_lockfree_defines.h \
+ /usr/include/c++/5/bits/exception_ptr.h \
  /usr/include/c++/5/bits/exception_defines.h \
+ /usr/include/c++/5/bits/nested_exception.h \
+ /usr/include/c++/5/bits/char_traits.h \
+ /usr/include/c++/5/bits/stl_algobase.h \
+ /usr/include/c++/5/bits/functexcept.h \
  /usr/include/c++/5/bits/cpp_type_traits.h \
  /usr/include/c++/5/ext/type_traits.h \
  /usr/include/c++/5/ext/numeric_traits.h \
@@ -19,34 +31,7 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/bits/stl_iterator_base_funcs.h \
  /usr/include/c++/5/debug/debug.h /usr/include/c++/5/bits/stl_iterator.h \
  /usr/include/c++/5/bits/ptr_traits.h \
- /usr/include/c++/5/bits/predefined_ops.h \
- /usr/include/c++/5/bits/allocator.h \
- /usr/include/x86_64-linux-gnu/c++/5/bits/c++allocator.h \
- /usr/include/c++/5/ext/new_allocator.h /usr/include/c++/5/new \
- /usr/include/c++/5/exception \
- /usr/include/c++/5/bits/atomic_lockfree_defines.h \
- /usr/include/c++/5/bits/exception_ptr.h \
- /usr/include/c++/5/bits/nested_exception.h \
- /usr/include/c++/5/bits/memoryfwd.h \
- /usr/include/c++/5/bits/stl_construct.h \
- /usr/include/c++/5/ext/alloc_traits.h \
- /usr/include/c++/5/bits/alloc_traits.h \
- /usr/include/c++/5/bits/stl_uninitialized.h \
- /usr/include/c++/5/bits/stl_vector.h /usr/include/c++/5/initializer_list \
- /usr/include/c++/5/bits/stl_bvector.h \
- /usr/include/c++/5/bits/functional_hash.h \
- /usr/include/c++/5/bits/hash_bytes.h \
- /usr/include/c++/5/bits/range_access.h \
- /usr/include/c++/5/bits/vector.tcc /usr/include/c++/5/fstream \
- /usr/include/c++/5/istream /usr/include/c++/5/ios \
- /usr/include/c++/5/iosfwd /usr/include/c++/5/bits/stringfwd.h \
- /usr/include/c++/5/bits/postypes.h /usr/include/c++/5/cwchar \
- /usr/include/wchar.h /usr/include/stdio.h \
- /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
- /usr/include/x86_64-linux-gnu/bits/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h /usr/include/xlocale.h \
- /usr/include/x86_64-linux-gnu/bits/wchar2.h \
- /usr/include/c++/5/bits/char_traits.h /usr/include/c++/5/cstdint \
+ /usr/include/c++/5/bits/predefined_ops.h /usr/include/c++/5/cstdint \
  /usr/lib/gcc/x86_64-linux-gnu/5/include/stdint.h /usr/include/stdint.h \
  /usr/include/c++/5/bits/localefwd.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/c++locale.h \
@@ -68,11 +53,18 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/x86_64-linux-gnu/bits/setjmp.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/atomic_word.h \
  /usr/include/c++/5/bits/locale_classes.h /usr/include/c++/5/string \
+ /usr/include/c++/5/bits/allocator.h \
+ /usr/include/x86_64-linux-gnu/c++/5/bits/c++allocator.h \
+ /usr/include/c++/5/ext/new_allocator.h /usr/include/c++/5/new \
  /usr/include/c++/5/bits/ostream_insert.h \
  /usr/include/c++/5/bits/cxxabi_forced.h \
  /usr/include/c++/5/bits/stl_function.h \
  /usr/include/c++/5/backward/binders.h \
+ /usr/include/c++/5/bits/range_access.h \
+ /usr/include/c++/5/initializer_list \
  /usr/include/c++/5/bits/basic_string.h \
+ /usr/include/c++/5/ext/alloc_traits.h \
+ /usr/include/c++/5/bits/alloc_traits.h \
  /usr/include/c++/5/ext/string_conversions.h /usr/include/c++/5/cstdlib \
  /usr/include/stdlib.h /usr/include/x86_64-linux-gnu/bits/waitflags.h \
  /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
@@ -93,6 +85,8 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/errno.h /usr/include/x86_64-linux-gnu/bits/errno.h \
  /usr/include/linux/errno.h /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
+ /usr/include/c++/5/bits/functional_hash.h \
+ /usr/include/c++/5/bits/hash_bytes.h \
  /usr/include/c++/5/bits/basic_string.tcc \
  /usr/include/c++/5/bits/locale_classes.tcc \
  /usr/include/c++/5/system_error \
@@ -106,15 +100,72 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/bits/streambuf_iterator.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/ctype_inline.h \
  /usr/include/c++/5/bits/locale_facets.tcc \
- /usr/include/c++/5/bits/basic_ios.tcc /usr/include/c++/5/ostream \
- /usr/include/c++/5/bits/ostream.tcc /usr/include/c++/5/bits/istream.tcc \
- /usr/include/c++/5/bits/codecvt.h \
+ /usr/include/c++/5/bits/basic_ios.tcc \
+ /usr/include/c++/5/bits/ostream.tcc /usr/include/c++/5/istream \
+ /usr/include/c++/5/bits/istream.tcc /usr/include/unistd.h \
+ /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+ /usr/include/x86_64-linux-gnu/bits/environments.h \
+ /usr/include/x86_64-linux-gnu/bits/confname.h /usr/include/getopt.h \
+ /usr/include/x86_64-linux-gnu/bits/unistd.h /usr/include/signal.h \
+ /usr/include/x86_64-linux-gnu/bits/signum.h \
+ /usr/include/x86_64-linux-gnu/bits/siginfo.h \
+ /usr/include/x86_64-linux-gnu/bits/sigaction.h \
+ /usr/include/x86_64-linux-gnu/bits/sigcontext.h \
+ /usr/include/x86_64-linux-gnu/bits/sigstack.h \
+ /usr/include/x86_64-linux-gnu/sys/ucontext.h \
+ /usr/include/x86_64-linux-gnu/bits/sigthread.h \
+ /usr/include/x86_64-linux-gnu/sys/time.h /usr/include/math.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_val.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_valf.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_vall.h \
+ /usr/include/x86_64-linux-gnu/bits/inf.h \
+ /usr/include/x86_64-linux-gnu/bits/nan.h \
+ /usr/include/x86_64-linux-gnu/bits/mathdef.h \
+ /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+ /usr/include/x86_64-linux-gnu/bits/mathinline.h \
+ /usr/include/c++/5/iomanip /usr/include/c++/5/locale \
+ /usr/include/c++/5/bits/locale_facets_nonio.h /usr/include/c++/5/ctime \
+ /usr/include/x86_64-linux-gnu/c++/5/bits/time_members.h \
+ /usr/include/x86_64-linux-gnu/c++/5/bits/messages_members.h \
+ /usr/include/libintl.h /usr/include/c++/5/bits/codecvt.h \
+ /usr/include/c++/5/bits/locale_facets_nonio.tcc \
+ /usr/include/c++/5/bits/locale_conv.h \
+ /usr/include/c++/5/bits/stringfwd.h /usr/include/c++/5/bits/allocator.h \
+ /usr/include/c++/5/bits/codecvt.h /usr/include/c++/5/bits/unique_ptr.h \
+ /usr/include/c++/5/utility /usr/include/c++/5/bits/stl_relops.h \
+ /usr/include/c++/5/tuple /usr/include/c++/5/array \
+ /usr/include/c++/5/bits/uses_allocator.h /usr/include/string.h \
+ /usr/include/x86_64-linux-gnu/bits/string3.h /usr/include/assert.h \
+ pcm/cpucounters.h pcm/types.h /usr/include/c++/5/sstream \
+ /usr/include/c++/5/bits/sstream.tcc pcm/msr.h pcm/mutex.h \
+ /usr/include/c++/5/memory /usr/include/c++/5/bits/stl_construct.h \
+ /usr/include/c++/5/bits/stl_uninitialized.h \
+ /usr/include/c++/5/bits/stl_tempbuf.h \
+ /usr/include/c++/5/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/5/typeinfo /usr/include/c++/5/ext/concurrence.h \
+ /usr/include/c++/5/functional /usr/include/c++/5/bits/unique_ptr.h \
+ /usr/include/c++/5/bits/shared_ptr.h \
+ /usr/include/c++/5/bits/shared_ptr_base.h \
+ /usr/include/c++/5/bits/allocated_ptr.h \
+ /usr/include/c++/5/ext/aligned_buffer.h \
+ /usr/include/c++/5/bits/shared_ptr_atomic.h \
+ /usr/include/c++/5/bits/atomic_base.h \
+ /usr/include/c++/5/backward/auto_ptr.h pcm/pci.h \
+ /usr/include/c++/5/vector /usr/include/c++/5/bits/stl_vector.h \
+ /usr/include/c++/5/bits/stl_bvector.h /usr/include/c++/5/bits/vector.tcc \
+ pcm/client_bw.h pcm/width_extender.h /usr/include/c++/5/limits \
+ /usr/include/semaphore.h /usr/include/x86_64-linux-gnu/bits/semaphore.h \
+ /usr/include/x86_64-linux-gnu/sys/stat.h \
+ /usr/include/x86_64-linux-gnu/bits/stat.h /usr/include/fcntl.h \
+ /usr/include/x86_64-linux-gnu/bits/fcntl.h \
+ /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
+ /usr/include/x86_64-linux-gnu/bits/uio.h \
+ /usr/include/x86_64-linux-gnu/bits/fcntl2.h pcm/utils.h \
+ /usr/include/c++/5/cstring /usr/include/c++/5/fstream \
  /usr/include/x86_64-linux-gnu/c++/5/bits/basic_file.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/c++io.h \
- /usr/include/c++/5/bits/fstream.tcc /usr/include/c++/5/iostream \
- /usr/include/string.h /usr/include/x86_64-linux-gnu/bits/string3.h \
- /usr/include/c++/5/utility /usr/include/c++/5/bits/stl_relops.h \
- /usr/include/x86_64-linux-gnu/sys/time.h /usr/local/include/papi.h \
+ /usr/include/c++/5/bits/fstream.tcc /usr/include/c++/5/csignal \
+ /usr/include/c++/5/cmath microbench.h /usr/local/include/papi.h \
  /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/limits.h \
  /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/syslimits.h \
  /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
@@ -122,32 +173,12 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/linux/limits.h \
  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
- /usr/local/include/papiStdEventDefs.h /usr/include/signal.h \
- /usr/include/x86_64-linux-gnu/bits/signum.h \
- /usr/include/x86_64-linux-gnu/bits/siginfo.h \
- /usr/include/x86_64-linux-gnu/bits/sigaction.h \
- /usr/include/x86_64-linux-gnu/bits/sigcontext.h \
- /usr/include/x86_64-linux-gnu/bits/sigstack.h \
- /usr/include/x86_64-linux-gnu/sys/ucontext.h \
- /usr/include/x86_64-linux-gnu/bits/sigthread.h allocatortracker.h \
- /usr/include/c++/5/typeinfo /usr/include/c++/5/cstring \
+ /usr/local/include/papiStdEventDefs.h allocatortracker.h \
  /usr/include/c++/5/map /usr/include/c++/5/bits/stl_tree.h \
- /usr/include/c++/5/ext/aligned_buffer.h \
- /usr/include/c++/5/bits/stl_map.h /usr/include/c++/5/tuple \
- /usr/include/c++/5/array /usr/include/c++/5/bits/uses_allocator.h \
- /usr/include/c++/5/bits/stl_multimap.h util.h indexkey.h index.h \
- ARTOLC/Tree.h ARTOLC/N.h /usr/include/c++/5/atomic \
- /usr/include/c++/5/bits/atomic_base.h ARTOLC/Key.h \
- /usr/include/c++/5/memory /usr/include/c++/5/bits/stl_tempbuf.h \
- /usr/include/c++/5/bits/stl_raw_storage_iter.h \
- /usr/include/c++/5/ext/concurrence.h /usr/include/c++/5/functional \
- /usr/include/c++/5/bits/unique_ptr.h \
- /usr/include/c++/5/bits/shared_ptr.h \
- /usr/include/c++/5/bits/shared_ptr_base.h \
- /usr/include/c++/5/bits/allocated_ptr.h \
- /usr/include/c++/5/bits/shared_ptr_atomic.h \
- /usr/include/c++/5/backward/auto_ptr.h /usr/include/assert.h \
- ARTOLC/Epoche.h /usr/include/tbb/enumerable_thread_specific.h \
+ /usr/include/c++/5/bits/stl_map.h /usr/include/c++/5/bits/stl_multimap.h \
+ util.h indexkey.h index.h ARTOLC/Tree.h ARTOLC/N.h \
+ /usr/include/c++/5/atomic ARTOLC/Key.h ARTOLC/Epoche.h \
+ /usr/include/tbb/enumerable_thread_specific.h \
  /usr/include/tbb/concurrent_vector.h /usr/include/tbb/tbb_stddef.h \
  /usr/include/tbb/tbb_config.h /usr/include/c++/5/cstddef \
  /usr/include/tbb/tbb_exception.h /usr/include/tbb/tbb_allocator.h \
@@ -155,11 +186,7 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/tbb/machine/linux_intel64.h \
  /usr/include/tbb/machine/gcc_ia32_common.h \
  /usr/include/tbb/machine/gcc_itsx.h \
- /usr/include/tbb/machine/linux_common.h /usr/include/unistd.h \
- /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
- /usr/include/x86_64-linux-gnu/bits/environments.h \
- /usr/include/x86_64-linux-gnu/bits/confname.h /usr/include/getopt.h \
- /usr/include/x86_64-linux-gnu/bits/unistd.h \
+ /usr/include/tbb/machine/linux_common.h \
  /usr/include/x86_64-linux-gnu/sys/syscall.h \
  /usr/include/x86_64-linux-gnu/asm/unistd.h \
  /usr/include/x86_64-linux-gnu/asm/unistd_64.h \
@@ -169,10 +196,9 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/c++/5/algorithm /usr/include/c++/5/bits/stl_algo.h \
  /usr/include/c++/5/bits/algorithmfwd.h \
  /usr/include/c++/5/bits/stl_heap.h \
- /usr/include/c++/5/bits/uniform_int_dist.h /usr/include/c++/5/limits \
- /usr/include/c++/5/iterator /usr/include/c++/5/bits/stream_iterator.h \
- /usr/include/tbb/tbb_thread.h /usr/include/tbb/tick_count.h \
- /usr/include/c++/5/ctime /usr/include/tbb/aligned_space.h \
+ /usr/include/c++/5/bits/uniform_int_dist.h /usr/include/c++/5/iterator \
+ /usr/include/c++/5/bits/stream_iterator.h /usr/include/tbb/tbb_thread.h \
+ /usr/include/tbb/tick_count.h /usr/include/tbb/aligned_space.h \
  /usr/include/tbb/combinable.h \
  /usr/include/tbb/enumerable_thread_specific.h BTreeOLC/BTreeOLC.h \
  /usr/include/c++/5/cassert \
@@ -218,7 +244,6 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/byteswap.h masstree/mtIndexAPI.hh \
  /usr/include/x86_64-linux-gnu/sys/socket.h \
  /usr/include/x86_64-linux-gnu/sys/uio.h \
- /usr/include/x86_64-linux-gnu/bits/uio.h \
  /usr/include/x86_64-linux-gnu/bits/socket.h \
  /usr/include/x86_64-linux-gnu/bits/socket_type.h \
  /usr/include/x86_64-linux-gnu/bits/sockaddr.h \
@@ -231,41 +256,29 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/x86_64-linux-gnu/sys/mman.h \
  /usr/include/x86_64-linux-gnu/bits/mman.h \
  /usr/include/x86_64-linux-gnu/bits/mman-linux.h \
- /usr/include/x86_64-linux-gnu/sys/stat.h \
- /usr/include/x86_64-linux-gnu/bits/stat.h \
  /usr/include/x86_64-linux-gnu/sys/wait.h \
  /usr/include/x86_64-linux-gnu/sys/utsname.h \
  /usr/include/x86_64-linux-gnu/bits/utsname.h \
  /usr/include/x86_64-linux-gnu/sys/epoll.h \
  /usr/include/x86_64-linux-gnu/bits/epoll.h /usr/include/execinfo.h \
  /usr/include/asm-generic/mman.h /usr/include/asm-generic/mman-common.h \
- /usr/include/fcntl.h /usr/include/x86_64-linux-gnu/bits/fcntl.h \
- /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
- /usr/include/x86_64-linux-gnu/bits/fcntl2.h /usr/include/math.h \
- /usr/include/x86_64-linux-gnu/bits/huge_val.h \
- /usr/include/x86_64-linux-gnu/bits/huge_valf.h \
- /usr/include/x86_64-linux-gnu/bits/huge_vall.h \
- /usr/include/x86_64-linux-gnu/bits/inf.h \
- /usr/include/x86_64-linux-gnu/bits/nan.h \
- /usr/include/x86_64-linux-gnu/bits/mathdef.h \
- /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
- /usr/include/x86_64-linux-gnu/bits/mathinline.h /usr/include/malloc.h \
- masstree/nodeversion.hh masstree/compiler.hh /usr/include/inttypes.h \
- /usr/include/arpa/inet.h masstree/kvstats.hh masstree/query_masstree.hh \
- masstree/masstree.hh masstree/str.hh masstree/string_base.hh \
- masstree/hashcode.hh masstree/ksearch.hh masstree/kpermuter.hh \
- masstree/string.hh masstree/kvrow.hh masstree/kvthread.hh \
- masstree/mtcounters.hh masstree/circular_int.hh masstree/timestamp.hh \
- masstree/kvproto.hh masstree/log.hh masstree/json.hh \
- masstree/straccum.hh masstree/value_bag.hh masstree/masstree_tcursor.hh \
- masstree/local_vector.hh masstree/masstree_key.hh \
- masstree/string_slice.hh masstree/masstree_struct.hh \
- masstree/stringbag.hh masstree/masstree_insert.hh \
- masstree/masstree_get.hh /usr/include/c++/5/deque \
- /usr/include/c++/5/bits/stl_deque.h /usr/include/c++/5/bits/deque.tcc \
- masstree/masstree_split.hh masstree/btree_leaflink.hh \
- masstree/masstree_remove.hh masstree/masstree_scan.hh masstree/kvtest.hh \
- masstree/misc.hh masstree/clp.h masstree/kvrandom.hh masstree/kvio.hh \
+ /usr/include/malloc.h masstree/nodeversion.hh masstree/compiler.hh \
+ /usr/include/inttypes.h /usr/include/arpa/inet.h masstree/kvstats.hh \
+ masstree/query_masstree.hh masstree/masstree.hh masstree/str.hh \
+ masstree/string_base.hh masstree/hashcode.hh masstree/ksearch.hh \
+ masstree/kpermuter.hh masstree/string.hh masstree/kvrow.hh \
+ masstree/kvthread.hh masstree/mtcounters.hh masstree/circular_int.hh \
+ masstree/timestamp.hh masstree/kvproto.hh masstree/log.hh \
+ masstree/json.hh masstree/straccum.hh masstree/value_bag.hh \
+ masstree/masstree_tcursor.hh masstree/local_vector.hh \
+ masstree/masstree_key.hh masstree/string_slice.hh \
+ masstree/masstree_struct.hh masstree/stringbag.hh \
+ masstree/masstree_insert.hh masstree/masstree_get.hh \
+ /usr/include/c++/5/deque /usr/include/c++/5/bits/stl_deque.h \
+ /usr/include/c++/5/bits/deque.tcc masstree/masstree_split.hh \
+ masstree/btree_leaflink.hh masstree/masstree_remove.hh \
+ masstree/masstree_scan.hh masstree/kvtest.hh masstree/misc.hh \
+ masstree/clp.h masstree/kvrandom.hh masstree/kvio.hh \
  /usr/include/c++/5/numeric /usr/include/c++/5/bits/stl_numeric.h \
  masstree/config.h
 
@@ -273,11 +286,9 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
 
 masstree/config.h:
 
-microbench.h:
+pcm/pcm-memory.cpp:
 
-/usr/include/c++/5/vector:
-
-/usr/include/c++/5/bits/stl_algobase.h:
+/usr/include/c++/5/iostream:
 
 /usr/include/x86_64-linux-gnu/c++/5/bits/c++config.h:
 
@@ -295,9 +306,49 @@ microbench.h:
 
 /usr/include/x86_64-linux-gnu/c++/5/bits/cpu_defines.h:
 
-/usr/include/c++/5/bits/functexcept.h:
+/usr/include/c++/5/ostream:
+
+/usr/include/c++/5/ios:
+
+/usr/include/c++/5/iosfwd:
+
+/usr/include/c++/5/bits/stringfwd.h:
+
+/usr/include/c++/5/bits/memoryfwd.h:
+
+/usr/include/c++/5/bits/postypes.h:
+
+/usr/include/c++/5/cwchar:
+
+/usr/include/wchar.h:
+
+/usr/include/stdio.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h:
+
+/usr/include/x86_64-linux-gnu/bits/wchar.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h:
+
+/usr/include/xlocale.h:
+
+/usr/include/x86_64-linux-gnu/bits/wchar2.h:
+
+/usr/include/c++/5/exception:
+
+/usr/include/c++/5/bits/atomic_lockfree_defines.h:
+
+/usr/include/c++/5/bits/exception_ptr.h:
 
 /usr/include/c++/5/bits/exception_defines.h:
+
+/usr/include/c++/5/bits/nested_exception.h:
+
+/usr/include/c++/5/bits/char_traits.h:
+
+/usr/include/c++/5/bits/stl_algobase.h:
+
+/usr/include/c++/5/bits/functexcept.h:
 
 /usr/include/c++/5/bits/cpp_type_traits.h:
 
@@ -324,76 +375,6 @@ microbench.h:
 /usr/include/c++/5/bits/ptr_traits.h:
 
 /usr/include/c++/5/bits/predefined_ops.h:
-
-/usr/include/c++/5/bits/allocator.h:
-
-/usr/include/x86_64-linux-gnu/c++/5/bits/c++allocator.h:
-
-/usr/include/c++/5/ext/new_allocator.h:
-
-/usr/include/c++/5/new:
-
-/usr/include/c++/5/exception:
-
-/usr/include/c++/5/bits/atomic_lockfree_defines.h:
-
-/usr/include/c++/5/bits/exception_ptr.h:
-
-/usr/include/c++/5/bits/nested_exception.h:
-
-/usr/include/c++/5/bits/memoryfwd.h:
-
-/usr/include/c++/5/bits/stl_construct.h:
-
-/usr/include/c++/5/ext/alloc_traits.h:
-
-/usr/include/c++/5/bits/alloc_traits.h:
-
-/usr/include/c++/5/bits/stl_uninitialized.h:
-
-/usr/include/c++/5/bits/stl_vector.h:
-
-/usr/include/c++/5/initializer_list:
-
-/usr/include/c++/5/bits/stl_bvector.h:
-
-/usr/include/c++/5/bits/functional_hash.h:
-
-/usr/include/c++/5/bits/hash_bytes.h:
-
-/usr/include/c++/5/bits/range_access.h:
-
-/usr/include/c++/5/bits/vector.tcc:
-
-/usr/include/c++/5/fstream:
-
-/usr/include/c++/5/istream:
-
-/usr/include/c++/5/ios:
-
-/usr/include/c++/5/iosfwd:
-
-/usr/include/c++/5/bits/stringfwd.h:
-
-/usr/include/c++/5/bits/postypes.h:
-
-/usr/include/c++/5/cwchar:
-
-/usr/include/wchar.h:
-
-/usr/include/stdio.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h:
-
-/usr/include/x86_64-linux-gnu/bits/wchar.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h:
-
-/usr/include/xlocale.h:
-
-/usr/include/x86_64-linux-gnu/bits/wchar2.h:
-
-/usr/include/c++/5/bits/char_traits.h:
 
 /usr/include/c++/5/cstdint:
 
@@ -457,6 +438,14 @@ microbench.h:
 
 /usr/include/c++/5/string:
 
+/usr/include/c++/5/bits/allocator.h:
+
+/usr/include/x86_64-linux-gnu/c++/5/bits/c++allocator.h:
+
+/usr/include/c++/5/ext/new_allocator.h:
+
+/usr/include/c++/5/new:
+
 /usr/include/c++/5/bits/ostream_insert.h:
 
 /usr/include/c++/5/bits/cxxabi_forced.h:
@@ -465,7 +454,15 @@ microbench.h:
 
 /usr/include/c++/5/backward/binders.h:
 
+/usr/include/c++/5/bits/range_access.h:
+
+/usr/include/c++/5/initializer_list:
+
 /usr/include/c++/5/bits/basic_string.h:
+
+/usr/include/c++/5/ext/alloc_traits.h:
+
+/usr/include/c++/5/bits/alloc_traits.h:
 
 /usr/include/c++/5/ext/string_conversions.h:
 
@@ -525,6 +522,10 @@ microbench.h:
 
 /usr/include/asm-generic/errno-base.h:
 
+/usr/include/c++/5/bits/functional_hash.h:
+
+/usr/include/c++/5/bits/hash_bytes.h:
+
 /usr/include/c++/5/bits/basic_string.tcc:
 
 /usr/include/c++/5/bits/locale_classes.tcc:
@@ -557,13 +558,187 @@ microbench.h:
 
 /usr/include/c++/5/bits/basic_ios.tcc:
 
-/usr/include/c++/5/ostream:
-
 /usr/include/c++/5/bits/ostream.tcc:
+
+/usr/include/c++/5/istream:
 
 /usr/include/c++/5/bits/istream.tcc:
 
+/usr/include/unistd.h:
+
+/usr/include/x86_64-linux-gnu/bits/posix_opt.h:
+
+/usr/include/x86_64-linux-gnu/bits/environments.h:
+
+/usr/include/x86_64-linux-gnu/bits/confname.h:
+
+/usr/include/getopt.h:
+
+/usr/include/x86_64-linux-gnu/bits/unistd.h:
+
+/usr/include/signal.h:
+
+/usr/include/x86_64-linux-gnu/bits/signum.h:
+
+/usr/include/x86_64-linux-gnu/bits/siginfo.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigaction.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigcontext.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigstack.h:
+
+/usr/include/x86_64-linux-gnu/sys/ucontext.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigthread.h:
+
+/usr/include/x86_64-linux-gnu/sys/time.h:
+
+/usr/include/math.h:
+
+/usr/include/x86_64-linux-gnu/bits/huge_val.h:
+
+/usr/include/x86_64-linux-gnu/bits/huge_valf.h:
+
+/usr/include/x86_64-linux-gnu/bits/huge_vall.h:
+
+/usr/include/x86_64-linux-gnu/bits/inf.h:
+
+/usr/include/x86_64-linux-gnu/bits/nan.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathdef.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathinline.h:
+
+/usr/include/c++/5/iomanip:
+
+/usr/include/c++/5/locale:
+
+/usr/include/c++/5/bits/locale_facets_nonio.h:
+
+/usr/include/c++/5/ctime:
+
+/usr/include/x86_64-linux-gnu/c++/5/bits/time_members.h:
+
+/usr/include/x86_64-linux-gnu/c++/5/bits/messages_members.h:
+
+/usr/include/libintl.h:
+
 /usr/include/c++/5/bits/codecvt.h:
+
+/usr/include/c++/5/bits/locale_facets_nonio.tcc:
+
+/usr/include/c++/5/bits/locale_conv.h:
+
+/usr/include/c++/5/bits/stringfwd.h:
+
+/usr/include/c++/5/bits/allocator.h:
+
+/usr/include/c++/5/bits/codecvt.h:
+
+/usr/include/c++/5/bits/unique_ptr.h:
+
+/usr/include/c++/5/utility:
+
+/usr/include/c++/5/bits/stl_relops.h:
+
+/usr/include/c++/5/tuple:
+
+/usr/include/c++/5/array:
+
+/usr/include/c++/5/bits/uses_allocator.h:
+
+/usr/include/string.h:
+
+/usr/include/x86_64-linux-gnu/bits/string3.h:
+
+/usr/include/assert.h:
+
+pcm/cpucounters.h:
+
+pcm/types.h:
+
+/usr/include/c++/5/sstream:
+
+/usr/include/c++/5/bits/sstream.tcc:
+
+pcm/msr.h:
+
+pcm/mutex.h:
+
+/usr/include/c++/5/memory:
+
+/usr/include/c++/5/bits/stl_construct.h:
+
+/usr/include/c++/5/bits/stl_uninitialized.h:
+
+/usr/include/c++/5/bits/stl_tempbuf.h:
+
+/usr/include/c++/5/bits/stl_raw_storage_iter.h:
+
+/usr/include/c++/5/typeinfo:
+
+/usr/include/c++/5/ext/concurrence.h:
+
+/usr/include/c++/5/functional:
+
+/usr/include/c++/5/bits/unique_ptr.h:
+
+/usr/include/c++/5/bits/shared_ptr.h:
+
+/usr/include/c++/5/bits/shared_ptr_base.h:
+
+/usr/include/c++/5/bits/allocated_ptr.h:
+
+/usr/include/c++/5/ext/aligned_buffer.h:
+
+/usr/include/c++/5/bits/shared_ptr_atomic.h:
+
+/usr/include/c++/5/bits/atomic_base.h:
+
+/usr/include/c++/5/backward/auto_ptr.h:
+
+pcm/pci.h:
+
+/usr/include/c++/5/vector:
+
+/usr/include/c++/5/bits/stl_vector.h:
+
+/usr/include/c++/5/bits/stl_bvector.h:
+
+/usr/include/c++/5/bits/vector.tcc:
+
+pcm/client_bw.h:
+
+pcm/width_extender.h:
+
+/usr/include/c++/5/limits:
+
+/usr/include/semaphore.h:
+
+/usr/include/x86_64-linux-gnu/bits/semaphore.h:
+
+/usr/include/x86_64-linux-gnu/sys/stat.h:
+
+/usr/include/x86_64-linux-gnu/bits/stat.h:
+
+/usr/include/fcntl.h:
+
+/usr/include/x86_64-linux-gnu/bits/fcntl.h:
+
+/usr/include/x86_64-linux-gnu/bits/fcntl-linux.h:
+
+/usr/include/x86_64-linux-gnu/bits/uio.h:
+
+/usr/include/x86_64-linux-gnu/bits/fcntl2.h:
+
+pcm/utils.h:
+
+/usr/include/c++/5/cstring:
+
+/usr/include/c++/5/fstream:
 
 /usr/include/x86_64-linux-gnu/c++/5/bits/basic_file.h:
 
@@ -571,17 +746,11 @@ microbench.h:
 
 /usr/include/c++/5/bits/fstream.tcc:
 
-/usr/include/c++/5/iostream:
+/usr/include/c++/5/csignal:
 
-/usr/include/string.h:
+/usr/include/c++/5/cmath:
 
-/usr/include/x86_64-linux-gnu/bits/string3.h:
-
-/usr/include/c++/5/utility:
-
-/usr/include/c++/5/bits/stl_relops.h:
-
-/usr/include/x86_64-linux-gnu/sys/time.h:
+microbench.h:
 
 /usr/local/include/papi.h:
 
@@ -603,41 +772,13 @@ microbench.h:
 
 /usr/local/include/papiStdEventDefs.h:
 
-/usr/include/signal.h:
-
-/usr/include/x86_64-linux-gnu/bits/signum.h:
-
-/usr/include/x86_64-linux-gnu/bits/siginfo.h:
-
-/usr/include/x86_64-linux-gnu/bits/sigaction.h:
-
-/usr/include/x86_64-linux-gnu/bits/sigcontext.h:
-
-/usr/include/x86_64-linux-gnu/bits/sigstack.h:
-
-/usr/include/x86_64-linux-gnu/sys/ucontext.h:
-
-/usr/include/x86_64-linux-gnu/bits/sigthread.h:
-
 allocatortracker.h:
-
-/usr/include/c++/5/typeinfo:
-
-/usr/include/c++/5/cstring:
 
 /usr/include/c++/5/map:
 
 /usr/include/c++/5/bits/stl_tree.h:
 
-/usr/include/c++/5/ext/aligned_buffer.h:
-
 /usr/include/c++/5/bits/stl_map.h:
-
-/usr/include/c++/5/tuple:
-
-/usr/include/c++/5/array:
-
-/usr/include/c++/5/bits/uses_allocator.h:
 
 /usr/include/c++/5/bits/stl_multimap.h:
 
@@ -653,33 +794,7 @@ ARTOLC/N.h:
 
 /usr/include/c++/5/atomic:
 
-/usr/include/c++/5/bits/atomic_base.h:
-
 ARTOLC/Key.h:
-
-/usr/include/c++/5/memory:
-
-/usr/include/c++/5/bits/stl_tempbuf.h:
-
-/usr/include/c++/5/bits/stl_raw_storage_iter.h:
-
-/usr/include/c++/5/ext/concurrence.h:
-
-/usr/include/c++/5/functional:
-
-/usr/include/c++/5/bits/unique_ptr.h:
-
-/usr/include/c++/5/bits/shared_ptr.h:
-
-/usr/include/c++/5/bits/shared_ptr_base.h:
-
-/usr/include/c++/5/bits/allocated_ptr.h:
-
-/usr/include/c++/5/bits/shared_ptr_atomic.h:
-
-/usr/include/c++/5/backward/auto_ptr.h:
-
-/usr/include/assert.h:
 
 ARTOLC/Epoche.h:
 
@@ -709,18 +824,6 @@ ARTOLC/Epoche.h:
 
 /usr/include/tbb/machine/linux_common.h:
 
-/usr/include/unistd.h:
-
-/usr/include/x86_64-linux-gnu/bits/posix_opt.h:
-
-/usr/include/x86_64-linux-gnu/bits/environments.h:
-
-/usr/include/x86_64-linux-gnu/bits/confname.h:
-
-/usr/include/getopt.h:
-
-/usr/include/x86_64-linux-gnu/bits/unistd.h:
-
 /usr/include/x86_64-linux-gnu/sys/syscall.h:
 
 /usr/include/x86_64-linux-gnu/asm/unistd.h:
@@ -745,8 +848,6 @@ ARTOLC/Epoche.h:
 
 /usr/include/c++/5/bits/uniform_int_dist.h:
 
-/usr/include/c++/5/limits:
-
 /usr/include/c++/5/iterator:
 
 /usr/include/c++/5/bits/stream_iterator.h:
@@ -754,8 +855,6 @@ ARTOLC/Epoche.h:
 /usr/include/tbb/tbb_thread.h:
 
 /usr/include/tbb/tick_count.h:
-
-/usr/include/c++/5/ctime:
 
 /usr/include/tbb/aligned_space.h:
 
@@ -867,8 +966,6 @@ masstree/mtIndexAPI.hh:
 
 /usr/include/x86_64-linux-gnu/sys/uio.h:
 
-/usr/include/x86_64-linux-gnu/bits/uio.h:
-
 /usr/include/x86_64-linux-gnu/bits/socket.h:
 
 /usr/include/x86_64-linux-gnu/bits/socket_type.h:
@@ -897,10 +994,6 @@ masstree/mtIndexAPI.hh:
 
 /usr/include/x86_64-linux-gnu/bits/mman-linux.h:
 
-/usr/include/x86_64-linux-gnu/sys/stat.h:
-
-/usr/include/x86_64-linux-gnu/bits/stat.h:
-
 /usr/include/x86_64-linux-gnu/sys/wait.h:
 
 /usr/include/x86_64-linux-gnu/sys/utsname.h:
@@ -916,32 +1009,6 @@ masstree/mtIndexAPI.hh:
 /usr/include/asm-generic/mman.h:
 
 /usr/include/asm-generic/mman-common.h:
-
-/usr/include/fcntl.h:
-
-/usr/include/x86_64-linux-gnu/bits/fcntl.h:
-
-/usr/include/x86_64-linux-gnu/bits/fcntl-linux.h:
-
-/usr/include/x86_64-linux-gnu/bits/fcntl2.h:
-
-/usr/include/math.h:
-
-/usr/include/x86_64-linux-gnu/bits/huge_val.h:
-
-/usr/include/x86_64-linux-gnu/bits/huge_valf.h:
-
-/usr/include/x86_64-linux-gnu/bits/huge_vall.h:
-
-/usr/include/x86_64-linux-gnu/bits/inf.h:
-
-/usr/include/x86_64-linux-gnu/bits/nan.h:
-
-/usr/include/x86_64-linux-gnu/bits/mathdef.h:
-
-/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
-
-/usr/include/x86_64-linux-gnu/bits/mathinline.h:
 
 /usr/include/malloc.h:
 

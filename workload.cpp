@@ -703,5 +703,7 @@ int main(int argc, char *argv[]) {
     run_rdtsc_benchmark(index_type, num_thread, 50 * 1000 * 1000);
   }
 
+  exit_cleanup();
+
   return 0;
 }

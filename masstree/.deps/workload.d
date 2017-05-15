@@ -165,7 +165,7 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/basic_file.h \
  /usr/include/x86_64-linux-gnu/c++/5/bits/c++io.h \
  /usr/include/c++/5/bits/fstream.tcc /usr/include/c++/5/csignal \
- /usr/include/c++/5/cmath pcm/pcm-numa.cpp microbench.h \
+ /usr/include/c++/5/cmath pcm/pcm-numa.cpp papi_util.cpp microbench.h \
  /usr/local/include/papi.h \
  /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/limits.h \
  /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/syslimits.h \
@@ -177,8 +177,8 @@ workload.o: workload.cpp /usr/include/stdc-predef.h masstree/config.h \
  /usr/local/include/papiStdEventDefs.h allocatortracker.h \
  /usr/include/c++/5/map /usr/include/c++/5/bits/stl_tree.h \
  /usr/include/c++/5/bits/stl_map.h /usr/include/c++/5/bits/stl_multimap.h \
- util.h indexkey.h index.h ARTOLC/Tree.h ARTOLC/N.h \
- /usr/include/c++/5/atomic ARTOLC/Key.h ARTOLC/Epoche.h \
+ microbench.h allocatortracker.h util.h indexkey.h index.h ARTOLC/Tree.h \
+ ARTOLC/N.h /usr/include/c++/5/atomic ARTOLC/Key.h ARTOLC/Epoche.h \
  /usr/include/tbb/enumerable_thread_specific.h \
  /usr/include/tbb/concurrent_vector.h /usr/include/tbb/tbb_stddef.h \
  /usr/include/tbb/tbb_config.h /usr/include/c++/5/cstddef \
@@ -753,6 +753,8 @@ pcm/utils.h:
 
 pcm/pcm-numa.cpp:
 
+papi_util.cpp:
+
 microbench.h:
 
 /usr/local/include/papi.h:
@@ -784,6 +786,10 @@ allocatortracker.h:
 /usr/include/c++/5/bits/stl_map.h:
 
 /usr/include/c++/5/bits/stl_multimap.h:
+
+microbench.h:
+
+allocatortracker.h:
 
 util.h:
 

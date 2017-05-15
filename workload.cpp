@@ -44,7 +44,12 @@ extern bool hyperthreading;
 
 // This is the flag for whather to measure memory bandwidth
 static bool memory_bandwidth = false;
+// Whether to measure NUMA Throughput
 static bool numa = false;
+// Whether to measure cache misses
+static bool cache = false;
+// Whether to measure instruction details
+static bool inst = false;
 
 #include "util.h"
 
@@ -287,6 +292,14 @@ inline void exec(int wl,
   if(numa == true) {
     PCM_NUMA::StartNUMAMonitor();
   }
+
+  if(cache == true) {
+    StartCacheMonitor();
+  }
+
+  if(inst == true) {
+    StartInstMonitor();
+  }
  
   double start_time = get_now(); 
   StartThreads(idx, num_thread, func, false);
@@ -298,6 +311,14 @@ inline void exec(int wl,
 
   if(numa == true) {
     PCM_NUMA::EndNUMAMonitor();
+  }
+
+  if(cache == true) {
+    EndCacheMonitor();
+  }
+
+  if(inst == true) {
+    EndInstMonitor();
   }
 
   // Only execute consolidation if BwTree delta chain is used
@@ -424,6 +445,14 @@ inline void exec(int wl,
     PCM_NUMA::StartNUMAMonitor();
   }
 
+  if(cache == true) {
+    StartCacheMonitor();
+  }
+
+  if(inst == true) {
+    StartInstMonitor();
+  }
+
   start_time = get_now();  
   StartThreads(idx, num_thread, func2, false);
   end_time = get_now();
@@ -434,6 +463,14 @@ inline void exec(int wl,
 
   if(numa == true) {
     PCM_NUMA::EndNUMAMonitor();
+  }
+
+  if(cache == true) {
+    EndCacheMonitor();
+  }
+
+  if(inst == true) {
+    EndInstMonitor();
   }
 
   // Print out how many reads have missed in the index (do not have a value)
@@ -620,6 +657,10 @@ int main(int argc, char *argv[]) {
       memory_bandwidth = true;
     } else if(strcmp(*v, "--numa") == 0) {
       numa = true;
+    } else if(strcmp(*v, "--cache") == 0) {
+      cache = true;
+    } else if(strcmp(*v, "--inst") == 0) {
+      inst = true;
     }
   }
 
@@ -669,6 +710,16 @@ int main(int argc, char *argv[]) {
 
     // Call init here to avoid calling it mutiple times
     PCM_NUMA::InitNUMAMonitor();
+  }
+
+  if(cache == true) {
+    fprintf(stderr, "  Measuring cache misses\n");
+    InitCacheMonitor();
+  }
+
+  if(inst == true) {
+    fprintf(stderr, "  Measuring instructions\n");
+    InitInstMonitor();
   }
 
   // If the key type is RDTSC we just run the special function

@@ -4,7 +4,35 @@
 static constexpr int PAPI_CACHE_EVENT_COUNT = 3;
 static constexpr int PAPI_INST_EVENT_COUNT = 4;
 
+// This is only for low level initialization - do not call this
+// if only counters are read or started
+void InitPAPI() {
+  int retval;
+
+  retval = PAPI_library_init(PAPI_VER_CURRENT);
+  if(retval != PAPI_VER_CURRENT && retval > 0) {
+    fprintf(stderr,"PAPI library version mismatch!\n");
+    exit(1); 
+  }
+
+  if (retval < 0) {
+    fprintf(stderr, "PAPI failed to start (1): %s\n", PAPI_strerror(retval));
+    exit(1);
+  }
+
+  retval = PAPI_is_initialized();
+
+
+  if (retval != PAPI_LOW_LEVEL_INITED) {
+    fprintf(stderr, "PAPI failed to start (2): %s\n", PAPI_strerror(retval));
+    exit(1);
+  }
+
+  return;
+}
+
 void InitInstMonitor() {
+  //InitPAPI();
   return;
 }
 
@@ -27,7 +55,7 @@ void EndInstMonitor() {
   int retval;
 
   if ((retval = PAPI_stop_counters(counters, PAPI_INST_EVENT_COUNT)) != PAPI_OK) {
-    fprintf(stderr, "PAPI failed to read counters: %s\n", PAPI_strerror(retval));
+    fprintf(stderr, "PAPI failed to stop counters: %s\n", PAPI_strerror(retval));
     exit(1);
   }
 
@@ -67,7 +95,7 @@ void EndCacheMonitor() {
   int retval;
 
   if ((retval = PAPI_stop_counters(counters, PAPI_CACHE_EVENT_COUNT)) != PAPI_OK) {
-    fprintf(stderr, "PAPI failed to read counters: %s\n", PAPI_strerror(retval));
+    fprintf(stderr, "PAPI failed to stop counters: %s\n", PAPI_strerror(retval));
     exit(1);
   }
 
@@ -78,7 +106,7 @@ void EndCacheMonitor() {
   return;
 }
 
-// Empty function for consistency
 void InitCacheMonitor() {
+  //InitPAPI();
   return;
 }

@@ -94,10 +94,10 @@ inline void load(int wl,
   // but do not execute any transaction. In this case we do not 
   if(kt == RAND_KEY && wl == WORKLOAD_Z) {
     init_file = "workloads/loada_zipf_int_100M.dat";
-    txn_file = "";
+    txn_file = "workloads/txnsa_zipf_int_100M.dat";
   } else if(kt == MONO_KEY && wl == WORKLOAD_Z) {
     init_file = "workloads/mono_inc_loada_zipf_int_100M.dat";
-    txn_file = "";
+    txn_file = "workloads/mono_inc_txnsa_zipf_int_100M.dat";
   } else if (kt == RAND_KEY && wl == WORKLOAD_A) {
     init_file = "workloads/loada_zipf_int_100M.dat";
     txn_file = "workloads/txnsa_zipf_int_100M.dat";
@@ -165,11 +165,6 @@ inline void load(int wl,
       values.push_back(reinterpret_cast<uint64_t>(init_keys_data+count));
       count++;
     }
-  }
-
-  if(txn_file.size() == 0) {
-    fprintf(stderr, "  Do not load transaction file\n");
-    return;
   }
 
   // If we also execute transaction then open the 

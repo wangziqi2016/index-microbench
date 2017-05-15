@@ -511,9 +511,17 @@ void run_rdtsc_benchmark(int index_type, int thread_num, int key_num) {
     return;
   };
 
+  if(numa == true) {
+    PCM_NUMA::StartNUMAMonitor();
+  }
+
   double start_time = get_now();
   StartThreads(idx, thread_num, func, false);
   double end_time = get_now();
+
+  if(numa == true) {
+    PCM_NUMA::EndNUMAMonitor();
+  }
 
   // Only execute consolidation if BwTree delta chain is used
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT

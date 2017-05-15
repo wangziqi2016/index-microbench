@@ -1,6 +1,7 @@
 
 #include "./pcm/pcm-memory.cpp"
 #include "./pcm/pcm-numa.cpp"
+#include "./papi_util.cpp"
 
 #include "microbench.h"
 

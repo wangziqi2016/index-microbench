@@ -161,7 +161,7 @@ static constexpr NodeID FIRST_LEAF_NODE_ID = static_cast<NodeID>(2UL);
 /////////////////////////////////////////////////////////////////////
 
 // The maximum number of nodes we could map in this index
-static constexpr size_t MAPPING_TABLE_SIZE = 0x1 << 24;
+static constexpr size_t MAPPING_TABLE_SIZE = 0x1 << 20;
 
 // If the length of delta chain exceeds ( >= ) this then we consolidate 
 // the node
@@ -213,6 +213,10 @@ static constexpr int PREALLOCATE_THREAD_NUM = 1024;
 #define INC_COUNTER(name, value) do {} while(false);
 #endif
 
+// This determines whether bwtree will use preallocation
+#define BWTREE_PREALLOCATION
+
+
 /*
  * InnerInlineAllocateOfType() - allocates a chunk of memory from base node and
  *                               initialize it using placement new and then 
@@ -220,11 +224,17 @@ static constexpr int PREALLOCATE_THREAD_NUM = 1024;
  *
  * This is used for InnerNode delta chains
  */
+
+#ifdef BWTREE_PREALLOCATION
 #define InnerInlineAllocateOfType(T, node_p, ...) (static_cast<T *>( \
                                                      new(InnerNode::InlineAllocate( \
                                                          &node_p->GetLowKeyPair(), \
-                                                         sizeof(InnerDeltaNodeUnion)) \
+                                                         sizeof(T)) \
                                                      ) T{ __VA_ARGS__ } ))
+#else
+// If preallocation is not enabled this is simply an operator new
+#define InnerInlineAllocateOfType(T, node_p, ...) (new T{ __VA_ARGS__ })
+#endif
                                                      
 /*
  * LeafInlineAllocateOfType() - allocates a chunk of memory from base node and
@@ -233,11 +243,16 @@ static constexpr int PREALLOCATE_THREAD_NUM = 1024;
  *
  * This is used for LeafNode delta chains
  */
+#ifdef BWTREE_PREALLOCATION
 #define LeafInlineAllocateOfType(T, node_p, ...) (static_cast<T *>( \
                                                     new(LeafNode::InlineAllocate( \
                                                         &node_p->GetLowKeyPair(), \
-                                                        sizeof(LeafDeltaNodeUnion)) \
+                                                        sizeof(T)) \
                                                     ) T{__VA_ARGS__} ))
+#else
+// If preallocation is not enabled this is simply an operator new
+#define LeafInlineAllocateOfType(T, node_p, ...) (new T{ __VA_ARGS__ })
+#endif
 
 /*
  * class BwTreeBase - Base class of BwTree that stores some common members
@@ -2038,8 +2053,8 @@ class BwTree : public BwTreeBase {
   };
   
   /*
-   * union InnerDeltaNodeUnion - The union of all delta nodes - we use this to 
-   *                             precllocate memory on the base node for delta nodes
+   * union DeltaNodeUnion - The union of all delta nodes - we use this to 
+   *                        precllocate memory on the base node for delta nodes
    */
   union InnerDeltaNodeUnion {
     InnerInsertNode inner_insert_node;
@@ -2051,8 +2066,8 @@ class BwTree : public BwTreeBase {
   };
   
   /*
-   * union LeafDeltaNodeUnion - This is used to determine the preallocation size
-   *                            for leaf level delta chains
+   * LeafDeltaNodeUnion - This is used to determine the preallocation size
+   *                      for leaf level delta chains
    */
   union LeafDeltaNodeUnion {
     LeafInsertNode leaf_insert_node;
@@ -2533,7 +2548,11 @@ class BwTree : public BwTreeBase {
       return;
     }
   };
-  
+
+  // If preallocation is enabled then the preallocated storage is of size
+  // threshold * union size  
+  // Otherwise preallocate 0 bytes
+#ifdef BWTREE_PREALLOCATION
   // This is the base type of inner nodes
   using InnerBaseType = ElasticNode<INNER_DELTA_CHAIN_LENGTH_THRESHOLD *
                                       sizeof(InnerDeltaNodeUnion),
@@ -2542,6 +2561,15 @@ class BwTree : public BwTreeBase {
   using LeafBaseType = ElasticNode<LEAF_DELTA_CHAIN_LENGTH_THRESHOLD * 
                                      sizeof(LeafDeltaNodeUnion),
                                    char[0]>;
+#else
+  // This is the base type of inner nodes
+  using InnerBaseType = ElasticNode<0UL,
+                                    NodeID *>;
+  // This is the base type of leaf nodes
+  using LeafBaseType = ElasticNode<0UL,
+                                   char[0]>;
+#endif
+
   /*
    * class InnerNode - Inner node that holds keys and NodeID arrays
    *
@@ -3585,7 +3613,7 @@ class BwTree : public BwTreeBase {
     int ret = 0;
     
     if(node_p->IsOnLeafDeltaChain() == true) {
-      if(//type == NodeType::LeafSplitType ||
+      if(type == NodeType::LeafSplitType ||
          type == NodeType::LeafMergeType ||
          type == NodeType::LeafRemoveType) {
         fprintf(stderr,
@@ -3607,7 +3635,7 @@ class BwTree : public BwTreeBase {
       (*leaf_node_total)++;
       (*leaf_size_total) += leaf_node_p->GetItemCount();
     } else {
-      if(//type == NodeType::InnerSplitType ||
+      if(type == NodeType::InnerSplitType ||
          type == NodeType::InnerMergeType ||
          type == NodeType::InnerRemoveType ||
          type == NodeType::InnerAbortType) {
@@ -9178,7 +9206,11 @@ try_join_again:
           case NodeType::LeafInsertType:
             next_node_p = ((LeafInsertNode *)node_p)->child_node_p;
 
+#ifdef BWTREE_PREALLOCATION
             ((LeafInsertNode *)node_p)->~LeafInsertNode();
+#else
+            delete (LeafInsertNode *)node_p;
+#endif
 
             #ifdef BWTREE_DEBUG
             freed_count++;
@@ -9187,7 +9219,11 @@ try_join_again:
           case NodeType::LeafDeleteType:
             next_node_p = ((LeafDeleteNode *)node_p)->child_node_p;
 
+#ifdef BWTREE_PREALLOCATION
             ((LeafDeleteNode *)node_p)->~LeafDeleteNode();
+#else
+            delete (LeafDeleteNode *)node_p;
+#endif
 
             #ifdef BWTREE_DEBUG
             freed_count++;
@@ -9197,7 +9233,11 @@ try_join_again:
           case NodeType::LeafUpdateType:
             next_node_p = ((LeafUpdateNode *)node_p)->child_node_p;
 
+#ifdef BWTREE_PREALLOCATION
             ((LeafUpdateNode *)node_p)->~LeafUpdateNode();
+#else
+            delete (LeafUpdateNode *)node_p;
+#endif
 
             #ifdef BWTREE_DEBUG
             freed_count++;
@@ -9207,7 +9247,11 @@ try_join_again:
           case NodeType::LeafSplitType:
             next_node_p = ((LeafSplitNode *)node_p)->child_node_p;
 
+#ifdef BWTREE_PREALLOCATION
             ((LeafSplitNode *)node_p)->~LeafSplitNode();
+#else
+            delete (LeafSplitNode *)node_p;
+#endif
 
             #ifdef BWTREE_DEBUG
             freed_count++;
@@ -9218,7 +9262,11 @@ try_join_again:
             FreeEpochDeltaChain(((LeafMergeNode *)node_p)->child_node_p);
             FreeEpochDeltaChain(((LeafMergeNode *)node_p)->right_merge_p);
 
+#ifdef BWTREE_PREALLOCATION
             ((LeafMergeNode *)node_p)->~LeafMergeNode();
+#else
+            delete (LeafMergeNode *)node_p;
+#endif
 
             #ifdef BWTREE_DEBUG
             freed_count++;
@@ -9254,7 +9302,11 @@ try_join_again:
           case NodeType::InnerInsertType:
             next_node_p = ((InnerInsertNode *)node_p)->child_node_p;
 
+#ifdef BWTREE_PREALLOCATION
             ((InnerInsertNode *)node_p)->~InnerInsertNode();
+#else
+            delete (InnerInsertNode *)node_p;
+#endif
 
             #ifdef BWTREE_DEBUG
             freed_count++;
@@ -9264,7 +9316,11 @@ try_join_again:
           case NodeType::InnerDeleteType:
             next_node_p = ((InnerDeleteNode *)node_p)->child_node_p;
 
+#ifdef BWTREE_PREALLOCATION
             ((InnerDeleteNode *)node_p)->~InnerDeleteNode();
+#else
+            delete (InnerDeleteNode *)node_p;
+#endif            
             
             #ifdef BWTREE_DEBUG
             freed_count++;
@@ -9274,7 +9330,11 @@ try_join_again:
           case NodeType::InnerSplitType:
             next_node_p = ((InnerSplitNode *)node_p)->child_node_p;
 
+#ifdef BWTREE_PREALLOCATION
             ((InnerSplitNode *)node_p)->~InnerSplitNode();
+#else
+            delete (InnerSplitNode *)node_p;
+#endif
 
             #ifdef BWTREE_DEBUG
             freed_count++;
@@ -9285,7 +9345,11 @@ try_join_again:
             FreeEpochDeltaChain(((InnerMergeNode *)node_p)->child_node_p);
             FreeEpochDeltaChain(((InnerMergeNode *)node_p)->right_merge_p);
 
+#ifdef BWTREE_PREALLOCATION
             ((InnerMergeNode *)node_p)->~InnerMergeNode();
+#else
+            delete (InnerMergeNode *)node_p;
+#endif
 
             #ifdef BWTREE_DEBUG
             freed_count++;

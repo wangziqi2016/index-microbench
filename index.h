@@ -190,10 +190,16 @@ template<typename KeyType,
 class BwTreeIndex : public Index<KeyType, KeyComparator>
 {
  public:
+  using index_type = BwTree<KeyType, uint64_t, KeyComparator, KeyEqualityChecker, KeyHashFunc>;
   BwTreeIndex(uint64_t kt) {
-    index_p = new BwTree<KeyType, uint64_t, KeyComparator, KeyEqualityChecker, KeyHashFunc>{};
+    index_p = new index_type{};
     assert(index_p != nullptr);
     (void)kt;
+
+    // Print the size of preallocated storage
+    fprintf(stderr, "Inner prealloc size = %lu; Leaf prealloc size = %lu\n",
+            index_type::INNER_PREALLOCATION_SIZE,
+            index_type::LEAF_PREALLOCATION_SIZE);
 
     return;
   }

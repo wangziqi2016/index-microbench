@@ -25,11 +25,11 @@ run_all: workload workload_string
 	./workload_string c email $(TYPE) $(THREAD_NUM)
 	./workload_string e email $(TYPE) $(THREAD_NUM)
 
-workload.o: workload.cpp microbench.h index.h util.h ./masstree/mtIndexAPI.hh ./BwTree/bwtree.h BTreeOLC/BTreeOLC.h
+workload.o: workload.cpp microbench.h index.h util.h ./masstree/mtIndexAPI.hh ./BwTree/bwtree.h BTreeOLC/BTreeOLC.h ./pcm/pcm-memory.cpp ./pcm/pcm-numa.cpp ./papi_util.cpp
 	$(CXX) $(CFLAGS) -c -o workload.o workload.cpp
 
-workload: workload.o bwtree.o artolc.o ./masstree/mtIndexAPI.a
-	$(CXX) $(CFLAGS) -o workload workload.o bwtree.o artolc.o masstree/mtIndexAPI.a $(MEMMGR) -lpthread -lm -ltbb
+workload: workload.o bwtree.o artolc.o ./masstree/mtIndexAPI.a ./pcm/libPCM.a
+	$(CXX) $(CFLAGS) -o workload workload.o bwtree.o artolc.o masstree/mtIndexAPI.a ./pcm/libPCM.a $(MEMMGR) -lpthread -lm -ltbb
 
 workload_string.o: workload_string.cpp microbench.h index.h util.h ./masstree/mtIndexAPI.hh ./BwTree/bwtree.h BTreeOLC/BTreeOLC.h
 	$(CXX) $(CFLAGS) -c -o workload_string.o workload_string.cpp

@@ -1,4 +1,8 @@
 
+#include "./pcm/pcm-memory.cpp"
+#include "./pcm/pcm-numa.cpp"
+#include "./papi_util.cpp"
+
 #include "microbench.h"
 
 #include <cstring>
@@ -37,6 +41,15 @@ static const uint64_t key_type=0;
 static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
 
 extern bool hyperthreading;
+
+// This is the flag for whather to measure memory bandwidth
+static bool memory_bandwidth = false;
+// Whether to measure NUMA Throughput
+static bool numa = false;
+// Whether to measure cache misses
+static bool cache = false;
+// Whether to measure instruction details
+static bool inst = false;
 
 #include "util.h"
 
@@ -81,10 +94,10 @@ inline void load(int wl,
   // but do not execute any transaction. In this case we do not 
   if(kt == RAND_KEY && wl == WORKLOAD_Z) {
     init_file = "workloads/loada_zipf_int_100M.dat";
-    txn_file = "";
+    txn_file = "workloads/txnsa_zipf_int_100M.dat";
   } else if(kt == MONO_KEY && wl == WORKLOAD_Z) {
     init_file = "workloads/mono_inc_loada_zipf_int_100M.dat";
-    txn_file = "";
+    txn_file = "workloads/mono_inc_txnsa_zipf_int_100M.dat";
   } else if (kt == RAND_KEY && wl == WORKLOAD_A) {
     init_file = "workloads/loada_zipf_int_100M.dat";
     txn_file = "workloads/txnsa_zipf_int_100M.dat";
@@ -154,11 +167,6 @@ inline void load(int wl,
     }
   }
 
-  if(txn_file.size() == 0) {
-    fprintf(stderr, "  Do not load transaction file\n");
-    return;
-  }
-
   // If we also execute transaction then open the 
   // transacton file here
   std::ifstream infile_txn(txn_file);
@@ -210,8 +218,6 @@ inline void exec(int wl,
 
   //WRITE ONLY TEST-----------------
   int count = (int)init_keys.size();
-  double start_time = get_now();
-  
 
 #ifdef USE_TBB  
   tbb::task_scheduler_init init{num_thread};
@@ -273,9 +279,42 @@ inline void exec(int wl,
     
     return;
   };
-  
-  
+ 
+  if(memory_bandwidth == true) {
+    PCM_memory::StartMemoryMonitor();
+  }
+
+  if(numa == true) {
+    PCM_NUMA::StartNUMAMonitor();
+  }
+
+  if(cache == true) {
+    StartCacheMonitor();
+  }
+
+  if(inst == true) {
+    StartInstMonitor();
+  }
+ 
+  double start_time = get_now(); 
   StartThreads(idx, num_thread, func, false);
+  double end_time = get_now();
+ 
+  if(memory_bandwidth == true) {
+    PCM_memory::EndMemoryMonitor();
+  }
+
+  if(numa == true) {
+    PCM_NUMA::EndNUMAMonitor();
+  }
+
+  if(cache == true) {
+    EndCacheMonitor();
+  }
+
+  if(inst == true) {
+    EndInstMonitor();
+  }
 
   // Only execute consolidation if BwTree delta chain is used
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
@@ -284,7 +323,6 @@ inline void exec(int wl,
 
 #endif   
   
-  double end_time = get_now();
   double tput = count / (end_time - start_time) / 1000000; //Mops/sec
 
   std::cout << "\033[1;32m";
@@ -296,34 +334,9 @@ inline void exec(int wl,
   }
 
   //READ/UPDATE/SCAN TEST----------------
-  start_time = get_now();
   int txn_num = GetTxnCount(ops, index_type);
   uint64_t sum = 0;
   uint64_t s = 0;
-
-#ifdef PAPI_IPC
-  //Variables for PAPI
-  float real_time, proc_time, ipc;
-  long long ins;
-  int retval;
-
-  if((retval = PAPI_ipc(&real_time, &proc_time, &ins, &ipc)) < PAPI_OK) {    
-    printf("PAPI error: retval: %d\n", retval);
-    exit(1);
-  }
-#endif
-
-#ifdef PAPI_CACHE
-  static const int EVENT_COUNT = 3;
-  int events[EVENT_COUNT] = {PAPI_L1_TCM, PAPI_L2_TCM, PAPI_L3_TCM};
-  long long counters[EVENT_COUNT];
-  int retval;
-
-  if ((retval = PAPI_start_counters(events, EVENT_COUNT)) != PAPI_OK) {
-    fprintf(stderr, "PAPI failed to start counters: %s\n", PAPI_strerror(retval));
-    exit(1);
-  }
-#endif
 
   if(values.size() < keys.size()) {
     fprintf(stderr, "Values array too small\n");
@@ -394,10 +407,42 @@ inline void exec(int wl,
     
     return;
   };
-  
+
+  if(memory_bandwidth == true) {
+    PCM_memory::StartMemoryMonitor();
+  }
+
+  if(numa == true) {
+    PCM_NUMA::StartNUMAMonitor();
+  }
+
+  if(cache == true) {
+    StartCacheMonitor();
+  }
+
+  if(inst == true) {
+    StartInstMonitor();
+  }
+
+  start_time = get_now();  
   StartThreads(idx, num_thread, func2, false);
-  
   end_time = get_now();
+
+  if(memory_bandwidth == true) {
+    PCM_memory::EndMemoryMonitor();
+  }
+
+  if(numa == true) {
+    PCM_NUMA::EndNUMAMonitor();
+  }
+
+  if(cache == true) {
+    EndCacheMonitor();
+  }
+
+  if(inst == true) {
+    EndInstMonitor();
+  }
 
   // Print out how many reads have missed in the index (do not have a value)
 #ifdef COUNT_READ_MISS
@@ -405,29 +450,6 @@ inline void exec(int wl,
           "  Read misses: %lu; Read hits: %lu\n", 
           read_miss_counter.load(),
           read_hit_counter.load());
-#endif
-
-#ifdef PAPI_IPC
-  if((retval = PAPI_ipc(&real_time, &proc_time, &ins, &ipc)) < PAPI_OK) {    
-    printf("PAPI error: retval: %d\n", retval);
-    exit(1);
-  }
-
-  std::cout << "Time = " << real_time << "\n";
-  std::cout << "Tput = " << LIMIT/real_time << "\n";
-  std::cout << "Inst = " << ins << "\n";
-  std::cout << "IPC = " << ipc << "\n";
-#endif
-
-#ifdef PAPI_CACHE
-  if ((retval = PAPI_read_counters(counters, EVENT_COUNT)) != PAPI_OK) {
-    fprintf(stderr, "PAPI failed to read counters: %s\n", PAPI_strerror(retval));
-    exit(1);
-  }
-
-  std::cout << "L1 miss = " << counters[0] << "\n";
-  std::cout << "L2 miss = " << counters[1] << "\n";
-  std::cout << "L3 miss = " << counters[2] << "\n";
 #endif
 
   tput = txn_num / (end_time - start_time) / 1000000; //Mops/sec
@@ -489,9 +511,17 @@ void run_rdtsc_benchmark(int index_type, int thread_num, int key_num) {
     return;
   };
 
+  if(numa == true) {
+    PCM_NUMA::StartNUMAMonitor();
+  }
+
   double start_time = get_now();
   StartThreads(idx, thread_num, func, false);
   double end_time = get_now();
+
+  if(numa == true) {
+    PCM_NUMA::EndNUMAMonitor();
+  }
 
   // Only execute consolidation if BwTree delta chain is used
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
@@ -576,7 +606,17 @@ int main(int argc, char *argv[]) {
   char **argv_end = argv + argc;
   for(char **v = argv + 5;v != argv_end;v++) {
     if(strcmp(*v, "--hyper") == 0) {
+      // Enable hyoerthreading for scheduling threads
       hyperthreading = true;
+    } else if(strcmp(*v, "--mem") == 0) {
+      // Enable memory bandwidth measurement
+      memory_bandwidth = true;
+    } else if(strcmp(*v, "--numa") == 0) {
+      numa = true;
+    } else if(strcmp(*v, "--cache") == 0) {
+      cache = true;
+    } else if(strcmp(*v, "--inst") == 0) {
+      inst = true;
     }
   }
 
@@ -603,6 +643,39 @@ int main(int argc, char *argv[]) {
   // If we do not interleave threads on two sockets then this will be printed
   if(hyperthreading == true) {
     fprintf(stderr, "  Hyperthreading for thread 10 - 19, 30 - 39\n");
+  }
+
+  if(memory_bandwidth == true) {
+    if(geteuid() != 0) {
+      fprintf(stderr, "Please run the program as root in order to measure memory bandwidth\n");
+      exit(1);
+    }
+
+    fprintf(stderr, "  Measuring memory bandwidth\n");
+
+    PCM_memory::InitMemoryMonitor();
+  }
+
+  if(numa == true) {
+    if(geteuid() != 0) {
+      fprintf(stderr, "Please run the program as root in order to measure NUMA operations\n");
+      exit(1);
+    }
+
+    fprintf(stderr, "  Measuring NUMA operations\n");
+
+    // Call init here to avoid calling it mutiple times
+    PCM_NUMA::InitNUMAMonitor();
+  }
+
+  if(cache == true) {
+    fprintf(stderr, "  Measuring cache misses\n");
+    InitCacheMonitor();
+  }
+
+  if(inst == true) {
+    fprintf(stderr, "  Measuring instructions\n");
+    InitInstMonitor();
   }
 
   // If the key type is RDTSC we just run the special function
@@ -637,6 +710,8 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Running RDTSC benchmark...\n");
     run_rdtsc_benchmark(index_type, num_thread, 50 * 1000 * 1000);
   }
+
+  exit_cleanup();
 
   return 0;
 }

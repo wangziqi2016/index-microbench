@@ -1,37 +1,36 @@
-ROOT = ../../..
 
-include $(ROOT)/common/Makefile.common
-
-BINS = $(BINDIR)/lockfree-rotating-skiplist
+CC=gcc
+CFLAGS=-O3 -I./atomic_ops/
+LDFLAGS=-pthread
 
 .PHONY:	all clean
 
 all:	main
 
 $(BUILDIR)/ptst.o: ptst.h common.h 
-	$(CC) $(CFLAGS) -c -o $(BUILDIR)/ptst.o ptst.c 
+	$(CC) $(CFLAGS) -c -o ./ptst.o ptst.c 
 
 $(BUILDIR)/garbagecoll.o: garbagecoll.h ptst.h common.h
-	$(CC) $(CFLAGS) -c -o $(BUILDIR)/garbagecoll.o garbagecoll.c 
+	$(CC) $(CFLAGS) -c -o ./garbagecoll.o garbagecoll.c 
 
 $(BUILDIR)/nohotspot_ops.o: skiplist.h background.h nohotspot_ops.h common.h 
-	$(CC) $(CFLAGS) -c -o $(BUILDIR)/nohotspot_ops.o nohotspot_ops.c 
+	$(CC) $(CFLAGS) -c -o ./nohotspot_ops.o nohotspot_ops.c 
 
 $(BUILDIR)/skiplist.o: skiplist.h background.h common.h 
-	$(CC) $(CFLAGS) -c -o $(BUILDIR)/skiplist.o skiplist.c 
+	$(CC) $(CFLAGS) -c -o ./skiplist.o skiplist.c 
 
 $(BUILDIR)/background.o: background.h skiplist.h common.h
-	$(CC) $(CFLAGS) -c -o $(BUILDIR)/background.o background.c 
+	$(CC) $(CFLAGS) -c -o ./background.o background.c 
 
 intset.o: intset.h nohotspot_ops.h skiplist.h
-	$(CC) $(CFLAGS) -c -o $(BUILDIR)/intset.o intset.c 
+	$(CC) $(CFLAGS) -c -o ./intset.o intset.c 
 
 test.o: intset.h
-	$(CC) $(CFLAGS) -c -o $(BUILDIR)/test.o test.c
+	$(CC) $(CFLAGS) -c -o ./test.o test.c
 
-main: intset.o $(BUILDIR)/background.o $(BUILDIR)/skiplist.o $(BUILDIR)/nohotspot_ops.o test.o $(BUILDIR)/ptst.o $(BUILDIR)/garbagecoll.o
-	$(CC) $(CFLAGS) $(BUILDIR)/garbagecoll.o $(BUILDIR)/ptst.o $(BUILDIR)/skiplist.o $(BUILDIR)/nohotspot_ops.o $(BUILDIR)/intset.o $(BUILDIR)/background.o $(BUILDIR)/test.o -o $(BINS) $(LDFLAGS)
+main: intset.o background.o skiplist.o nohotspot_ops.o test.o ptst.o garbagecoll.o
+	$(CC) $(CFLAGS) garbagecoll.o ptst.o skiplist.o nohotspot_ops.o intset.o background.o test.o -o ./main $(LDFLAGS)
 
 clean:
-	-rm -rf ${BUILDIR}
-	-rm -f $(BINS)
+	-rm -rf *.o
+	-rm -f ./main

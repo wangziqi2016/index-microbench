@@ -1,7 +1,5 @@
 
-CC=gcc
-CFLAGS=-O3 -I./atomic_ops/
-LDFLAGS=-pthread
+include Makefile.common
 
 .PHONY:	all clean
 

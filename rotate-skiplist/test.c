@@ -32,7 +32,7 @@
 #include <time.h>
 #include <stdint.h>
 
-#include <atomic_ops.h>
+#include "./atomic_ops/atomic_ops.h"
 
 #include "tm.h"
 #include "ptst.h"

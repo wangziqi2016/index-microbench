@@ -52,7 +52,7 @@ finished.
 
 #include <stdlib.h>
 #include <assert.h>
-#include <atomic_ops.h>
+#include "./atomic_ops/atomic_ops.h"
 
 #include "common.h"
 #include "skiplist.h"

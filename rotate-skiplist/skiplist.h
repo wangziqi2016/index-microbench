@@ -7,7 +7,7 @@
 #ifndef SKIPLIST_H_
 #define SKIPLIST_H_
 
-#include <atomic_ops.h>
+#include "./atomic_ops/atomic_ops.h"
 
 #include "common.h"
 #include "ptst.h"

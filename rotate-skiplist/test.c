@@ -38,6 +38,8 @@
 #include "ptst.h"
 #include "garbagecoll.h"
 
+#include "lockfree.h"
+
 #define DEFAULT_DURATION                10000
 #define DEFAULT_INITIAL                 256
 #define DEFAULT_NB_THREADS              1

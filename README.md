@@ -29,4 +29,4 @@
 
    The generated workload files will be in ./workloads
 
-5. NOTE: To generate email-key workloads, you need an email list (list.txt)# index-microbench
+5. NOTE: To generate email-key workloads, you need an email list (list.txt)# index-microbench 

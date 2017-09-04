@@ -1,6 +1,6 @@
 # index-microbench
 
-## Generate Workloads ##
+## Generate Workloads ## 
 
 1. Download [YCSB](https://github.com/brianfrankcooper/YCSB/releases/latest)
 

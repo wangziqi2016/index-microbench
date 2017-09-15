@@ -346,9 +346,9 @@ int main(int argc, char **argv)
 	int alternate = DEFAULT_ALTERNATE;
 	int effective = DEFAULT_EFFECTIVE;
 	sigset_t block_set;
-        unsigned long top;
-        node_t *node = NULL;
-        int unbalanced = DEFAULT_UNBALANCED;
+	unsigned long top;
+	node_t *node = NULL;
+	int unbalanced = DEFAULT_UNBALANCED;
 
 	while(1) {
 		i = 0;
@@ -416,8 +416,8 @@ int main(int argc, char **argv)
 					update = atoi(optarg);
 					break;
 				case 'U':
-                                        unbalanced = atoi(optarg);
-                                        break;
+					unbalanced = atoi(optarg);
+					break;
 				case '?':
 					printf("Use -h or --help for help\n");
 					exit(0);
@@ -467,11 +467,11 @@ int main(int argc, char **argv)
 
 	levelmax = floor_log_2((unsigned int) initial);
 
-        /* create the skip list set and do inits */
-        ptst_subsystem_init();
-        gc_subsystem_init();
-        set_subsystem_init();
-        set = set_new(1);
+	/* create the skip list set and do inits */
+	ptst_subsystem_init();
+	gc_subsystem_init();
+	set_subsystem_init();
+	set = set_new(1);
 	stop = 0;
 
         global_seed = rand();
@@ -492,18 +492,23 @@ int main(int argc, char **argv)
 
 	// Populate set
 	printf("Adding %d entries to set\n", initial);
-	i = 0;
 
+	// This is the loop counter
+	i = 0;
+	// Start insetring values inside the while loop
 	while (i < initial) {
-                if (unbalanced)
-		        val = rand_range_re(&global_seed, initial);
-	        else
-                        val = rand_range_re(&global_seed, range);
+    if(unbalanced) {
+		  val = rand_range_re(&global_seed, initial);
+		} else {
+			val = rand_range_re(&global_seed, range);
+		}
+
 		if (sl_add_old(set, val, 0)) {
 			last = val;
 			i++;
 		}
 	}
+
 	size = set_size(set, 1);
 	printf("Set size     : %d\n", size);
 	printf("Level max    : %d\n", levelmax);

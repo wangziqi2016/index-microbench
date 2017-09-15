@@ -139,14 +139,30 @@ inline long rand_range(long r) {
 	return v;
 }
 
-/* Thread-safe, re-entrant version of rand_range(r) */
+/*
+ * rand_range_re() - Thread-safe, re-entrant version of rand_range(r)
+ *
+ * Note that this function also cope with platforms where rand max
+ * is smaller than the given range. The approach is to generate multiple
+ * randon numbers, and scale them to different ranges within rand max
+ * and then add them up.
+ */
 inline long rand_range_re(unsigned int *seed, long r) {
 	int m = RAND_MAX;
 	int d, v = 0;
 	
+	// We use a loop here because we may need to generate values larger than
+	// the rand max value (if rand max is not int max)
 	do {
+		// This is the scale factor to scale the random value into
+		// 0 and given range (or rand max)
 		d = (m > r ? r : m);		
+		// Note that rand_r takes a seed value, which is the reason why
+		// it is reentrant and could be used across multiple threads
 		v += 1 + (int)(d * ((double)rand_r(seed)/((double)(m)+1.0)));
+
+		// Next time it will be scaled into [0, r - m]
+		// such that we will never exceed the range
 		r -= m;
 	} while (r > 0);
 	return v;
@@ -474,7 +490,7 @@ int main(int argc, char **argv)
 	set = set_new(1);
 	stop = 0;
 
-        global_seed = rand();
+	global_seed = rand();
 #ifdef TLS
 	rng_seed = &global_seed;
 #else /* ! TLS */
@@ -497,6 +513,7 @@ int main(int argc, char **argv)
 	i = 0;
 	// Start insetring values inside the while loop
 	while (i < initial) {
+		// Whether the key is unbalanced
     if(unbalanced) {
 		  val = rand_range_re(&global_seed, initial);
 		} else {

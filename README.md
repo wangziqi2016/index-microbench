@@ -1,6 +1,6 @@
 # index-microbench
 
-## Generate Workloads ##
+## Generate Workloads ## 
 
 1. Download [YCSB](https://github.com/brianfrankcooper/YCSB/releases/latest)
 
@@ -8,7 +8,7 @@
    curl -O --location https://github.com/brianfrankcooper/YCSB/releases/download/0.11.0/ycsb-0.11.0.tar.gz
    tar xfvz ycsb-0.11.0.tar.gz
    mv ycsb-0.11.0 YCSB
-   ```
+   ``` 
 
 2. Create Workload Spec
 
@@ -29,4 +29,4 @@
 
    The generated workload files will be in ./workloads
 
-5. NOTE: To generate email-key workloads, you need an email list (list.txt)# index-microbench
+5. NOTE: To generate email-key workloads, you need an email list (list.txt)# index-microbench 

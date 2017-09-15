@@ -1,4 +1,4 @@
-CC = gcc-5
+CC = gcc-5 
 CXX = g++-5 -std=gnu++0x
 DEPSDIR := masstree/.deps
 DEPCFLAGS = -MD -MF $(DEPSDIR)/$*.d -MP

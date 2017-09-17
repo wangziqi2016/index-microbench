@@ -117,8 +117,6 @@ int floor_log_2(unsigned int n) {
   return ((n == 0) ? (-1) : pos);
 }
 
-
-
 /* 
  * Returns a pseudo-random value in [1;range).
  * Depending on the symbolic constant RAND_MAX>=32767 defined in stdlib.h,
@@ -136,6 +134,7 @@ inline long rand_range(long r) {
 		v += 1 + (int)(d * ((double)rand()/((double)(m)+1.0)));
 		r -= m;
 	} while (r > 0);
+
 	return v;
 }
 
@@ -165,6 +164,7 @@ inline long rand_range_re(unsigned int *seed, long r) {
 		// such that we will never exceed the range
 		r -= m;
 	} while (r > 0);
+
 	return v;
 }
 
@@ -513,13 +513,16 @@ int main(int argc, char **argv)
 	i = 0;
 	// Start insetring values inside the while loop
 	while (i < initial) {
-		// Whether the key is unbalanced
+		// Whether the key is unbalanced, if it is then just insert keys
+		// in the given range (i.e. the number of iterations)
     if(unbalanced) {
 		  val = rand_range_re(&global_seed, initial);
 		} else {
 			val = rand_range_re(&global_seed, range);
 		}
 
+		// If insert succeeds increament i; since we use random number
+		// insertion could collide with a previously inserted value
 		if (sl_add_old(set, val, 0)) {
 			last = val;
 			i++;

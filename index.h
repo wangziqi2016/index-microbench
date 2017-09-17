@@ -64,6 +64,11 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
     (void)key_type;
     return;
   }
+  
+  // Not actually used
+  void UpdateThreadLocal(size_t thread_num) { (void)thread_num; }
+  void AssignGCID(size_t thread_id) { (void)thread_id; }
+  void UnregisterThread(size_t thread_id) { (void)thread_id; }
 };
 
 template<typename KeyType, class KeyComparator>

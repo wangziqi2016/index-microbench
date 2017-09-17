@@ -43,6 +43,30 @@ class Index
 };
 
 template<typename KeyType, class KeyComparator>
+class SkipListIndex : public Index<KeyType, KeyComparator> {
+ public:
+
+  /*
+   * Destructor - We need to stop the background thread and also to 
+   *              free the index object
+   */
+  ~SkipListIndex() {
+    // Stop the background thread
+
+    // Remove the actual index
+    return;
+  }
+
+  /*
+   * Constructor - Allocate memory and initialize the skip list index
+   */
+  SkipListIndex(uint64_t key_type) {
+    (void)key_type;
+    return;
+  }
+};
+
+template<typename KeyType, class KeyComparator>
 class ArtOLCIndex : public Index<KeyType, KeyComparator>
 {
  public:

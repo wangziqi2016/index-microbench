@@ -8,7 +8,7 @@
 #include <functional>
 
 // Traditional C libraries 
-#include <ctsdlib>
+#include <cstdlib>
 #include <cstdio>
 
 /*
@@ -24,8 +24,8 @@
  */
 template <typename _KeyType, 
           typename _ValueType,
-          typename _KeyLess = std::less,
-          typename _KeyEq = std::equal_to>
+          typename _KeyLess = std::less<_KeyType>,
+          typename _KeyEq = std::equal_to<_KeyType>>
 class RotateSkiplist {
  public:
   // Define member types to make it easier for external code to manipulate
@@ -33,7 +33,7 @@ class RotateSkiplist {
   // list then it is impossible for external code to obtain the actual
   // template arguments)
   using KeyType = _KeyType;
-  using ValueType = _ValueType
+  using ValueType = _ValueType;
   using KeyLess = _KeyLess;
   using KeyEq = _KeyEq;
  

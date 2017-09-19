@@ -22,12 +22,23 @@
  * need at least one functor which is the key comparator. To make key comparison
  * faster, a key equality checker is also required.
  */
-template <typename KeyType, 
-          typename ValueType,
-          typename KeyLess = std::less,
-          typename KeyEq = std::equal_to>
+template <typename _KeyType, 
+          typename _ValueType,
+          typename _KeyLess = std::less,
+          typename _KeyEq = std::equal_to>
 class RotateSkiplist {
-
+ public:
+  // Define member types to make it easier for external code to manipulate
+  // types inside this class (if we just write it in the template argument
+  // list then it is impossible for external code to obtain the actual
+  // template arguments)
+  using KeyType = _KeyType;
+  using ValueType = _ValueType
+  using KeyLess = _KeyLess;
+  using KeyEq = _KeyEq;
+ 
+ private:
+  
 };
 
 #endif

@@ -10,11 +10,11 @@
    mv ycsb-0.11.0 YCSB
    ``` 
 
-2. Create Workload Spec
-
-   The default workload a-f are in ./workload_spec
-
-   You can of course generate your own spec and put it in this folder.
+2. Create Workload Spec 
+ 
+   The default workload a-f are in ./workload_spec 
+ 
+   You can of course generate your own spec and put it in this folder. 
 
 3. Modify workload_config.inp
 

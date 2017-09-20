@@ -6,6 +6,7 @@
 
 // This contains std::less and std::equal_to
 #include <functional>
+#include <atomic>
 
 // Traditional C libraries 
 #include <cstdlib>
@@ -26,18 +27,35 @@ class GCState {
 };
 
 /*
- * class PerThreadState - This class implements thread state related functions
+ * class ThreadState - This class implements thread state related functions
  */
-class PerThreadState {
+class ThreadState {
  public:
   // This is the current thread ID
-  unsigned int thread;
-  unsigned int count;
+  unsigned int id;
+  
+  // Whether the thread state object is already owned by some
+  // active thread. We set this flag when a thread claims a certain
+  // object, and clears the flag when thread exits by using a callback
+  std::atomic<bool> owned;
 
   // Points to the next state object in the linked list
-  PerThreadState *next_p;
+  ThreadState *next_p;
   // Points to the gargabe collection state for the current thread
   GCState *gc_p;
+
+  // This is used as a key to access thread local data
+  // i.e. the thread state object allocated for every thread
+  static pthread_key_t thread_state_key;
+  static std::atomic<unsigned int> next_id;
+  static ThreadState *thread_state_head_p;
+
+  static void ClearOwnedFlag(ThreadState *thread_state_p) {
+    // This does not have to be atomic
+    thread_state_p.owned = false;
+    
+    return;
+  }
 };
 
 /*

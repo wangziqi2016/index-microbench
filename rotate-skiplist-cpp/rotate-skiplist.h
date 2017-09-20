@@ -11,6 +11,10 @@
 #include <cstdlib>
 #include <cstdio>
 
+// This prevents compiler rearranging the code cross this point
+// Usually a hardware memury fence is not needed for x86-64
+#define BARRIER() asm volatile("" ::: "memory")
+
 /*
  * class RotateSkiplist - Main class of the skip list
  *

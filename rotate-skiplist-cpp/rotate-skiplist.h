@@ -11,9 +11,15 @@
 #include <cstdlib>
 #include <cstdio>
 
+namespace rotate_skiplist {
+
 // This prevents compiler rearranging the code cross this point
 // Usually a hardware memury fence is not needed for x86-64
 #define BARRIER() asm volatile("" ::: "memory")
+
+class PerThreadState {
+
+};
 
 /*
  * class RotateSkiplist - Main class of the skip list
@@ -44,5 +50,7 @@ class RotateSkiplist {
  private:
   
 };
+
+} // end of namespace rotate-skiplist
 
 #endif

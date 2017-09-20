@@ -10,6 +10,7 @@
 // Traditional C libraries 
 #include <cstdlib>
 #include <cstdio>
+#include <pthread.h>
 
 namespace rotate_skiplist {
 
@@ -17,8 +18,26 @@ namespace rotate_skiplist {
 // Usually a hardware memury fence is not needed for x86-64
 #define BARRIER() asm volatile("" ::: "memory")
 
-class PerThreadState {
+/*
+ * class GCState
+ */
+class GCState {
 
+};
+
+/*
+ * class PerThreadState - This class implements thread state related functions
+ */
+class PerThreadState {
+ public:
+  // This is the current thread ID
+  unsigned int thread;
+  unsigned int count;
+
+  // Points to the next state object in the linked list
+  PerThreadState *next_p;
+  // Points to the gargabe collection state for the current thread
+  GCState *gc_p;
 };
 
 /*

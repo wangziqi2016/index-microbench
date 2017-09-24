@@ -128,7 +128,7 @@ class ThreadState {
    * We return the thread state object to the caller to let is pass it in
    * as an argument when leaving
    */
-  inline ThreadState *EnterCritical() {
+  inline static ThreadState *EnterCritical() {
     // This is the current thread's local object
     ThreadState *thread_state_p = GetCurrentThreadState();
     // TODO: ENTER GC
@@ -142,7 +142,8 @@ class ThreadState {
    *
    * This function is just a simple wrapper over GC
    */
-  inline void LeaveCritical(ThreadState *thread_state_p) {
+  inline static void LeaveCritical(ThreadState *thread_state_p) {
+    (void)thread_state_p;
     // TODO: ADD GC LEAVE
     return;
   }
@@ -158,7 +159,7 @@ class ThreadState {
    * Finally if none above succeeds, we allocate a cache aligned chunk of
    * memory and then add it into the list and register with pthread
    */
-  ThreadState *GetCurrentThreadState() {
+  static ThreadState *GetCurrentThreadState() {
     // 1. Try to obtain it as a registered per-thread object
     ThreadState *thread_state_p = static_cast<ThreadState *>(
       pthread_getspecific(thread_state_key));

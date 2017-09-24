@@ -13,7 +13,7 @@ pthread_key_t ThreadState::thread_state_key{};
 
 // Will initialize these two in the global initializer
 std::atomic<unsigned int> ThreadState::next_id{0U};
-std::atomic<ThreadState *> ThreadState::thread_state_head_p = nullptr;
+std::atomic<ThreadState *> ThreadState::thread_state_head_p{nullptr};
 
 // Has not been initialized yet
 bool ThreadState::inited = false;

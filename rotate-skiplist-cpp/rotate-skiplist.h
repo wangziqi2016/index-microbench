@@ -167,7 +167,8 @@ class ThreadState {
 
     // If we are here then the while loop exited without finding
     // an appropriate thread state object. So allocate one
-    thread_state_p = CACHE_ALIGNED_ALLOC(sizeof(ThreadState));
+    thread_state_p = \
+      static_cast<ThreadState *>(CACHE_ALIGNED_ALLOC(sizeof(ThreadState)));
     if(thread_state_p == nullptr) {
       perror("ThreadState::GetCurrentThreadState() CACHE_ALIGNED_ALLOC()");
       exit(1);
@@ -177,15 +178,16 @@ class ThreadState {
     thread_state_p->owned.clear();
     thread_state_p->owned.test_and_set();
     // This atomically increments the counter and returns the old value
-    thread_state_p->id = next_id.fetch_and_add();
+    thread_state_p->id = next_id.fetch_add(1U);
     // TODO: ADD GC INIT HERE ALSO
     thread_state_p->gc_p = nullptr;
 
     // Whether the new node is installed using CAS into the linked list
     bool installed;
+    // This will also be reloded with the current value if CAS fails
+    ThreadState *old_head = thread_state_head_p.load();
     do {
-      ThreadState *old_head = thread_state_head_p.load();
-      thread_state_p->next_p = old_head();
+      thread_state_p->next_p = old_head;
       installed = \
         thread_state_head_p.compare_exchange_strong(old_head, thread_state_p);
     } while(installed == false);

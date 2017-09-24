@@ -11,6 +11,7 @@
 // Traditional C libraries 
 #include <cstdlib>
 #include <cstdio>
+#include <cassert>
 #include <pthread.h>
 
 namespace rotate_skiplist {
@@ -50,7 +51,9 @@ class ThreadState {
   // Points to the gargabe collection state for the current thread
   GCState *gc_p;
 
+  ///////////////////////////////////////////////////////////////////
   // Static data for maintaining the global linked list & thread ID
+  ///////////////////////////////////////////////////////////////////
 
   // This is used as a key to access thread local data (i.e. pthread library
   // will return the registered thread local object when given the key)
@@ -77,6 +80,32 @@ class ThreadState {
     // Frees the thread state object for the next thread
     thread_state_p->owned = false;
     
+    return;
+  }
+
+  /*
+   * Init() - Initialize the thread local environment
+   */
+  static void Init() {
+    assert(inited == false);
+
+    // Initialize the thread ID allocator
+    next_id = 0U;
+    // There is no element in the linked list
+    thread_state_head_p = nullptr;
+
+    // Must do a barrier to make sure all cores observe the same value
+    BARRIER();
+
+    // We use the clear owned flag as a call back which will be 
+    // invoked when the thread exist
+    if (pthread_key_create(&thread_state_key, ClearOwnedFlag)) {
+      perror("pthread_key_create() returned non-zero\n");
+      exit(1);
+    }
+
+    // Finally
+    inited = true;
     return;
   }
 };

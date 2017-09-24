@@ -3,8 +3,17 @@
 
 using namespace rotate_skiplist;
 
+/////////////////////////////////////////////////////////////////////
+// Global varialbes: ThreadState
+/////////////////////////////////////////////////////////////////////
+
 // Three global variables defined within thread state object
 // which mains the global linked list of thread objects
 pthread_key_t ThreadState::thread_state_key{};
+
+// Will initialize these two in the global initializer
 std::atomic<unsigned int> ThreadState::next_id{0U};
 ThreadState *ThreadState::thread_state_head_p = nullptr;
+
+// Has not been initialized yet
+bool ThreadState::inited = false;

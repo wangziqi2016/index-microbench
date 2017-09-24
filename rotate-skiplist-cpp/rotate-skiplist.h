@@ -128,6 +128,45 @@ class ThreadState {
   void EnterCritical() {
 
   }
+
+ private:
+  /*
+   * GetCurrentThreadState() - This function returns the current thread local
+   *                           object for thread
+   *
+   * If the object is registered with pthread library then we fetch it using
+   * a library call; Otherwise we try to recycle one from the linked list
+   * by atomically CAS into a nonoccupied local object in the linked list.
+   * Finally if none above succeeds, we allocate a cache aligned chunk of
+   * memory and then add it into the list and register with pthread
+   */
+  ThreadState *GetCurrentThreadState() {
+    // 1. Try to obtain it as a registered per-thread object
+    ThreadState *thread_state_p = static_cast<ThreadState *>(
+      pthread_getspecific(thread_state_key));
+    
+    // If found then return - this should be the normal path
+    if(thread_state_p != nullptr) {
+      return thread_state_p;
+    }
+
+    // This is the head of the linked list
+    thread_state_p = thread_state_head_p;
+    while(thread_state_p != nullptr) {
+      // Try to CAS a true value into the boolean
+      bool ownership_acquired = thread_state_p->test_and_set();
+      // If we succeeded and we successfully acquired an object, so just
+      // register it and we are done
+      if(ownership_acquired == true) {
+        pthread_setspecific(thread_state_key, thread_state_p);
+        return thread_state_p;
+      }
+    }
+
+    // If we are here then the while loop exited without finding
+    // an appropriate thread state object. So allocate one
+    
+  } 
 };
 
 /*

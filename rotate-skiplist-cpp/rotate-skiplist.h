@@ -72,7 +72,7 @@ class ThreadState {
   // This is the ID of the next thread
   static std::atomic<unsigned int> next_id;
   // This is the head of the linked list
-  static ThreadState *thread_state_head_p;
+  static std::atomic<ThreadState *> thread_state_head_p;
 
   // This is used for debugging purpose to check whether the global states
   // are initialized
@@ -113,7 +113,7 @@ class ThreadState {
     if (pthread_key_create(&thread_state_key, ClearOwnedFlag)) {
       // Use this for system call failure as it translates errno
       // The format is: the string here + ": " + strerror(errno)
-      perror("ThreadState::Init::pthread_key_create()");
+      perror("ThreadState::Init() pthread_key_create()");
       exit(1);
     }
 
@@ -151,7 +151,7 @@ class ThreadState {
     }
 
     // This is the head of the linked list
-    thread_state_p = thread_state_head_p;
+    thread_state_p = thread_state_head_p.load();
     while(thread_state_p != nullptr) {
       // Try to CAS a true value into the boolean
       // Note that the TAS will return false if successful so we take 
@@ -168,7 +168,33 @@ class ThreadState {
     // If we are here then the while loop exited without finding
     // an appropriate thread state object. So allocate one
     thread_state_p = CACHE_ALIGNED_ALLOC(sizeof(ThreadState));
-  } 
+    if(thread_state_p == nullptr) {
+      perror("ThreadState::GetCurrentThreadState() CACHE_ALIGNED_ALLOC()");
+      exit(1);
+    }
+
+    // Initialize the value and set it
+    thread_state_p->owned.clear();
+    thread_state_p->owned.test_and_set();
+    // This atomically increments the counter and returns the old value
+    thread_state_p->id = next_id.fetch_and_add();
+    // TODO: ADD GC INIT HERE ALSO
+    thread_state_p->gc_p = nullptr;
+
+    // Whether the new node is installed using CAS into the linked list
+    bool installed;
+    do {
+      ThreadState *old_head = thread_state_head_p.load();
+      thread_state_p->next_p = old_head();
+      installed = \
+        thread_state_head_p.compare_exchange_strong(old_head, thread_state_p);
+    } while(installed == false);
+
+    // Also register this thread local
+    pthread_setspecific(thread_state_key, thread_state_p);
+
+    return thread_state_head_p;
+  }
 };
 
 /*

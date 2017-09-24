@@ -20,6 +20,17 @@ namespace rotate_skiplist {
 // Usually a hardware memury fence is not needed for x86-64
 #define BARRIER() asm volatile("" ::: "memory")
 
+// Note that since this macro may be defined also in other modules, we
+// only define it if it is missing from the context
+#ifndef CACHE_LINE_SIZE
+#define CACHE_LINE_SIZE 64
+#endif
+
+// This macro allocates a cahce line aligned chunk of memory
+#define CACHE_ALIGNED_ALLOC(_s)                                 \
+    ((void *)(((unsigned long)malloc((_s)+CACHE_LINE_SIZE*2) +  \
+        CACHE_LINE_SIZE - 1) & ~(CACHE_LINE_SIZE-1)))
+
 /*
  * class GCState
  */
@@ -100,13 +111,22 @@ class ThreadState {
     // We use the clear owned flag as a call back which will be 
     // invoked when the thread exist
     if (pthread_key_create(&thread_state_key, ClearOwnedFlag)) {
-      perror("pthread_key_create() returned non-zero\n");
+      // Use this for system call failure as it translates errno
+      // The format is: the string here + ": " + strerror(errno)
+      perror("ThreadState::Init::pthread_key_create()");
       exit(1);
     }
 
     // Finally
     inited = true;
     return;
+  }
+
+  /*
+   * EnterCritical() - Inform GC that some thread is still on the structure
+   */
+  void EnterCritical() {
+
   }
 };
 

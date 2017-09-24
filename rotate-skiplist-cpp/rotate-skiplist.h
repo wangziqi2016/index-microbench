@@ -28,6 +28,12 @@ class GCState {
 
 /*
  * class ThreadState - This class implements thread state related functions
+ *
+ * We allocate thread state for each thread as its thread local data area, and
+ * chain them up as a linked list. When a thread is created, we try to search 
+ * a nonoccupied thread state object and assign it to the thread, or create
+ * a new one if none was found. When a thread exist we simply clear the owned
+ * flag to release a thread state object
  */
 class ThreadState {
  public:
@@ -44,15 +50,32 @@ class ThreadState {
   // Points to the gargabe collection state for the current thread
   GCState *gc_p;
 
-  // This is used as a key to access thread local data
-  // i.e. the thread state object allocated for every thread
+  // Static data for maintaining the global linked list & thread ID
+
+  // This is used as a key to access thread local data (i.e. pthread library
+  // will return the registered thread local object when given the key)
   static pthread_key_t thread_state_key;
+  // This is the ID of the next thread
   static std::atomic<unsigned int> next_id;
+  // This is the head of the linked list
   static ThreadState *thread_state_head_p;
 
-  static void ClearOwnedFlag(ThreadState *thread_state_p) {
+  // This is used for debugging purpose to check whether the global states
+  // are initialized
+  static bool inited;
+
+  /*
+   * ClearOwnedFlag() - This is called when the threda exits and the OS
+   *                    destroies the thread local structure
+   *
+   * The function prototype is defined by the pthread library
+   */
+  static void ClearOwnedFlag(void *data) {
+    ThreadState *thread_state_p = static_cast<ThreadState *>(data);
+
     // This does not have to be atomic
-    thread_state_p.owned = false;
+    // Frees the thread state object for the next thread
+    thread_state_p->owned = false;
     
     return;
   }

@@ -55,7 +55,7 @@ class ThreadState {
   // Whether the thread state object is already owned by some
   // active thread. We set this flag when a thread claims a certain
   // object, and clears the flag when thread exits by using a callback
-  std::atomic<bool> owned;
+  std::atomic_flag owned;
 
   // Points to the next state object in the linked list
   ThreadState *next_p;
@@ -89,7 +89,7 @@ class ThreadState {
 
     // This does not have to be atomic
     // Frees the thread state object for the next thread
-    thread_state_p->owned = false;
+    thread_state_p->owned.clear();
     
     return;
   }
@@ -154,7 +154,9 @@ class ThreadState {
     thread_state_p = thread_state_head_p;
     while(thread_state_p != nullptr) {
       // Try to CAS a true value into the boolean
-      bool ownership_acquired = thread_state_p->test_and_set();
+      // Note that the TAS will return false if successful so we take 
+      // logical not
+      bool ownership_acquired = !thread_state_p->owned.test_and_set();
       // If we succeeded and we successfully acquired an object, so just
       // register it and we are done
       if(ownership_acquired == true) {
@@ -165,7 +167,7 @@ class ThreadState {
 
     // If we are here then the while loop exited without finding
     // an appropriate thread state object. So allocate one
-    
+    thread_state_p = CACHE_ALIGNED_ALLOC(sizeof(ThreadState));
   } 
 };
 

@@ -124,9 +124,16 @@ class ThreadState {
 
   /*
    * EnterCritical() - Inform GC that some thread is still on the structure
+   *
+   * We return the thread state object to the caller to let is pass it in
+   * as an argument when leaving
    */
-  void EnterCritical() {
+  ThreadState *EnterCritical() {
+    // This is the current thread's local object
+    ThreadState *thread_state_p = GetCurrentThreadState();
+    // TODO: ENTER GC
 
+    return thread_state_p;
   }
 
  private:

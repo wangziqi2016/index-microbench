@@ -165,6 +165,8 @@ class GCState {
 
  public:
 
+  int DebugCountChunk();
+
   /*
    * GetFreeGCChunk() - This function returns free GC chunks from the current
    *                    free list
@@ -174,8 +176,6 @@ class GCState {
    * list as a circular linked list, the free list pointer can be thought of
    * as pointing to the tail of the free list, and we are doing CAS on the
    * head of the linked list.
-   *
-   * Note that this function will modify free list
    */
   GCChunk *GetFreeGCChunk(int num) {
     // Need to loop for retry
@@ -223,6 +223,36 @@ class GCState {
 
     assert(false);
     return nullptr;
+  }
+
+  /*
+   * GetFilledGCChunk() - Returns a circular linked list of GC chunks and 
+   *                      assign each block inside the chunk a valid piece
+   *                      of memory of given size
+   *
+   * This function internally calls GetFreeGCChunk() to obtain chunks with 
+   * uninitialized memory pointers, and then fills each pointer with a valid
+   * memory address of size given in the argumemt, and return.
+   */
+  GCChunk *GetFilledGCChunk(int gc_chunk_count, int block_size) {
+    GCChunk * const new_chunk_p = GetFreeGCChunk(gc_chunk_count);
+    GCCHunk *p = new_chunk_p;
+
+    // Allocate this much memory in a sngle allocation and disperse
+    // them as different blocks
+    uint8_t *mem_p = static_cast<uint8_t *>( \
+      CACHE_ALIGNED_ALLOC(gc_chunk_count * BLOCK_PER_CHUNK * block_size));
+
+    // End condition is p->next_p == new_chunk_p but should check this
+    // only after we have performed pointer initialization on the last chunk
+    do {
+      for(int i = 0;i < BLOCK_PER_CHUNK;i++) {
+        p->blocks[i] = mem_p;
+        mem_p += block_size;
+      }
+    } while(p->next_p != new_chunk_p);
+
+    return new_chunk_p;
   }
 };
 

@@ -122,24 +122,26 @@ class GCState {
   gc_hookfn hook_fn_list[MAX_HOOKS];
 
   // A circular linked list of free chunks
-  GCChunk *free_chunk_list;
+  GCChunk *free_list_p;
 
   GCChunk *alloc[NUM_SIZES];
   unsigned long alloc_size[NUM_SIZES];
 
  public:
   /*
-   * AddGCChunkToFreeList() - This function atomically links a circular linked
-   *                          list of GC chunks into a given linked list
+   * AddFreeGCChunk() - This function atomically links a circular linked
+   *                    list of GC chunks into a given linked list
    *
    * Note that since the linked list we are linking is circular, we can treat
    * the pointer passed in as argument as a pointer to the actual tail,
    * and use the next node as a head. This requires:
    *    1. The linked list has at least 2 elements
-   *    2. The list we are linking into has at least 1 element
+   *    2. The list we are linking into has at least 1 element (since the
+   *       free list is also a circular list we could not alter the first
+   *       element)
    * which are all guaranteed
    */
-  void AddGCChunkToFreeList(GCChunk *new_list_p, GCChunk *link_into_p) {
+  static void AddFreeGCChunk(GCChunk *new_list_p, GCChunk *link_into_p) {
     // Checks condition 2
     assert(link_into_p != nullptr);
     // Checks condition 1
@@ -161,6 +163,28 @@ class GCState {
 
     return;
   } 
+
+  /*
+   * GetFreeGCChunk() - This function returns free GC chunks from the current
+   *                    free list
+   *
+   * If there are not enough free chunks we just batch allocate some
+   * and link into the list before we retry. Note that since we treat free
+   * list as a circular linked list, the free list pointer can be thought of
+   * as pointing to the tail of the free list, and we are doing CAS on the
+   * head of the linked list.
+   *
+   * Note that this function will modify free list
+   */
+  GCChunk *GetFreeGCChunk(int num) {
+    // Need to loop for retry
+    while(1) {
+      // Whether we need to allocate new chunks
+      bool need_new_chunk = false;
+      GCChunk *tail_p = free_list_p;
+      GCChunk *head_p = tail_p->next_p;
+    }
+  }
 };
 
 /*

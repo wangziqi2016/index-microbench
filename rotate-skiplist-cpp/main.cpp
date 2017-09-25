@@ -5,11 +5,10 @@
 using namespace rotate_skiplist;
 
 /*
- * main() - The main testing function
+ * ThreadStateTest1() - Tests threda state basic
  */
-int main() {
-  RotateSkiplist<uint64_t, uint64_t> rsl{};
-  (void)rsl;
+void ThreadStateTest1() {
+  fprintf(stderr, "Testing class ThreadState basic\n");
 
   ThreadState::Init();
   ThreadState *thread_state_p = ThreadState::EnterCritical();
@@ -22,6 +21,18 @@ int main() {
   assert(pthread_getspecific(ThreadState::thread_state_key) == thread_state_p);
 
   ThreadState::LeaveCritical(thread_state_p);
+
+  return;
+}
+
+/*
+ * main() - The main testing function
+ */
+int main() {
+  RotateSkiplist<uint64_t, uint64_t> rsl{};
+  (void)rsl;
+
+  ThreadStateTest1();
 
   fprintf(stderr, "All tests have passed\n");
   

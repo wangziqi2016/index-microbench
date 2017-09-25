@@ -53,6 +53,11 @@ void GCChunkTest2() {
 
   // This is a local object but we have constructor
   GCState gc_state{};
+  fprintf(stderr, "  System page size = %d bytes\n", gc_state.system_page_size);
+  fprintf(stderr, 
+          "  Free list elements = %d\n", 
+          GCChunk::DebugCountChunk(gc_state.free_list_p));
+
   // Allocate 17 chunks of 23 bytes block each
   GCChunk * const p = gc_state.GetFilledGCChunk(17, 23);
   

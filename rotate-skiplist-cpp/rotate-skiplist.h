@@ -31,6 +31,10 @@ namespace rotate_skiplist {
     ((void *)(((unsigned long)malloc((_s)+CACHE_LINE_SIZE*2) +  \
         CACHE_LINE_SIZE - 1) & ~(CACHE_LINE_SIZE-1)))
 
+// This macro defines an empty array of cache line size
+// We use this to prevent false sharing
+#define CACHE_PAD(_n) char __pad ## _n [CACHE_LINE_SIZE]
+
 /////////////////////////////////////////////////////////////////////
 // GC related classes
 /////////////////////////////////////////////////////////////////////
@@ -83,10 +87,12 @@ class GCChunk {
 };
 
 /*
- * class GCState
+ * class GCState - This is the global GC state object which has a unique copy
+ *                 over all threads (i.e. singleton)
  */
 class GCState {
-
+ public:
+  
 };
 
 /*

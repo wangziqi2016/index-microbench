@@ -200,7 +200,7 @@ class GCState {
 
       if(need_new_chunk == true) {
         GCChunk *new_chunk_p = GCChunk::AllocateFromHeap();
-        GCCHunk::LinkInto(new_chunk_p, free_list_p);
+        GCChunk::LinkInto(new_chunk_p, free_list_p);
         // Retry
         continue;
       }
@@ -216,10 +216,11 @@ class GCState {
 
       // Make it circular and return
       p->next_p = head_p;
-      break;
+      return head_p;
     }
 
-    return head_p;
+    assert(false);
+    return nullptr;
   }
 };
 

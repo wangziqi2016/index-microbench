@@ -31,6 +31,22 @@ namespace rotate_skiplist {
     ((void *)(((unsigned long)malloc((_s)+CACHE_LINE_SIZE*2) +  \
         CACHE_LINE_SIZE - 1) & ~(CACHE_LINE_SIZE-1)))
 
+/////////////////////////////////////////////////////////////////////
+// GC related classes
+/////////////////////////////////////////////////////////////////////
+
+/*
+ * class GCChunk - This is a memory chunk as an allocation unit
+ */
+class GCChunk {
+ public:
+  // Number of blocks per chunk
+  static constexpr int BLOCK_PER_CHUNK = 100;
+  // We use this to allocate blocks into the following array
+  int next_block_index;
+  void *blocks[BLOCK_PER_CHUNK];
+};
+
 /*
  * class GCState
  */

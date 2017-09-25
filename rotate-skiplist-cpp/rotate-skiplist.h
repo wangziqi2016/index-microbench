@@ -121,9 +121,32 @@ class GCState {
   unsigned long hook_count;
   gc_hookfn hook_fn_list[MAX_HOOKS];
 
-  GCChunk *free_chunks;
+  // A circular linked list of free chunks
+  GCChunk *free_chunk_list;
+
   GCChunk *alloc[NUM_SIZES];
   unsigned long alloc_size[NUM_SIZES];
+
+ public:
+  /*
+   * AddGCChunkToFreeList() - This function atomically links a circular linked
+   *                          list of GC chunks into a given linked list
+   *
+   * Note that since the linked list we are linking is circular, we can treat
+   * the pointer passed in as argument as a pointer to the actual tail,
+   * and use the next node as a head. This requires:
+   *    1. The linked list has at least 2 elements
+   *    2. The list we are linking has at least 1 element
+   * which are all guaranteed
+   */
+  void AddGCChunkToFreeList(GCChunk *new_list_p, GCChunk *link_into_p) {
+    // Checks condition 2
+    assert(link_into_p != nullptr);
+    // Checks condition 1
+    assert(new_list_p->next_p != new_list_p);
+
+
+  } 
 };
 
 /*

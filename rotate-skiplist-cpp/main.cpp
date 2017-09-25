@@ -32,6 +32,7 @@ void GCChunkTest1() {
   fprintf(stderr, "Testing GCChunk basic\n");
 
   GCChunk *chunk_p = GCChunk::AllocateFromHeap();
+  GCChunk *head_p = chunk_p;
   for(int i = 0;i < GCChunk::CHUNK_PER_ALLOCATION - 1;i++) {
     // Whether it is a linked list
     assert(chunk_p + 1 == chunk_p->next_p);
@@ -39,7 +40,7 @@ void GCChunkTest1() {
   }
 
   // Whether it is circular
-  assert(chunk_p[GCChunk::CHUNK_PER_ALLOCATION - 1].next_p == chunk_p);
+  assert(head_p[GCChunk::CHUNK_PER_ALLOCATION - 1].next_p == head_p);
 
   return;
 }
@@ -52,6 +53,7 @@ int main() {
   (void)rsl;
 
   ThreadStateTest1();
+  GCChunkTest1();
 
   fprintf(stderr, "All tests have passed\n");
   

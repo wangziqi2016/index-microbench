@@ -33,6 +33,7 @@ namespace rotate_skiplist {
 
 // This macro defines an empty array of cache line size
 // We use this to prevent false sharing
+// We should pass in a different _n to specify different names for the struct
 #define CACHE_PAD(_n) char __pad ## _n [CACHE_LINE_SIZE]
 
 /////////////////////////////////////////////////////////////////////
@@ -86,13 +87,43 @@ class GCChunk {
   }
 };
 
+// This is used as a pointer by class GCState
+class ThreadState;
+
 /*
  * class GCState - This is the global GC state object which has a unique copy
  *                 over all threads (i.e. singleton)
  */
 class GCState {
  public:
-  
+  static constexpr int NUM_EPOCHS = 3;
+  static constexpr int MAX_HOOKS = 4;
+  static constexpr int NUM_SIZES = 1;
+
+  using gc_hookfn = void (*)(ThreadState *, void *);
+
+ public:
+  CACHE_PAD(0);
+
+  // The current epoch
+  int current;
+
+  CACHE_PAD(1);
+
+  // Grants exclusive access to GC reclaim function
+  std::atomic_flag gc_lock;
+
+  CACHE_PAD(2);
+
+  int system_page_size;
+  unsigned long node_size_count;
+  int block_size_list[NUM_SIZES];
+  unsigned long hook_count;
+  gc_hookfn hook_fn_list[MAX_HOOKS];
+
+  GCChunk *free_chunks;
+  GCChunk *alloc[NUM_SIZES];
+  unsigned long alloc_size[NUM_SIZES];
 };
 
 /*

@@ -12,7 +12,10 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cassert>
+#include <cstring>
 #include <pthread.h>
+
+#include <unistd.h>
 
 namespace rotate_skiplist {
 
@@ -265,7 +268,9 @@ class GCState {
         p->blocks[i] = mem_p;
         mem_p += block_size;
       }
-    } while(p->next_p != new_chunk_p);
+
+      p = p->next_p;
+    } while(p != new_chunk_p);
     
     assert(GCChunk::DebugCountChunk(new_chunk_p) == gc_chunk_count);
     return new_chunk_p;
@@ -276,7 +281,7 @@ class GCState {
    */
   GCState() {
     system_page_size = static_cast<unsigned int>(sysconf(_SC_PAGESIZE));
-    free_list_p = GCCHunk::AllocateFromHeap();
+    free_list_p = GCChunk::AllocateFromHeap();
 
     hook_count = 0;
     node_size_count = 0;

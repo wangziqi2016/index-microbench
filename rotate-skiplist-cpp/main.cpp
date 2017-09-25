@@ -46,6 +46,36 @@ void GCChunkTest1() {
 }
 
 /*
+ * GCCHunkTest2() - Tests GC chunk allocation
+ */
+void GCChunkTest2() {
+  fprintf(stderr, "Testing GCChunk allocation\n");
+
+  // This is a local object but we have constructor
+  GCState gc_state{};
+  // Allocate 17 chunks of 23 bytes block each
+  GCChunk * const p = gc_state.GetFilledGCChunk(17, 23);
+  
+  assert(GCChunk::DebugCountChunk(p) == 17);
+
+  GCChunk *p2 = p;
+  int count = 0;
+  do {
+    count += 1;
+    for(int i = 0;i < GCChunk::BLOCK_PER_CHUNK;i++) {
+      // This will be reported by Valgrind if memory is not valid
+      memset(p2->blocks[i], 0x88, 23);
+    }
+
+    p2 = p2->next_p;
+  } while(p2 != p);
+
+  assert(count == 17);
+
+  return;
+}
+
+/*
  * main() - The main testing function
  */
 int main() {
@@ -54,6 +84,7 @@ int main() {
 
   ThreadStateTest1();
   GCChunkTest1();
+  GCChunkTest2();
 
   fprintf(stderr, "All tests have passed\n");
   

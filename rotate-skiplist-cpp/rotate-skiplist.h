@@ -42,9 +42,44 @@ class GCChunk {
  public:
   // Number of blocks per chunk
   static constexpr int BLOCK_PER_CHUNK = 100;
+  // Number of chunks we allocate from the heap in one function call
+  static constexpr int CHUNK_PER_ALLOCATION = 1000;
+
+ public:
+  GCChunk *next_p;
+  
   // We use this to allocate blocks into the following array
   int next_block_index;
   void *blocks[BLOCK_PER_CHUNK];
+
+  /*
+   * AllocateFromHeap() - This function allocates an array of chunks
+   *                      from the heap and initialize these chunks as 
+   *                      a linked list
+   *
+   * We make sure that chunks are cache line aligned. Also, the returned 
+   * chunk is a circular linked list, in which the last element is linked
+   * to the first element in the array.
+   */
+  static GCChunk *AllocateFromHeap() {
+    // Allocate that many chunks as an array
+    GCChunk *chunk_p = static_cast<GCChunk *>( \
+      CACHE_ALIGNED_ALLOC(sizeof(GCChunk) * CHUNK_PER_ALLOCATION));
+    if(chunk_p == nullptr) {
+      perror("GCCHunk::AllocateFromHeap() CACHE_ALIGNED_ALLOC");
+      exit(1);
+    }
+
+    // Set next_p pointer as the next element
+    for(int i = 0;i < CHUNK_PER_ALLOCATION;i++) {
+      chunk_p[i].next_p = &chunk_p[i + 1];
+    }
+
+    // Make it circular
+    chunk_p[CHUNK_PER_ALLOCATION - 1].next_p = &chunk_p[0];
+
+    return chunk_p;
+  }
 };
 
 /*

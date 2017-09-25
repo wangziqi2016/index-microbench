@@ -83,6 +83,7 @@ class GCChunk {
     // Make it circular
     chunk_p[CHUNK_PER_ALLOCATION - 1].next_p = &chunk_p[0];
 
+    assert(GCChunk::DebugCountChunk(chunk_p) == CHUNK_PER_ALLOCATION);
     return chunk_p;
   }
 
@@ -121,6 +122,22 @@ class GCChunk {
 
     return;
   } 
+
+  /*
+   * DebugCountChunk() - This function counts the number of elements in a chunk
+   *
+   * Only called under debug mode
+   */
+  static int DebugCountChunk(const GCChunk * const chunk_p) {
+    const GCChunk *p = chunk_p;
+    int count = 0;
+    do {
+      count++;
+      p = p->next_p;
+    } while(p != chunk_p);
+
+    return count;
+  }
 };
 
 // This is used as a pointer by class GCState
@@ -164,22 +181,6 @@ class GCState {
   unsigned long alloc_size[NUM_SIZES];
 
  public:
-
-  /*
-   * DebugCountChunk() - This function counts the number of elements in a chunk
-   *
-   * Only called under debug mode
-   */
-  int DebugCountChunk(const GCChunk * const chunk_p) {
-    const GCCHunk *p = chunk_p;
-    int count = 0;
-    do {
-      count++;
-      p = p->next_p;
-    } while(p != chunk_p);
-
-    return count;
-  }
 
   /*
    * GetFreeGCChunk() - This function returns free GC chunks from the current
@@ -250,22 +251,23 @@ class GCState {
    */
   GCChunk *GetFilledGCChunk(int gc_chunk_count, int block_size) {
     GCChunk * const new_chunk_p = GetFreeGCChunk(gc_chunk_count);
-    GCCHunk *p = new_chunk_p;
+    GCChunk *p = new_chunk_p;
 
     // Allocate this much memory in a sngle allocation and disperse
     // them as different blocks
     uint8_t *mem_p = static_cast<uint8_t *>( \
-      CACHE_ALIGNED_ALLOC(gc_chunk_count * BLOCK_PER_CHUNK * block_size));
+      CACHE_ALIGNED_ALLOC(gc_chunk_count * GCChunk::BLOCK_PER_CHUNK * block_size));
 
     // End condition is p->next_p == new_chunk_p but should check this
     // only after we have performed pointer initialization on the last chunk
     do {
-      for(int i = 0;i < BLOCK_PER_CHUNK;i++) {
+      for(int i = 0;i < GCChunk::BLOCK_PER_CHUNK;i++) {
         p->blocks[i] = mem_p;
         mem_p += block_size;
       }
     } while(p->next_p != new_chunk_p);
-
+    
+    assert(GCChunk::DebugCountChunk(new_chunk_p) == gc_chunk_count);
     return new_chunk_p;
   }
 };

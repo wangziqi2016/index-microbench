@@ -136,7 +136,7 @@ class GCState {
    * the pointer passed in as argument as a pointer to the actual tail,
    * and use the next node as a head. This requires:
    *    1. The linked list has at least 2 elements
-   *    2. The list we are linking has at least 1 element
+   *    2. The list we are linking into has at least 1 element
    * which are all guaranteed
    */
   void AddGCChunkToFreeList(GCChunk *new_list_p, GCChunk *link_into_p) {
@@ -145,7 +145,21 @@ class GCState {
     // Checks condition 1
     assert(new_list_p->next_p != new_list_p);
 
+    // This is a circular list, so no real head anyway
+    GCChunk *head_p = new_list_p->next_p;
+    GCChunk *tail_p = new_list_p;
 
+    GCChunk *after_p = link_into_p->next_p.load();
+    bool cas_ret;
+    do {
+      // Must reinitialize this every time
+      tail_p->next_p = after_p;
+      // after_p will be changed if CAS fails, so do not have to reload
+      // it everytime but just adjust tail_p and retry
+      cas_ret = link_into_p->next_p.compare_exchange_strong(after_p, head_p);
+    } while(cas_ret == false);
+
+    return;
   } 
 };
 

@@ -270,6 +270,19 @@ class GCState {
     assert(GCChunk::DebugCountChunk(new_chunk_p) == gc_chunk_count);
     return new_chunk_p;
   }
+
+  /*
+   * GCState() - Initialize the object (rather than static states)
+   */
+  GCState() {
+    system_page_size = static_cast<unsigned int>(sysconf(_SC_PAGESIZE));
+    free_list_p = GCCHunk::AllocateFromHeap();
+
+    hook_count = 0;
+    node_size_count = 0;
+
+    return;
+  }
 };
 
 /*

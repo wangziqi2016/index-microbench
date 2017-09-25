@@ -186,7 +186,9 @@ class GCState {
       // This is the first node of the linked list that we allocate
       GCChunk * head_p = tail_p->next_p;
       // Use this as iterator to find the last node we allocate
-      GCChunk *p = head_p;
+      // Note that we start at tail because head will be the
+      // first element in the allocated linked list
+      GCChunk *p = tail_p;
       for(int i = 0;i < num;i++) {
         // Note that we need to leave at least one element in the free list
         // so could not remove all chunks

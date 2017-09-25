@@ -51,7 +51,7 @@ class GCChunk {
   static constexpr int CHUNK_PER_ALLOCATION = 1000;
 
  public:
-  GCChunk *next_p;
+  std::atomic<GCChunk *> next_p;
   
   // We use this to allocate blocks into the following array
   int next_block_index;

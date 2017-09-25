@@ -85,6 +85,42 @@ class GCChunk {
 
     return chunk_p;
   }
+
+  /*
+   * LinkInto() - This function atomically links a circular linked
+   *              list of GC chunks into another circular linked list
+   *
+   * Note that since the linked list we are linking is circular, we can treat
+   * the pointer passed in as argument as a pointer to the actual tail,
+   * and use the next node as a head. This requires:
+   *    1. The linked list has at least 2 elements
+   *    2. The list we are linking into has at least 1 element (since the
+   *       free list is also a circular list we could not alter the first
+   *       element)
+   * which are all guaranteed
+   */
+  static void LinkInto(GCChunk *new_list_p, GCChunk *link_into_p) {
+    // Checks condition 2
+    assert(link_into_p != nullptr);
+    // Checks condition 1
+    assert(new_list_p->next_p != new_list_p);
+
+    // This is a circular list, so no real head anyway
+    GCChunk *head_p = new_list_p->next_p;
+    GCChunk *tail_p = new_list_p;
+
+    GCChunk *after_p = link_into_p->next_p.load();
+    bool cas_ret;
+    do {
+      // Must reinitialize this every time
+      tail_p->next_p = after_p;
+      // after_p will be changed if CAS fails, so do not have to reload
+      // it everytime but just adjust tail_p and retry
+      cas_ret = link_into_p->next_p.compare_exchange_strong(after_p, head_p);
+    } while(cas_ret == false);
+
+    return;
+  } 
 };
 
 // This is used as a pointer by class GCState
@@ -128,41 +164,6 @@ class GCState {
   unsigned long alloc_size[NUM_SIZES];
 
  public:
-  /*
-   * AddFreeGCChunk() - This function atomically links a circular linked
-   *                    list of GC chunks into a given linked list
-   *
-   * Note that since the linked list we are linking is circular, we can treat
-   * the pointer passed in as argument as a pointer to the actual tail,
-   * and use the next node as a head. This requires:
-   *    1. The linked list has at least 2 elements
-   *    2. The list we are linking into has at least 1 element (since the
-   *       free list is also a circular list we could not alter the first
-   *       element)
-   * which are all guaranteed
-   */
-  static void AddFreeGCChunk(GCChunk *new_list_p, GCChunk *link_into_p) {
-    // Checks condition 2
-    assert(link_into_p != nullptr);
-    // Checks condition 1
-    assert(new_list_p->next_p != new_list_p);
-
-    // This is a circular list, so no real head anyway
-    GCChunk *head_p = new_list_p->next_p;
-    GCChunk *tail_p = new_list_p;
-
-    GCChunk *after_p = link_into_p->next_p.load();
-    bool cas_ret;
-    do {
-      // Must reinitialize this every time
-      tail_p->next_p = after_p;
-      // after_p will be changed if CAS fails, so do not have to reload
-      // it everytime but just adjust tail_p and retry
-      cas_ret = link_into_p->next_p.compare_exchange_strong(after_p, head_p);
-    } while(cas_ret == false);
-
-    return;
-  } 
 
   /*
    * GetFreeGCChunk() - This function returns free GC chunks from the current
@@ -181,9 +182,44 @@ class GCState {
     while(1) {
       // Whether we need to allocate new chunks
       bool need_new_chunk = false;
-      GCChunk *tail_p = free_list_p;
-      GCChunk *head_p = tail_p->next_p;
+      GCChunk * const tail_p = free_list_p;
+      // This is the first node of the linked list that we allocate
+      GCChunk * head_p = tail_p->next_p;
+      // Use this as iterator to find the last node we allocate
+      GCChunk *p = head_p;
+      for(int i = 0;i < num;i++) {
+        // Note that we need to leave at least one element in the free list
+        // so could not remove all chunks
+        if(p->next_p == free_list_p) {
+          need_new_chunk = true;
+          break;
+        }
+
+        p = p->next_p;
+      }
+
+      if(need_new_chunk == true) {
+        GCChunk *new_chunk_p = GCChunk::AllocateFromHeap();
+        GCCHunk::LinkInto(new_chunk_p, free_list_p);
+        // Retry
+        continue;
+      }
+
+      // Otherwise we know we have found a linked list of chunks
+      // Note that here we will not have lost update problem when removing
+      // elements from the linked list because we always remove from
+      // the beginning
+      bool cas_ret = tail_p->next_p.compare_exchange_strong(head_p, p->next_p);
+      if(cas_ret == false) {
+        continue;
+      }
+
+      // Make it circular and return
+      p->next_p = head_p;
+      break;
     }
+
+    return head_p;
   }
 };
 

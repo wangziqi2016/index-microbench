@@ -165,7 +165,21 @@ class GCState {
 
  public:
 
-  int DebugCountChunk();
+  /*
+   * DebugCountChunk() - This function counts the number of elements in a chunk
+   *
+   * Only called under debug mode
+   */
+  int DebugCountChunk(const GCChunk * const chunk_p) {
+    const GCCHunk *p = chunk_p;
+    int count = 0;
+    do {
+      count++;
+      p = p->next_p;
+    } while(p != chunk_p);
+
+    return count;
+  }
 
   /*
    * GetFreeGCChunk() - This function returns free GC chunks from the current

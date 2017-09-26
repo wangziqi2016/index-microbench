@@ -143,6 +143,44 @@ class GCChunk {
   }
 };
 
+/////////////////////////////////////////////////////////////////////
+// Thread local GC state
+/////////////////////////////////////////////////////////////////////
+
+/*
+ * class GCThreadLocal - This is a thread local
+ */
+class GCThreadLocal {
+ public:
+  static constexpr int NUM_EPOCHS = 3;
+  static constexpr int MAX_HOOKS = 4;
+  static constexpr int NUM_SIZES = 1;
+
+ public:
+  unsigned int epoch;
+
+  unsigned int entries_since_reclaim;
+
+  /* used with gc_async_barrier() */
+  void *async_page;
+  int async_page_state;
+
+  GCChunk *garbage_list[NUM_EPOCHS][NUM_SIZES];
+  GCChunk *garbage_tail_list[NUM_EPOCHS][NUM_SIZES];
+  GCChunk *chunk_cache;
+
+  // Local allocation of chunks
+  GCChunk *alloc_list[NUM_SIZES];
+  // The 
+  unsigned int alloc_chunk_list[NUM_SIZES];
+
+  GCChunk *hook_list[NUM_EPOCHS][MAX_HOOKS];
+};
+
+/////////////////////////////////////////////////////////////////////
+// Global GC state
+/////////////////////////////////////////////////////////////////////
+
 // This is used as a pointer by class GCState
 class ThreadState;
 
@@ -152,10 +190,6 @@ class ThreadState;
  */
 class GCState {
  public:
-  static constexpr int NUM_EPOCHS = 3;
-  static constexpr int MAX_HOOKS = 4;
-  static constexpr int NUM_SIZES = 1;
-
   using gc_hookfn = void (*)(ThreadState *, void *);
 
  public:
@@ -173,15 +207,15 @@ class GCState {
 
   int system_page_size;
   unsigned long node_size_count;
-  int block_size_list[NUM_SIZES];
+  int block_size_list[GCThreadLocal::NUM_SIZES];
   unsigned long hook_count;
-  gc_hookfn hook_fn_list[MAX_HOOKS];
+  gc_hookfn hook_fn_list[GCThreadLocal::MAX_HOOKS];
 
   // A circular linked list of free chunks
   GCChunk *free_list_p;
 
-  GCChunk *alloc[NUM_SIZES];
-  unsigned long alloc_size[NUM_SIZES];
+  GCChunk *alloc[GCThreadLocal::NUM_SIZES];
+  unsigned long alloc_size[GCThreadLocal::NUM_SIZES];
 
  public:
 

@@ -43,16 +43,31 @@ namespace rotate_skiplist {
 // GC related classes
 /////////////////////////////////////////////////////////////////////
 
+class ThreadState;
+
+/*
+ * class GCConstant - Base class for all GC elements to store the constants
+ *                   
+ * We have this class because there are lots of cross references
+ */
+class GCConstant {
+ public:
+  // Number of blocks per chunk - this is constant
+  static constexpr int BLOCK_PER_CHUNK = 100;
+  // Number of chunks we allocate from the heap in one function call
+  static constexpr int CHUNK_PER_ALLOCATION_FROM_HEAP = 1000;
+
+  static constexpr int NUM_EPOCHS = 3;
+  static constexpr int MAX_HOOKS = 4;
+  static constexpr int NUM_SIZES = 1;
+
+  using gc_hookfn_t = void (*)(ThreadState *, void *);
+};
+
 /*
  * class GCChunk - This is a memory chunk as an allocation unit
  */
-class GCChunk {
- public:
-  // Number of blocks per chunk
-  static constexpr int BLOCK_PER_CHUNK = 100;
-  // Number of chunks we allocate from the heap in one function call
-  static constexpr int CHUNK_PER_ALLOCATION = 1000;
-
+class GCChunk : public GCConstant {
  public:
   std::atomic<GCChunk *> next_p;
   
@@ -72,21 +87,21 @@ class GCChunk {
   static GCChunk *AllocateFromHeap() {
     // Allocate that many chunks as an array
     GCChunk *chunk_p = static_cast<GCChunk *>( \
-      CACHE_ALIGNED_ALLOC(sizeof(GCChunk) * CHUNK_PER_ALLOCATION));
+      CACHE_ALIGNED_ALLOC(sizeof(GCChunk) * CHUNK_PER_ALLOCATION_FROM_HEAP));
     if(chunk_p == nullptr) {
       perror("GCCHunk::AllocateFromHeap() CACHE_ALIGNED_ALLOC");
       exit(1);
     }
 
     // Set next_p pointer as the next element
-    for(int i = 0;i < CHUNK_PER_ALLOCATION;i++) {
+    for(int i = 0;i < CHUNK_PER_ALLOCATION_FROM_HEAP;i++) {
       chunk_p[i].next_p = &chunk_p[i + 1];
     }
 
     // Make it circular
-    chunk_p[CHUNK_PER_ALLOCATION - 1].next_p = &chunk_p[0];
+    chunk_p[CHUNK_PER_ALLOCATION_FROM_HEAP - 1].next_p = &chunk_p[0];
 
-    assert(GCChunk::DebugCountChunk(chunk_p) == CHUNK_PER_ALLOCATION);
+    assert(GCChunk::DebugCountChunk(chunk_p) == CHUNK_PER_ALLOCATION_FROM_HEAP);
     return chunk_p;
   }
 
@@ -150,12 +165,7 @@ class GCChunk {
 /*
  * class GCThreadLocal - This is a thread local
  */
-class GCThreadLocal {
- public:
-  static constexpr int NUM_EPOCHS = 3;
-  static constexpr int MAX_HOOKS = 4;
-  static constexpr int NUM_SIZES = 1;
-
+class GCThreadLocal : public GCConstant {
  public:
   unsigned int epoch;
 
@@ -181,17 +191,11 @@ class GCThreadLocal {
 // Global GC state
 /////////////////////////////////////////////////////////////////////
 
-// This is used as a pointer by class GCState
-class ThreadState;
-
 /*
  * class GCState - This is the global GC state object which has a unique copy
  *                 over all threads (i.e. singleton)
  */
-class GCState {
- public:
-  using gc_hookfn = void (*)(ThreadState *, void *);
-
+class GCState : public GCConstant {
  public:
   CACHE_PAD(0);
 
@@ -209,7 +213,7 @@ class GCState {
   
   
   unsigned long hook_count;
-  gc_hookfn hook_fn_list[GCThreadLocal::MAX_HOOKS];
+  gc_hookfn_t hook_fn_list[MAX_HOOKS];
 
   // This filed is initialized when we initialize this object
   // A circular linked list of free chunks; no block was alloted for them
@@ -218,14 +222,14 @@ class GCState {
   // The next two fields are initialized when adding new allocator
 
   // This maps size indices to actual size of blocks
-  int block_size_list[GCThreadLocal::NUM_SIZES];
+  int block_size_list[NUM_SIZES];
   // Number of chunks we allocate next time we need to get more chunks
   // to refill fill_chunk_list
-  unsigned long filled_chunks_per_allocation[GCThreadLocal::NUM_SIZES];
+  unsigned long filled_chunks_per_allocation[NUM_SIZES];
 
   // Each element points to a circular linked list that has been filled
   // with blocks of size of corresponding types
-  GCChunk *filled_chunk_list[GCThreadLocal::NUM_SIZES];
+  GCChunk *filled_chunk_list[NUM_SIZES];
 
   // This variable is used to denote the number of sizes
   // this object could allocate
@@ -242,7 +246,11 @@ class GCState {
    * atomically
    */
   void AddSizeType(int size) {
-    
+    // Atomically add it by 1 and return the old value
+    unsigned long size_type_index = size_type_count.fetch_add(1);
+    // Fill the size into the list and from now on it becomes constant
+    block_size_list[size_type_index] = size;
+    //filled_chunks_per_allocation[size_type_index] = 
   }
 
   /*
@@ -319,18 +327,18 @@ class GCState {
     // Allocate this much memory in a sngle allocation and disperse
     // them as different blocks
     uint8_t *mem_p = static_cast<uint8_t *>( \
-      CACHE_ALIGNED_ALLOC(gc_chunk_count * GCChunk::BLOCK_PER_CHUNK * block_size));
+      CACHE_ALIGNED_ALLOC(gc_chunk_count * BLOCK_PER_CHUNK * block_size));
 
     // End condition is p->next_p == new_chunk_p but should check this
     // only after we have performed pointer initialization on the last chunk
     do {
-      for(int i = 0;i < GCChunk::BLOCK_PER_CHUNK;i++) {
+      for(int i = 0;i < BLOCK_PER_CHUNK;i++) {
         p->blocks[i] = mem_p;
         mem_p += block_size;
       }
 
       // We allocate from the highest to the lowest
-      p->next_block_index = GCChunk::BLOCK_PER_CHUNK;
+      p->next_block_index = BLOCK_PER_CHUNK;
 
       p = p->next_p;
     } while(p != new_chunk_p);

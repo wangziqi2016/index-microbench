@@ -33,14 +33,15 @@ void GCChunkTest1() {
 
   GCChunk *chunk_p = GCChunk::AllocateFromHeap();
   GCChunk *head_p = chunk_p;
-  for(int i = 0;i < GCChunk::CHUNK_PER_ALLOCATION - 1;i++) {
+  for(int i = 0;i < GCConstant::CHUNK_PER_ALLOCATION_FROM_HEAP - 1;i++) {
     // Whether it is a linked list
     assert(chunk_p + 1 == chunk_p->next_p);
     chunk_p = chunk_p->next_p;
   }
 
   // Whether it is circular
-  assert(head_p[GCChunk::CHUNK_PER_ALLOCATION - 1].next_p == head_p);
+  assert(
+    head_p[GCConstant::CHUNK_PER_ALLOCATION_FROM_HEAP - 1].next_p == head_p);
 
   return;
 }
@@ -67,13 +68,13 @@ void GCChunkTest2() {
   int count = 0;
   do {
     count += 1;
-    for(int i = 0;i < GCChunk::BLOCK_PER_CHUNK;i++) {
+    for(int i = 0;i < GCConstant::BLOCK_PER_CHUNK;i++) {
       // This will be reported by Valgrind if memory is not valid
       memset(p2->blocks[i], 0x88, 23);
     }
 
     // This must be true for a new chunk
-    assert(p2->next_block_index == GCChunk::BLOCK_PER_CHUNK);
+    assert(p2->next_block_index == GCConstant::BLOCK_PER_CHUNK);
 
     p2 = p2->next_p;
   } while(p2 != p);

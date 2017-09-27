@@ -206,18 +206,44 @@ class GCState {
   CACHE_PAD(2);
 
   int system_page_size;
-  unsigned long node_size_count;
-  int block_size_list[GCThreadLocal::NUM_SIZES];
+  
+  
   unsigned long hook_count;
   gc_hookfn hook_fn_list[GCThreadLocal::MAX_HOOKS];
 
-  // A circular linked list of free chunks
+  // This filed is initialized when we initialize this object
+  // A circular linked list of free chunks; no block was alloted for them
   GCChunk *free_list_p;
 
-  GCChunk *alloc[GCThreadLocal::NUM_SIZES];
-  unsigned long alloc_size[GCThreadLocal::NUM_SIZES];
+  // The next two fields are initialized when adding new allocator
+
+  // This maps size indices to actual size of blocks
+  int block_size_list[GCThreadLocal::NUM_SIZES];
+  // Number of chunks we allocate next time we need to get more chunks
+  // to refill fill_chunk_list
+  unsigned long filled_chunks_per_allocation[GCThreadLocal::NUM_SIZES];
+
+  // Each element points to a circular linked list that has been filled
+  // with blocks of size of corresponding types
+  GCChunk *filled_chunk_list[GCThreadLocal::NUM_SIZES];
+
+  // This variable is used to denote the number of sizes
+  // this object could allocate
+  std::atomic<unsigned long> size_type_count;
 
  public:
+
+  /*
+   * AddSizeType() - This function adds a new type size that this object
+   *                 supports
+   *
+   * This function adds a new element into block_size_list and 
+   * filled_chunks_per_allocation. It also increases size_type_count by 1
+   * atomically
+   */
+  void AddSizeType(int size) {
+    
+  }
 
   /*
    * GetFreeGCChunk() - This function returns free GC chunks from the current
@@ -321,11 +347,15 @@ class GCState {
     free_list_p = GCChunk::AllocateFromHeap();
 
     hook_count = 0;
-    node_size_count = 0;
+    size_type_count = 0;
 
     return;
   }
 };
+
+/////////////////////////////////////////////////////////////////////
+// Thread local states
+/////////////////////////////////////////////////////////////////////
 
 /*
  * class ThreadState - This class implements thread state related functions

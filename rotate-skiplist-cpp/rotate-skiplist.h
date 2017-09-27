@@ -64,7 +64,7 @@ class GCConstant {
   // Number of chunks we allocate for a list
   static constexpr int CHUNK_PER_ALLOCATION_FROM_FREE_LIST = 300;
 
-  using gc_hookfn_t = void (*)(ThreadState *, void *);
+  using GCHookFuncType = void (*)(ThreadState *, void *);
 };
 
 /*
@@ -216,7 +216,7 @@ class GCState : public GCConstant {
   
   
   unsigned long hook_count;
-  gc_hookfn_t hook_fn_list[MAX_HOOKS];
+  GCHookFuncType hook_fn_list[MAX_HOOKS];
 
   // This filed is initialized when we initialize this object
   // A circular linked list of free chunks; no block was alloted for them

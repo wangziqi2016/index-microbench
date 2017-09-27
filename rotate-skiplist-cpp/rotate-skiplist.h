@@ -381,9 +381,11 @@ class GCGlobalState : public GCConstant {
     assert(size_type < size_type_count.load());
     bool cas_ret;
 
-    GCChunk *tail_p = filled_chunk_list[size_type];
+    GCChunk *tail_p, *head_p;
     do {
-      GCChunk *head_p = tail_p->next_p.load();
+      tail_p = filled_chunk_list[size_type];
+      head_p = tail_p->next_p.load();
+
       // If there is only one element in the list, then we should 
       // allocate more filled chunks of that type size
       while(head_p == tail_p) {
@@ -405,7 +407,7 @@ class GCGlobalState : public GCConstant {
     // Close the loop
     head_p->next_p = head_p;
     // All blocks in the chunk are available
-    assert(head_p->next_block_index == BLOCK_PER_CHUNK)
+    assert(head_p->next_block_index == BLOCK_PER_CHUNK);
 
     return head_p;
   }

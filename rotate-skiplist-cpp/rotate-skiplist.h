@@ -162,43 +162,14 @@ class GCChunk : public GCConstant {
 };
 
 /////////////////////////////////////////////////////////////////////
-// Thread local GC state
-/////////////////////////////////////////////////////////////////////
-
-/*
- * class GCThreadLocal - This is a thread local
- */
-class GCThreadLocal : public GCConstant {
- public:
-  unsigned int epoch;
-
-  unsigned int entries_since_reclaim;
-
-  /* used with gc_async_barrier() */
-  void *async_page;
-  int async_page_state;
-
-  GCChunk *garbage_list[NUM_EPOCHS][NUM_SIZES];
-  GCChunk *garbage_tail_list[NUM_EPOCHS][NUM_SIZES];
-  GCChunk *chunk_cache;
-
-  // Local allocation of chunks
-  GCChunk *alloc_list[NUM_SIZES];
-  // The 
-  unsigned int alloc_chunk_list[NUM_SIZES];
-
-  GCChunk *hook_list[NUM_EPOCHS][MAX_HOOKS];
-};
-
-/////////////////////////////////////////////////////////////////////
 // Global GC state
 /////////////////////////////////////////////////////////////////////
 
 /*
- * class GCState - This is the global GC state object which has a unique copy
- *                 over all threads (i.e. singleton)
+ * class GCGlobalState - This is the global GC state object which has a unique 
+*                        copy over all threads (i.e. singleton)
  */
-class GCState : public GCConstant {
+class GCGlobalState : public GCConstant {
  public:
   CACHE_PAD(0);
 
@@ -397,9 +368,9 @@ class GCState : public GCConstant {
   }
 
   /*
-   * GCState() - Initialize the object (rather than static states)
+   * GCGlobalState() - Initialize the object (rather than static states)
    */
-  GCState() {
+  GCGlobalState() {
     system_page_size = static_cast<unsigned int>(sysconf(_SC_PAGESIZE));
     free_list_p = GCChunk::AllocateFromHeap();
 
@@ -408,6 +379,35 @@ class GCState : public GCConstant {
 
     return;
   }
+};
+
+/////////////////////////////////////////////////////////////////////
+// Thread local GC state
+/////////////////////////////////////////////////////////////////////
+
+/*
+ * class GCThreadLocal - This is a thread local
+ */
+class GCThreadLocal : public GCConstant {
+ public:
+  unsigned int epoch;
+
+  unsigned int entries_since_reclaim;
+
+  /* used with gc_async_barrier() */
+  void *async_page;
+  int async_page_state;
+
+  GCChunk *garbage_list[NUM_EPOCHS][NUM_SIZES];
+  GCChunk *garbage_tail_list[NUM_EPOCHS][NUM_SIZES];
+  GCChunk *chunk_cache;
+
+  // Local allocation of chunks
+  GCChunk *alloc_list[NUM_SIZES];
+  // The 
+  unsigned int alloc_chunk_list[NUM_SIZES];
+
+  GCChunk *hook_list[NUM_EPOCHS][MAX_HOOKS];
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -436,7 +436,7 @@ class ThreadState {
   // Points to the next state object in the linked list
   ThreadState *next_p;
   // Points to the gargabe collection state for the current thread
-  GCState *gc_p;
+  GCGlobalState *gc_p;
 
   ///////////////////////////////////////////////////////////////////
   // Static data for maintaining the global linked list & thread ID

@@ -53,7 +53,7 @@ void GCChunkTest2() {
   fprintf(stderr, "Testing GCChunk allocation\n");
 
   // This is a local object but we have constructor
-  GCState gc_state{};
+  GCGlobalState gc_state{};
   fprintf(stderr, "  System page size = %d bytes\n", gc_state.system_page_size);
   fprintf(stderr, 
           "  Free list elements = %d\n", 

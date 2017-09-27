@@ -174,7 +174,7 @@ class GCGlobalState : public GCConstant {
   CACHE_PAD(0);
 
   // The current epoch
-  int current;
+  int current_epoch;
 
   CACHE_PAD(1);
 
@@ -240,6 +240,7 @@ class GCGlobalState : public GCConstant {
    */
   int AddHook(GCHookFuncType func) {
     int hook_index = hook_count.fetch_add(1);
+    assert(hook_fn_list[hook_index] == nullptr);
 
     hook_fn_list[hook_index] = func;
 
@@ -258,6 +259,11 @@ class GCGlobalState : public GCConstant {
    */
   int AddSizeType(int size) {
     int size_type_index = size_type_count.fetch_add(1);
+
+    // This is the value we fill in constructor
+    assert(block_size_list[size_type_index] == 0);
+    assert(filled_chunks_per_allocation[size_type_index] == 0);
+    assert(filled_chunk_list[size_type_index] == nullptr);
 
     // Fill the size into the list and from now on it becomes constant
     block_size_list[size_type_index] = size;
@@ -371,11 +377,24 @@ class GCGlobalState : public GCConstant {
    * GCGlobalState() - Initialize the object (rather than static states)
    */
   GCGlobalState() {
+    current_epoch = 0;
+    gc_lock.clear();
+
     system_page_size = static_cast<unsigned int>(sysconf(_SC_PAGESIZE));
     free_list_p = GCChunk::AllocateFromHeap();
 
     hook_count = 0;
+    for(int i = 0;i < MAX_HOOKS;i++) {
+      hook_fn_list[i] = nullptr;
+    }
+
+    // Initialize size type and all related data
     size_type_count = 0;
+    for(int i = 0;i < NUM_SIZES;i++) {
+      block_size_list[i] = 0;
+      filled_chunks_per_allocation[i] = 0;
+      filled_chunk_list[i] = nullptr;
+    }
 
     return;
   }

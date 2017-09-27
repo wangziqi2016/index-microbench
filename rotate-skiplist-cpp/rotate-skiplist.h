@@ -227,7 +227,7 @@ class GCState : public GCConstant {
   int block_size_list[NUM_SIZES];
   // Number of chunks we allocate next time we need to get more chunks
   // to refill fill_chunk_list
-  int filled_chunks_per_allocation[NUM_SIZES];
+  std::atomic<int> filled_chunks_per_allocation[NUM_SIZES];
 
   // Each element points to a circular linked list that has been filled
   // with blocks of different sizes. The size on index i is block_size_list[i]
@@ -250,12 +250,14 @@ class GCState : public GCConstant {
     assert(type_index < size_type_count.load());
 
     // This is the number of filled blocks we need to get
-    int num_chunk = filled_chunks_per_allocation[type_index];
+    int num_chunk = filled_chunks_per_allocation[type_index].load();
     int block_size = block_size_list[type_index];
 
     // Allocate filled chunks and link them into existing chunks
     GCChunk *new_chunk_p = GetFilledGCChunk(num_chunk, block_size);
     GCChunk::LinkInto(new_chunk_p, filled_chunk_list[type_index]);
+
+    filled_chunks_per_allocation[type_index].fetch_add(num_chunk >> 3);
 
     return filled_chunk_list[type_index];
   }

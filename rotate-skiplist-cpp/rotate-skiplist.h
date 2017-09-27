@@ -61,6 +61,9 @@ class GCConstant {
   static constexpr int MAX_HOOKS = 4;
   static constexpr int NUM_SIZES = 1;
 
+  // Number of chunks we allocate for a list
+  static constexpr int CHUNK_PER_ALLOCATION_FROM_FREE_LIST = 300;
+
   using gc_hookfn_t = void (*)(ThreadState *, void *);
 };
 
@@ -244,13 +247,24 @@ class GCState : public GCConstant {
    * This function adds a new element into block_size_list and 
    * filled_chunks_per_allocation. It also increases size_type_count by 1
    * atomically
+   *
+   * Returns old number of node sizes (i.e. current index)
    */
-  void AddSizeType(int size) {
-    // Atomically add it by 1 and return the old value
+  unsigned long AddSizeType(int size) {
     unsigned long size_type_index = size_type_count.fetch_add(1);
+
     // Fill the size into the list and from now on it becomes constant
     block_size_list[size_type_index] = size;
-    //filled_chunks_per_allocation[size_type_index] = 
+    // This will change for every successful allocation
+    filled_chunks_per_allocation[size_type_index] = \
+      CHUNK_PER_ALLOCATION_FROM_FREE_LIST;
+
+    // Also initialize the filled chunk list
+    filled_chunk_list[size_type_index] = \
+      GetFilledGCChunk(CHUNK_PER_ALLOCATION_FROM_FREE_LIST, 
+                       size);
+    
+    return size_type_index;
   }
 
   /*

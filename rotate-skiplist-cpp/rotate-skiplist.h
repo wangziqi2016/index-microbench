@@ -374,6 +374,43 @@ class GCGlobalState : public GCConstant {
   }
 
   /*
+   * GetChunkOfSizeType() - This function returns a chunk of a certain size
+   *                        type, which is filled 
+   */
+  GCChunk *GetChunkOfSizeType(int size_type) {
+    assert(size_type < size_type_count.load());
+    bool cas_ret;
+
+    GCChunk *tail_p = filled_chunk_list[size_type];
+    do {
+      GCChunk *head_p = tail_p->next_p.load();
+      // If there is only one element in the list, then we should 
+      // allocate more filled chunks of that type size
+      while(head_p == tail_p) {
+        // This function will return the new tail (which 
+        // should not change anyway)
+        GCChunk *new_tail_p = RefillSizeType(size_type);
+        assert(tail_p == new_tail_p);
+        // Refresh
+        tail_p = new_tail_p;
+        head_p = tail_p->next_p.load();
+      }
+
+      GCChunk *after_p = head_p->next_p.load();
+      // If we get here then we know at least head_p is not tail_p
+      // and then just use CAS to check & swap
+      cas_ret = tail_p->next_p.compare_exchange_strong(head_p, after_p);
+    } while(cas_ret == false);
+
+    // Close the loop
+    head_p->next_p = head_p;
+    // All blocks in the chunk are available
+    assert(head_p->next_block_index == BLOCK_PER_CHUNK)
+
+    return head_p;
+  }
+
+  /*
    * GCGlobalState() - Initialize the object (rather than static states)
    */
   GCGlobalState() {

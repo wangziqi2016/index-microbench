@@ -214,8 +214,7 @@ class GCState : public GCConstant {
 
   int system_page_size;
   
-  
-  unsigned long hook_count;
+  std::atomic<unsigned long> hook_count;
   GCHookFuncType hook_fn_list[MAX_HOOKS];
 
   // This filed is initialized when we initialize this object
@@ -241,6 +240,19 @@ class GCState : public GCConstant {
  public:
 
   /*
+   * AddHook() - Adds a hook function and increments the hook count atomically
+   *
+   * Return the old number of hooks (i.e. current index)
+   */
+  unsigned long AddHook(GCHookFuncType func) {
+    unsigned long hook_index = hook_count.fetch_add(1UL);
+
+    hook_fn_list[hook_index] = func;
+
+    return hook_index;
+  }
+
+  /*
    * AddSizeType() - This function adds a new type size that this object
    *                 supports
    *
@@ -251,7 +263,7 @@ class GCState : public GCConstant {
    * Returns old number of node sizes (i.e. current index)
    */
   unsigned long AddSizeType(int size) {
-    unsigned long size_type_index = size_type_count.fetch_add(1);
+    unsigned long size_type_index = size_type_count.fetch_add(1UL);
 
     // Fill the size into the list and from now on it becomes constant
     block_size_list[size_type_index] = size;

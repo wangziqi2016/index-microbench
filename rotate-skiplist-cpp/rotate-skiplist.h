@@ -214,7 +214,7 @@ class GCState : public GCConstant {
 
   int system_page_size;
   
-  std::atomic<unsigned long> hook_count;
+  std::atomic<int> hook_count;
   GCHookFuncType hook_fn_list[MAX_HOOKS];
 
   // This filed is initialized when we initialize this object
@@ -227,25 +227,46 @@ class GCState : public GCConstant {
   int block_size_list[NUM_SIZES];
   // Number of chunks we allocate next time we need to get more chunks
   // to refill fill_chunk_list
-  unsigned long filled_chunks_per_allocation[NUM_SIZES];
+  int filled_chunks_per_allocation[NUM_SIZES];
 
   // Each element points to a circular linked list that has been filled
-  // with blocks of size of corresponding types
+  // with blocks of different sizes. The size on index i is block_size_list[i]
   GCChunk *filled_chunk_list[NUM_SIZES];
 
   // This variable is used to denote the number of sizes
   // this object could allocate
-  std::atomic<unsigned long> size_type_count;
+  std::atomic<int> size_type_count;
 
  public:
+
+  /*
+   * ReFillSizeType() - This function refills a given size type
+   *
+   * We allocate filled chunks, and link them into filled_chunk_list[size_index]
+   *
+   * Return value is the new head of filled_chunk_list[size_index]
+   */
+  GCChunk *RefillSizeType(int type_index) {
+    assert(type_index < size_type_count.load());
+
+    // This is the number of filled blocks we need to get
+    int num_chunk = filled_chunks_per_allocation[type_index];
+    int block_size = block_size_list[type_index];
+
+    // Allocate filled chunks and link them into existing chunks
+    GCChunk *new_chunk_p = GetFilledGCChunk(num_chunk, block_size);
+    GCChunk::LinkInto(new_chunk_p, filled_chunk_list[type_index]);
+
+    return filled_chunk_list[type_index];
+  }
 
   /*
    * AddHook() - Adds a hook function and increments the hook count atomically
    *
    * Return the old number of hooks (i.e. current index)
    */
-  unsigned long AddHook(GCHookFuncType func) {
-    unsigned long hook_index = hook_count.fetch_add(1UL);
+  int AddHook(GCHookFuncType func) {
+    int hook_index = hook_count.fetch_add(1);
 
     hook_fn_list[hook_index] = func;
 
@@ -262,8 +283,8 @@ class GCState : public GCConstant {
    *
    * Returns old number of node sizes (i.e. current index)
    */
-  unsigned long AddSizeType(int size) {
-    unsigned long size_type_index = size_type_count.fetch_add(1UL);
+  int AddSizeType(int size) {
+    int size_type_index = size_type_count.fetch_add(1);
 
     // Fill the size into the list and from now on it becomes constant
     block_size_list[size_type_index] = size;

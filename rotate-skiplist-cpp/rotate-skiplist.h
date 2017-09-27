@@ -303,6 +303,9 @@ class GCState {
         mem_p += block_size;
       }
 
+      // We allocate from the highest to the lowest
+      p->next_block_index = GCChunk::BLOCK_PER_CHUNK;
+
       p = p->next_p;
     } while(p != new_chunk_p);
     

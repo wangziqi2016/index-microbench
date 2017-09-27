@@ -72,6 +72,9 @@ void GCChunkTest2() {
       memset(p2->blocks[i], 0x88, 23);
     }
 
+    // This must be true for a new chunk
+    assert(p2->next_block_index == GCChunk::BLOCK_PER_CHUNK);
+
     p2 = p2->next_p;
   } while(p2 != p);
 

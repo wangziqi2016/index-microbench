@@ -207,6 +207,24 @@ class GCGlobalState : public GCConstant {
   // This variable is used to denote the number of sizes
   // this object could allocate
   std::atomic<int> size_type_count;
+ 
+ public:
+  // This is a singleton, which is initialized in Init() method of this class
+  static GCGlobalState *global_state_p;
+
+ public:
+
+  /*
+   * Init() - Initialize the singleton object (static varibale)
+   *
+   * This function should only be called once
+   */
+  static void Init() {
+    assert(global_state_p == nullptr);
+    global_state_p = new GCGlobalState{};
+
+    return;
+  }
 
  public:
 

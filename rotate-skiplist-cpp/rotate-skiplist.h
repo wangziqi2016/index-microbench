@@ -167,7 +167,12 @@ class GCChunk : public GCConstant {
 
 /*
  * class GCGlobalState - This is the global GC state object which has a unique 
-*                        copy over all threads (i.e. singleton)
+ *                       copy over all threads (i.e. singleton)
+ *
+ * This object is a singleton, and should only have one instance throughout 
+ * the execution of the program. In order to obtain a pointer to the initialized
+ * object, please call static method Get(). Prior to any usage of this object
+ * please initialize it using Init().
  */
 class GCGlobalState : public GCConstant {
  public:
@@ -224,6 +229,13 @@ class GCGlobalState : public GCConstant {
     global_state_p = new GCGlobalState{};
 
     return;
+  }
+
+  /*
+   * Get() - Returns the singleton object's pointer
+   */
+  inline static GCGlobalState *Get() {
+    return global_state_p;
   }
 
  public:
@@ -463,7 +475,7 @@ class GCGlobalState : public GCConstant {
   GCGlobalState(const GCGlobalState &) = delete;
   GCGlobalState(GCGlobalState &&) = delete;
   GCGlobalState &operator=(const GCGlobalState &) = delete;
-  GCGlobalState operator=(GCGlobalState &&) = delete;
+  GCGlobalState &operator=(GCGlobalState &&) = delete;
 };
 
 /////////////////////////////////////////////////////////////////////

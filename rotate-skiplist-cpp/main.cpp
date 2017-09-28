@@ -52,15 +52,22 @@ void GCChunkTest1() {
 void GCChunkTest2() {
   fprintf(stderr, "Testing GCChunk allocation\n");
 
+  // This will be a compilation error
+  //GCGlobalState nonsense{};
+
   // This is a local object but we have constructor
-  GCGlobalState gc_state{};
-  fprintf(stderr, "  System page size = %d bytes\n", gc_state.system_page_size);
+  GCGlobalState::Init();
+  GCGlobalState *global_state_p = GCGlobalState::Get();
+
+  fprintf(stderr, 
+          "  System page size = %d bytes\n", 
+          global_state_p->system_page_size);
   fprintf(stderr, 
           "  Free list elements = %d\n", 
-          GCChunk::DebugCountChunk(gc_state.free_list_p));
+          GCChunk::DebugCountChunk(global_state_p->free_list_p));
 
   // Allocate 17 chunks of 23 bytes block each
-  GCChunk * const p = gc_state.GetFilledGCChunk(17, 23);
+  GCChunk * const p = global_state_p->GetFilledGCChunk(17, 23);
   
   assert(GCChunk::DebugCountChunk(p) == 17);
 

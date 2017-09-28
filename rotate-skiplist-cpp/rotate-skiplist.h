@@ -64,6 +64,9 @@ class GCConstant {
   // Number of chunks we allocate for a list
   static constexpr int CHUNK_PER_ALLOCATION_FROM_FREE_LIST = 300;
 
+  // The number of chunks we allocate from heap for thred local chunk cache
+  static constexpr int CHUNK_PER_ALLOCATION_FOR_CACHE = 100;
+
   using GCHookFuncType = void (*)(ThreadState *, void *);
 };
 
@@ -487,24 +490,65 @@ class GCGlobalState : public GCConstant {
  */
 class GCThreadLocal : public GCConstant {
  public:
-  unsigned int epoch;
-
+  unsigned int local_epoch;
   unsigned int entries_since_reclaim;
-
-  /* used with gc_async_barrier() */
-  void *async_page;
-  int async_page_state;
 
   GCChunk *garbage_list[NUM_EPOCHS][NUM_SIZES];
   GCChunk *garbage_tail_list[NUM_EPOCHS][NUM_SIZES];
-  GCChunk *chunk_cache;
 
-  // Local allocation of chunks
-  GCChunk *alloc_list[NUM_SIZES];
-  // The 
-  unsigned int alloc_chunk_list[NUM_SIZES];
+  // A circular list of empty chunks (i.e. blocks are not filled)
+  GCChunk *empty_chunk_cache;
+
+  // The local filled chunk list of different size types
+  GCChunk *filled_chunk_list[NUM_SIZES];
+  // Number of elements in each of the above slots of filled chunks
+  int chunk_count_list[NUM_SIZES];
 
   GCChunk *hook_list[NUM_EPOCHS][MAX_HOOKS];
+
+ public:
+  /*
+   * Get() - This static function constructs a thread local object
+   *
+   * This is the only way this object could be built.
+   */
+  static GCThreadLocal *Get() {
+    return new GCThreadLocal{};
+  }
+
+ private:
+
+  /*
+   * GCThreadLocal() - Initialize
+   */
+  GCThreadLocal() {
+    local_epoch = 0U;
+    entries_since_reclaim = 0U;
+
+    for(int i = 0;i < NUM_EPOCHS;i++) {
+      for(int j = 0;j < NUM_SIZES;j++) {
+        garbage_list[i][j] = nullptr;
+        garbage_tail_list[i][j] = nullptr;
+      }
+    }
+
+    // This is a list of circular chunks that are not filled
+    empty_chunk_cache = \
+      GCGlobalState::Get()->GetFreeGCChunk(CHUNK_PER_ALLOCATION_FOR_CACHE);
+    
+    for(int i = 0;i < NUM_SIZES;i++) {
+      filled_chunk_list[i] = nullptr;
+      chunk_count_list[i] = 0;
+    }
+
+    for(int i = 0;i < NUM_EPOCHS;i++) {
+      for(int j = 0;j < MAX_HOOKS;j++) {
+        hook_list[i][j] = nullptr;
+      }
+    }
+
+    return;
+  } 
 };
 
 /////////////////////////////////////////////////////////////////////

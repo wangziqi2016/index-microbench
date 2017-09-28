@@ -430,10 +430,13 @@ class GCGlobalState : public GCConstant {
     return head_p;
   }
 
+ private:
   /*
    * GCGlobalState() - Initialize the object (rather than static states)
    */
   GCGlobalState() {
+    assert(global_state_p == nullptr);
+
     current_epoch = 0;
     gc_lock.clear();
 
@@ -455,6 +458,12 @@ class GCGlobalState : public GCConstant {
 
     return;
   }
+
+  // These two are deleted
+  GCGlobalState(const GCGlobalState &) = delete;
+  GCGlobalState(GCGlobalState &&) = delete;
+  GCGlobalState &operator=(const GCGlobalState &) = delete;
+  GCGlobalState operator=(GCGlobalState &&) = delete;
 };
 
 /////////////////////////////////////////////////////////////////////

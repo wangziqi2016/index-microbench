@@ -534,7 +534,7 @@ class GCThreadLocal : public GCConstant {
 
     // This is a list of circular chunks that are not filled
     empty_chunk_cache = \
-      GCGlobalState::Get()->GetFreeGCChunk(CHUNK_PER_ALLOCATION_FOR_CACHE);
+      GCGlobalState::Get()->GetFreeGCChunk(CHUNK_PER_ALLOCATION_FOR_CACHE); 
     
     for(int i = 0;i < NUM_SIZES;i++) {
       filled_chunk_list[i] = nullptr;

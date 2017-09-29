@@ -606,6 +606,20 @@ class GCThreadLocal : public GCConstant {
       }
     }
 
+    // This is the number of size types we have
+    int size_type_count = GCGlobalState::Get()->size_type_count.load();
+    // Then initialize GC allocation list of type sizes
+    // to a single filled chunk (or empty chunks if the size
+    // type has not yet been added)
+    for(int i = 0;i < size_type_count;i++) {
+      filled_chunk_list[i] = GCGlobalState::Get()->GetGCChunkOfSizeType(i);
+    }
+
+    // Use an empty chunk as a placeholder because we do not yet need them
+    for(int i = size_type_count;i < NUM_SIZES;i++) {
+      filled_chunk_list[i] = GetFreeGCChunkFromCache();
+    }
+
     return;
   } 
 };
@@ -632,7 +646,7 @@ class ThreadState {
   // active thread. We set this flag when a thread claims a certain
   // object, and clears the flag when thread exits by using a callback
   std::atomic_flag owned;
-
+  
   // Points to the next state object in the linked list
   ThreadState *next_p;
   // Points to the gargabe collection state for the current thread

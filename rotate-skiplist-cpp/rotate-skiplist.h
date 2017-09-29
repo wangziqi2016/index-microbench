@@ -407,10 +407,10 @@ class GCGlobalState : public GCConstant {
   }
 
   /*
-   * GetChunkOfSizeType() - This function returns a chunk of a certain size
-   *                        type, which is filled 
+   * GetGCChunkOfSizeType() - This function returns a chunk of a certain size
+   *                          type, which is filled 
    */
-  GCChunk *GetChunkOfSizeType(int size_type) {
+  GCChunk *GetGCChunkOfSizeType(int size_type) {
     assert(size_type < size_type_count.load());
     bool cas_ret;
 
@@ -563,7 +563,16 @@ class GCThreadLocal : public GCConstant {
    * list
    */
   void *AllocateSizeType(int size_type) {
+    GCChunk *chunk_p = filled_chunk_list[size_type];
+    assert(chunk_p != nullptr);
 
+    // If there are more blocks in the chunk we just return it
+    if(chunk_p->next_block_index != 0) {
+      chunk_p->next_block_index--;
+      return chunk_p->blocks[chunk_p->next_block_index];
+    }
+
+    // The first chunk in the list is full
   }
 
  private:

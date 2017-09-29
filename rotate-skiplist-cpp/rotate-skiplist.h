@@ -536,14 +536,14 @@ class GCThreadLocal : public GCConstant {
     // Need to refill the local cache
     if(next_p == head_p) {
       GCChunk *new_chunk_p = \
-        GCGlobalState.Get().GetFreeGCChunk(CHUNK_PER_ALLOCATION_FOR_CACHE);
+        GCGlobalState::Get()->GetFreeGCChunk(CHUNK_PER_ALLOCATION_FOR_CACHE);
       // We do not need atomicity, though it is provided
       GCChunk::LinkInto(new_chunk_p, head_p);
       assert(GCChunk::DebugCountChunk(head_p) == \
              CHUNK_PER_ALLOCATION_FOR_CACHE + 1);
     }
 
-    head_p->next_p = next_p->next_p;
+    head_p->next_p.store(next_p->next_p.load());
 
     // Make returned chunk circular with itself
     next_p->next_p = next_p;

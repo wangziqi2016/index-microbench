@@ -518,7 +518,7 @@ class GCThreadLocal : public GCConstant {
 
  public:
   /*
-   * GetFromCache() - Returns an empty chunk from the local cache
+   * GetFreeGCChunkFromCache() - Returns an empty chunk from the local cache
    *
    * This function should only be called by the thread loding ownership
    * of this object, and we do not have synchronization here.
@@ -528,7 +528,7 @@ class GCThreadLocal : public GCConstant {
    * chunks from the global object, and then link them into the cache, before
    * we retry.
    */
-  GCChunk *GetFromCache() {
+  GCChunk *GetFreeGCChunkFromCache() {
     GCChunk *head_p = empty_chunk_cache;
     assert(head_p != nullptr);
 
@@ -547,9 +547,24 @@ class GCThreadLocal : public GCConstant {
 
     // Make returned chunk circular with itself
     next_p->next_p = next_p;
+    // Mark it as empty
+    next_p->next_block_index = 0;
 
     return next_p;
   } 
+
+  /*
+   * AllocateSizeType() - This function allocates a certain size type block
+   *
+   * We try to allocate blocks from filled_chunk_list, and once a chunk
+   * in the list is exhausted, we change to the next chunk. If all blocks in all
+   * chunks were already allocated, then we link these chunks into the global
+   * free list, as all their blocks are being used or are linked to the garbage 
+   * list
+   */
+  void *AllocateSizeType(int size_type) {
+
+  }
 
  private:
 

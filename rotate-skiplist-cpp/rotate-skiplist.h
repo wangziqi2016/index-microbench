@@ -516,6 +516,41 @@ class GCThreadLocal : public GCConstant {
     return new GCThreadLocal{};
   }
 
+ public:
+  /*
+   * GetFromCache() - Returns an empty chunk from the local cache
+   *
+   * This function should only be called by the thread loding ownership
+   * of this object, and we do not have synchronization here.
+   *
+   * This function first tries to unlink one chunk from its local cache. If,
+   * however, the local cache has only one element, we just allocate empty
+   * chunks from the global object, and then link them into the cache, before
+   * we retry.
+   */
+  GCChunk *GetFromCache() {
+    GCChunk *head_p = empty_chunk_cache;
+    assert(head_p != nullptr);
+
+    GCChunk *next_p = head_p->next_p.load();
+    // Need to refill the local cache
+    if(next_p == head_p) {
+      GCChunk *new_chunk_p = \
+        GCGlobalState.Get().GetFreeGCChunk(CHUNK_PER_ALLOCATION_FOR_CACHE);
+      // We do not need atomicity, though it is provided
+      GCChunk::LinkInto(new_chunk_p, head_p);
+      assert(GCChunk::DebugCountChunk(head_p) == \
+             CHUNK_PER_ALLOCATION_FOR_CACHE + 1);
+    }
+
+    head_p->next_p = next_p->next_p;
+
+    // Make returned chunk circular with itself
+    next_p->next_p = next_p;
+
+    return next_p;
+  } 
+
  private:
 
   /*

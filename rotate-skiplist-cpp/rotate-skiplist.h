@@ -458,7 +458,7 @@ class GCGlobalState : public GCConstant {
     // Close the loop
     head_p->next_p = head_p;
     // All blocks in the chunk are available
-    assert(head_p->next_block_index == BLOCK_PER_CHUNK);
+    assert(head_p->IsFull());
 
     return head_p;
   }
@@ -616,7 +616,7 @@ class GCThreadLocal : public GCConstant {
       }
 
       filled_chunk_list[size_type] = chunk_p;
-      assert(chunk_p->next_block_index == BLOCK_PER_CHUNK);
+      assert(chunk_p->IsFull());
     } // while(1)
 
     return ret;
@@ -638,12 +638,12 @@ class GCThreadLocal : public GCConstant {
     if(garbage_chunk_p == nullptr) {
       garbage_chunk_p = GetFreeGCChunkFromCache();
       // Must be an empty chunk
-      assert(garbage_chunk_p->next_block_index == 0);
+      assert(garbage_chunk_p->IsEmpty());
       // Since there is only one node, head and tail points to the same node
       garbage_list[local_epoch][size_type] = garbage_chunk_p;
       garbage_tail_list[local_epoch][size_type] = garbage_chunk_p;
-    } else if(garbage_chunk_p->next_block_index == BLOCK_PER_CHUNK) {
-
+    } else if(garbage_chunk_p->IsFull()) {
+      
     }
   } 
 

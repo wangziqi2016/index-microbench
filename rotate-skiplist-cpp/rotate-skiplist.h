@@ -66,6 +66,8 @@ class GCConstant {
 
   // The number of chunks we allocate from heap for thred local chunk cache
   static constexpr int CHUNK_PER_ALLOCATION_FOR_CACHE = 100;
+  // Max number of depeletd chunks we allow for thread local GC objects
+  static constexpr int MAX_DEPLETED_CHUNK = 100;
 
   using GCHookFuncType = void (*)(ThreadState *, void *);
 };
@@ -566,18 +568,41 @@ class GCThreadLocal : public GCConstant {
   void *AllocateSizeType(int size_type) {
     GCChunk *chunk_p = filled_chunk_list[size_type];
     assert(chunk_p != nullptr);
+    void *ret;
 
-    // If there are more blocks in the chunk we just return the block
-    if(chunk_p->next_block_index != 0) {
-      assert(chunk_p->next_block_index <= BLOCK_PER_CHUNK);
-      chunk_p->next_block_index--;
-      return chunk_p->blocks[chunk_p->next_block_index];
-    }
+    while(1) {
+      // If there are more blocks in the chunk we just return the block
+      if(chunk_p->next_block_index != 0) {
+        assert(chunk_p->next_block_index <= BLOCK_PER_CHUNK);
+        chunk_p->next_block_index--;
+        ret = chunk_p->blocks[chunk_p->next_block_index];
 
-    // The current head chunk is depeted, and we need to allocate a new
-    // one. Before doing this, if there are too many depleted chunks we
-    // send them back to free list in the global GC object
+        break;
+      }
 
+      // The current head chunk is depeted, and we need to allocate a new
+      // one. Before doing this, if there are too many depleted chunks we
+      // send them back to free list in the global GC object
+      delpeted_chunk_count[size_type]++;
+
+      GCGlobalState *gc_global_p = GCGlobalState::Get();
+      if(delpeted_chunk_count[size_type] == MAX_DEPLETED_CHUNK) {
+        GCChunk::LinkInto(chunk_p, gc_global_p->free_list_p);
+        chunk_p = gc_global_p->GetGCChunkOfSizeType(size_type);
+        delpeted_chunk_count[size_type] = 0;
+      } else {
+        // We link the new chunk after the current chunk
+        GCChunk *prev_p = chunk_p;
+        chunk_p = gc_global_p->GetGCChunkOfSizeType(size_type);
+        chunk_p->next_p = prev_p->next_p.load();
+        prev_p->next_p = chunk_p;
+      }
+
+      filled_chunk_list[size_type] = chunk_p;
+      assert(chunk_p->next_block_index == BLOCK_PER_CHUNK);
+    } // while(1)
+
+    return ret;
   }
 
  private:

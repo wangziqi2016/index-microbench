@@ -152,6 +152,20 @@ class GCChunk : public GCConstant {
   } 
 
   /*
+   * IsEmpty() - Whether the chunk is empty (i.e. has no valid block pointers)
+   */
+  bool IsEmpty() const {
+    return next_block_index == 0;
+  }
+
+  /*
+   * IsFull() - Whether the chunk is full (i.e. all block pointers are valid)
+   */
+  bool IsFull() const {
+    return next_block_index == BLOCK_PER_CHUNK;
+  }
+
+  /*
    * DebugCountChunk() - This function counts the number of elements in a chunk
    *
    * Only called under debug mode
@@ -611,6 +625,11 @@ class GCThreadLocal : public GCConstant {
   /*
    * FreeSizeType() - This function returns the block of a certain size type
    *                  back to the block pool
+   *
+   * We keep a non-full chunk at the beginning of the circular linked list
+   * and add blocks into that chunk. If the chunk is full, then we allocate
+   * an empty chunk from the local cache, and link the empty chunk to the head
+   * of the garbage chain.
    */
   void FreeSizeType(void *block_p, int size_type) {
     assert(block_p != nullptr);
@@ -618,7 +637,13 @@ class GCThreadLocal : public GCConstant {
     GCChunk *garbage_chunk_p = garbage_list[local_epoch][size_type];
     if(garbage_chunk_p == nullptr) {
       garbage_chunk_p = GetFreeGCChunkFromCache();
+      // Must be an empty chunk
       assert(garbage_chunk_p->next_block_index == 0);
+      // Since there is only one node, head and tail points to the same node
+      garbage_list[local_epoch][size_type] = garbage_chunk_p;
+      garbage_tail_list[local_epoch][size_type] = garbage_chunk_p;
+    } else if(garbage_chunk_p->next_block_index == BLOCK_PER_CHUNK) {
+
     }
   } 
 

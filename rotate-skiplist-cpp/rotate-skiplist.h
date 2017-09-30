@@ -166,6 +166,27 @@ class GCChunk : public GCConstant {
   }
 
   /*
+   * Push() - Adds a block into the block list
+   */
+  inline void Push(void *block_p) {
+    assert(IsFull() == false);
+    blocks[next_block_index] = block_p;
+    next_block_index++;
+
+    return;
+  }
+
+  /*
+   * Pop() - Returns a block from the top (we pop from higher blocks to
+   *         lower blocks)
+   */
+  inline void *Pop() {
+    assert(IsEmpty() == false);
+    next_block_index--;
+    return blocks[next_block_index];
+  }
+
+  /*
    * DebugCountChunk() - This function counts the number of elements in a chunk
    *
    * Only called under debug mode
@@ -656,7 +677,7 @@ class GCThreadLocal : public GCConstant {
     }
 
     assert(garbage_chunk_p->IsFull() == false);
-    garbage_chunk_p[garbage_chunk_p->next_block_index] = block_p;
+    garbage_chunk_p->blocks[garbage_chunk_p->next_block_index] = block_p;
     garbage_chunk_p->next_block_index++;
 
     return;

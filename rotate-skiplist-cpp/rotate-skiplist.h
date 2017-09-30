@@ -611,9 +611,7 @@ class GCThreadLocal : public GCConstant {
     while(1) {
       // If there are more blocks in the chunk we just return the block
       if(chunk_p->next_block_index != 0) {
-        assert(chunk_p->next_block_index <= BLOCK_PER_CHUNK);
-        chunk_p->next_block_index--;
-        ret = chunk_p->blocks[chunk_p->next_block_index];
+        ret = chunk_p->Pop();
 
         break;
       }
@@ -676,9 +674,7 @@ class GCThreadLocal : public GCConstant {
       garbage_chunk_p = new_chunk_p;
     }
 
-    assert(garbage_chunk_p->IsFull() == false);
-    garbage_chunk_p->blocks[garbage_chunk_p->next_block_index] = block_p;
-    garbage_chunk_p->next_block_index++;
+    garbage_chunk_p->Push(block_p);
 
     return;
   } 

@@ -499,10 +499,11 @@ class GCThreadLocal : public GCConstant {
   // A circular list of empty chunks (i.e. blocks are not filled)
   GCChunk *empty_chunk_cache;
 
-  // The local filled chunk list of different size types
+  // A circular linked list of chunks that we use to allocate blocks
+  // Only the head chunk is not deleted. All other chunks are depleted
   GCChunk *filled_chunk_list[NUM_SIZES];
-  // Number of elements in each of the above slots of filled chunks
-  int chunk_count_list[NUM_SIZES];
+  // Number of chunks that has been depeted
+  int delpeted_chunk_count[NUM_SIZES];
 
   GCChunk *hook_list[NUM_EPOCHS][MAX_HOOKS];
 
@@ -566,13 +567,17 @@ class GCThreadLocal : public GCConstant {
     GCChunk *chunk_p = filled_chunk_list[size_type];
     assert(chunk_p != nullptr);
 
-    // If there are more blocks in the chunk we just return it
+    // If there are more blocks in the chunk we just return the block
     if(chunk_p->next_block_index != 0) {
+      assert(chunk_p->next_block_index <= BLOCK_PER_CHUNK);
       chunk_p->next_block_index--;
       return chunk_p->blocks[chunk_p->next_block_index];
     }
 
-    // The first chunk in the list is full
+    // The current head chunk is depeted, and we need to allocate a new
+    // one. Before doing this, if there are too many depleted chunks we
+    // send them back to free list in the global GC object
+
   }
 
  private:
@@ -597,7 +602,8 @@ class GCThreadLocal : public GCConstant {
     
     for(int i = 0;i < NUM_SIZES;i++) {
       filled_chunk_list[i] = nullptr;
-      chunk_count_list[i] = 0;
+      // We will increment this when a chunk has been depleted
+      delpeted_chunk_count[i] = 0;
     }
 
     for(int i = 0;i < NUM_EPOCHS;i++) {

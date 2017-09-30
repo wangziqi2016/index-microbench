@@ -641,10 +641,25 @@ class GCThreadLocal : public GCConstant {
       assert(garbage_chunk_p->IsEmpty());
       // Since there is only one node, head and tail points to the same node
       garbage_list[local_epoch][size_type] = garbage_chunk_p;
+      // Once set, this will become permanent and does not change 
+      // until reclaimation
       garbage_tail_list[local_epoch][size_type] = garbage_chunk_p;
     } else if(garbage_chunk_p->IsFull()) {
+      // Allocate a new chunk from the cache and prepend it to the beginning of
+      // the garbage list
+      GCChunk *new_chunk_p = GetFreeGCChunkFromCache();
+      new_chunk_p->next_p = garbage_chunk_p->next_p.load();
+      garbage_tail_list[local_epoch][size_type]->next_p = new_chunk_p;
+       garbage_list[local_epoch][size_type] = new_chunk_p;
       
+      garbage_chunk_p = new_chunk_p;
     }
+
+    assert(garbage_chunk_p->IsFull() == false);
+    garbage_chunk_p[garbage_chunk_p->next_block_index] = block_p;
+    garbage_chunk_p->next_block_index++;
+
+    return;
   } 
 
  private:

@@ -104,6 +104,8 @@ class GCChunk : public GCConstant {
     // Set next_p pointer as the next element
     for(int i = 0;i < CHUNK_PER_ALLOCATION_FROM_HEAP;i++) {
       chunk_p[i].next_p = &chunk_p[i + 1];
+      // Make it empty chunk; easier to debug
+      chunk_p[i].next_block_index = 0;
     }
 
     // Make it circular
@@ -566,6 +568,7 @@ class GCThreadLocal : public GCConstant {
    * list
    */
   void *AllocateSizeType(int size_type) {
+    assert(size_type < GCGlobalState::Get()->size_type_count.load());
     GCChunk *chunk_p = filled_chunk_list[size_type];
     assert(chunk_p != nullptr);
     void *ret;
@@ -604,6 +607,20 @@ class GCThreadLocal : public GCConstant {
 
     return ret;
   }
+
+  /*
+   * FreeSizeType() - This function returns the block of a certain size type
+   *                  back to the block pool
+   */
+  void FreeSizeType(void *block_p, int size_type) {
+    assert(block_p != nullptr);
+    assert(size_type < GCGlobalState::Get()->size_type_count.load());
+    GCChunk *garbage_chunk_p = garbage_list[local_epoch][size_type];
+    if(garbage_chunk_p == nullptr) {
+      garbage_chunk_p = GetFreeGCChunkFromCache();
+      assert(garbage_chunk_p->next_block_index == 0);
+    }
+  } 
 
  private:
 

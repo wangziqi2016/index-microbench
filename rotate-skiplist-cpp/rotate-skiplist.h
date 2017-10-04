@@ -5,7 +5,7 @@
 #define _H_ROTATE_SKIPLIST
 
 // This contains std::less and std::equal_to
-#include <functional>
+#include <functional> 
 #include <atomic>
 
 // Traditional C libraries 

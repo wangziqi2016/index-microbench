@@ -1,5 +1,5 @@
 
-# This is the basic set of compiler flags
+# This is the basic set of compiler flags  
 # We also add more for different options 
 CXX_FLAGS=-std=c++11 -pthread -Wall -Wextra
 

@@ -7,6 +7,9 @@
 
 #include "masstree/mtIndexAPI.hh"
 
+#include "./rotate-skiplist/intset.h"
+#include "./rotate-skiplist/background.h"
+
 #ifndef _INDEX_H
 #define _INDEX_H
 
@@ -45,7 +48,7 @@ class Index
 template<typename KeyType, class KeyComparator>
 class SkipListIndex : public Index<KeyType, KeyComparator> {
  public:
-
+  set_t *set;
   /*
    * Destructor - We need to stop the background thread and also to 
    *              free the index object
@@ -62,6 +65,11 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
    */
   SkipListIndex(uint64_t key_type) {
     (void)key_type;
+    ptst_subsystem_init();
+	  gc_subsystem_init();
+	  set_subsystem_init();
+	  set = set_new(1);
+
     return;
   }
   

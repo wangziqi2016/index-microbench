@@ -584,6 +584,8 @@ int main(int argc, char *argv[]) {
     index_type = TYPE_ARTOLC;
   else if (strcmp(argv[3], "btreeolc") == 0)
     index_type = TYPE_BTREEOLC;
+  else if (strcmp(argv[3], "skiplist") == 0)
+    index_type = TYPE_SKIPLIST;
   else if (strcmp(argv[3], "none") == 0)
     // This is a special type used for measuring base cost (i.e.
     // only loading the workload files but do not invoke the index)

@@ -10,6 +10,9 @@ CFLAGS = -g -O3 -Wno-invalid-offsetof -mcx16 -DNDEBUG -DBWTREE_NODEBUG $(DEPCFLA
 THREAD_NUM?=1
 TYPE?=bwtree
 
+# skiplist source files
+SL_OBJS=$(patsubst %.cpp,%.o,$(wildcard ./rotate-skiplist/*.cpp))
+$(info skip list object files: $(SL_OBJS))
 SNAPPY = /usr/lib/libsnappy.so.1.3.0
 
 all: workload workload_string
@@ -28,8 +31,8 @@ run_all: workload workload_string
 workload.o: workload.cpp microbench.h index.h util.h ./masstree/mtIndexAPI.hh ./BwTree/bwtree.h BTreeOLC/BTreeOLC.h ./pcm/pcm-memory.cpp ./pcm/pcm-numa.cpp ./papi_util.cpp
 	$(CXX) $(CFLAGS) -c -o workload.o workload.cpp
 
-workload: workload.o bwtree.o artolc.o ./masstree/mtIndexAPI.a ./pcm/libPCM.a
-	$(CXX) $(CFLAGS) -o workload workload.o bwtree.o artolc.o masstree/mtIndexAPI.a ./pcm/libPCM.a $(MEMMGR) -lpthread -lm -ltbb
+workload: workload.o bwtree.o artolc.o ./masstree/mtIndexAPI.a ./pcm/libPCM.a $(SL_OBJS)
+	$(CXX) $(CFLAGS) -o workload workload.o bwtree.o artolc.o $(SL_OBJS) masstree/mtIndexAPI.a ./pcm/libPCM.a $(MEMMGR) -lpthread -lm -ltbb
 
 workload_string.o: workload_string.cpp microbench.h index.h util.h ./masstree/mtIndexAPI.hh ./BwTree/bwtree.h BTreeOLC/BTreeOLC.h
 	$(CXX) $(CFLAGS) -c -o workload_string.o workload_string.cpp
@@ -43,8 +46,12 @@ bwtree.o: ./BwTree/bwtree.h ./BwTree/bwtree.cpp
 artolc.o: ./ARTOLC/*.cpp ./ARTOLC/*.h
 	$(CXX) $(CFLAGS) ./ARTOLC/Tree.cpp -c -o artolc.o $(MEMMGR) -lpthread -lm -ltbb
 
+./rotate-skiplist/%.o: ./rotate-skiplist/%.cpp ./rotate-skiplist/%.h
+	$(CXX) $(CFLAGS) -c -o $@ $< $(MEMMGR) -lpthread -lm -ltbb
+
 generate_workload:
 	./generate_all_workloads.sh
 
 clean:
 	$(RM) workload workload_string *.o *~ *.d
+	$(RM) ./rotate-skiplist/*.o

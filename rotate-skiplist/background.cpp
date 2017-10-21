@@ -484,7 +484,7 @@ void bg_print_stats(void)
  */
 void bg_help_remove(node_t *prev, node_t *node, ptst_t *ptst)
 {
-        node_t *n, *new, *prev_next;
+        node_t *n, *new_node, *prev_next;
         int retval;
 
         assert(NULL != prev);
@@ -495,8 +495,8 @@ void bg_help_remove(node_t *prev, node_t *node, ptst_t *ptst)
 
         n = node->next;
         while (NULL == n || !n->marker) {
-                        new = marker_new(node, n, ptst);
-                        CAS(&node->next, n, new);
+                        new_node = marker_new(node, n, ptst);
+                        CAS(&node->next, n, new_node);
 
                         assert (node->next != node);
 

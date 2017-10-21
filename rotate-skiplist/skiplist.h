@@ -12,6 +12,7 @@
 #include "common.h"
 #include "ptst.h"
 #include "garbagecoll.h"
+#include <cstdint>
 
 #define MAX_LEVELS 20
 
@@ -19,7 +20,11 @@
 #define NODE_SIZE 0
 
 #define IDX(_i, _z) ((_z) + (_i)) % MAX_LEVELS
-unsigned long sl_zero;
+extern unsigned long sl_zero;
+
+using sl_key_type = uint64_t;
+// Always need a void * value type
+using sl_value_type = void *;
 
 /* bottom-level nodes */
 typedef VOLATILE struct sl_node node_t;
@@ -27,8 +32,8 @@ struct sl_node {
         unsigned long   level;
         struct sl_node  *prev;
         struct sl_node  *next;
-        unsigned long   key;
-        void            *val;
+        sl_key_type     key;
+        sl_value_type   val;
         struct sl_node  *succs[MAX_LEVELS];
         unsigned long   marker;
         unsigned long   raise_or_remove;

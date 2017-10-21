@@ -60,7 +60,7 @@ ptst_t* ptst_critical_enter(void)
                 }
 
                 if (NULL == ptst) {
-                        ptst = ALIGNED_ALLOC(sizeof(ptst_t));
+                        ptst = (ptst_t *)ALIGNED_ALLOC(sizeof(ptst_t));
                         if (!ptst) {
                                 perror("malloc: sl_ptst_critial_enter\n");
                                 exit(1);

@@ -19,7 +19,7 @@ enum sl_optype {
 typedef enum sl_optype sl_optype_t;
 
 int sl_do_operation(set_t *set, sl_optype_t optype,
-                    unsigned int key, void *val);
+                    sl_key_type key, sl_value_type val);
 
 /* these are macros instead of functions to improve performance */
 #define sl_contains(a, b) sl_do_operation((a), CONTAINS, (b), NULL);

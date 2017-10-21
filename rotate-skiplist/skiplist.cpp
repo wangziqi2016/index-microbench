@@ -42,6 +42,8 @@ to implement this way.
 static int gc_id[NUM_SIZES];
 static int curr_id;
 
+unsigned long sl_zero = 0UL;
+
 /* - Public skiplist interface - */
 
 /**
@@ -56,13 +58,13 @@ static int curr_id;
  * Note: All nodes are originally created with
  * marker set to 0 (i.e. they are unmarked).
  */
-node_t* node_new(unsigned long key, void *val, node_t *prev,
+node_t* node_new(sl_key_type key, sl_value_type val, node_t *prev,
                  node_t *next, unsigned int level, ptst_t *ptst)
 {
         node_t *node;
         unsigned long i;
 
-        node  = gc_alloc(ptst, gc_id[curr_id]);
+        node  = (node_t *)gc_alloc(ptst, gc_id[curr_id]);
 
         node->key       = key;
         node->val       = val;
@@ -91,10 +93,11 @@ node_t* marker_new(node_t *prev, node_t *next, ptst_t *ptst)
         node_t *node;
         unsigned long i;
 
-        node  = gc_alloc(ptst, gc_id[curr_id]);
+        node = (node_t *)gc_alloc(ptst, gc_id[curr_id]);
 
-        node->key       = 0;
-        node->val       = node;
+        // Use C++ default constructor
+        node->key       = sl_key_type{};
+        node->val       = sl_value_type{};
         node->prev      = prev;
         node->next      = next;
         node->level     = 0;
@@ -143,7 +146,7 @@ set_t* set_new(int start)
 
         sl_zero = 0; /* the zero index is initially 0 */
 
-        set = malloc(sizeof(set_t));
+        set = (set_t *)malloc(sizeof(set_t));
         if (!set) {
                 perror("Failed to malloc a set\n");
                 exit(1);

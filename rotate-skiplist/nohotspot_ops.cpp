@@ -65,12 +65,12 @@ extern int bg_should_delete;
 
 /* - Private Functions - */
 
-static int sl_finish_contains(unsigned int key, node_t *node,
+static int sl_finish_contains(sl_key_type key, node_t *node,
                               void *node_val, ptst_t *ptst);
-static int sl_finish_delete(unsigned int key, node_t *node,
+static int sl_finish_delete(sl_key_type key, node_t *node,
                             void *node_val, ptst_t *ptst);
-static int sl_finish_insert(unsigned int key, void *val,
-                            node_t *node, void *node_val,
+static int sl_finish_insert(sl_key_type key, void *val,
+                            node_t *node, sl_value_type node_val,
                             node_t *next, ptst_t *ptst);
 
 /**
@@ -82,7 +82,7 @@ static int sl_finish_insert(unsigned int key, void *val,
  *
  * Returns 1 if the search key is present and 0 otherwise.
  */
-static int sl_finish_contains(unsigned int key,
+static int sl_finish_contains(sl_key_type key,
                               node_t *node,
                               void *node_val, ptst_t *ptst)
 {
@@ -105,7 +105,7 @@ static int sl_finish_contains(unsigned int key,
  *
  * Returns 1 on success or 0 if the search key is not present.
  */
-static int sl_finish_delete(unsigned int key, node_t *node,
+static int sl_finish_delete(sl_key_type key, node_t *node,
                             void *node_val, ptst_t *ptst)
 {
         int result = -1;
@@ -162,11 +162,11 @@ static int sl_finish_delete(unsigned int key, node_t *node,
  * > -1 if @key is not present in the set and insertion operation
  *   fails due to concurrency.
  */
-static int sl_finish_insert(unsigned int key, void *val, node_t *node,
+static int sl_finish_insert(sl_key_type key, sl_value_type val, node_t *node,
                             void *node_val, node_t *next, ptst_t *ptst)
 {
         int result = -1;
-        struct sl_node *new, *temp;
+        struct sl_node *new_node, *temp;
 
         if (node->key == key) {
                 if (NULL == node_val) {
@@ -176,15 +176,15 @@ static int sl_finish_insert(unsigned int key, void *val, node_t *node,
                         result = 0;
                 }
         } else {
-                new = node_new(key, val, node, next, 0, ptst);
-                if (CAS(&node->next, next, new)) {
+                new_node = node_new(key, val, node, next, 0, ptst);
+                if (CAS(&node->next, next, new_node)) {
                         if (NULL != next) {
                                 temp = next->prev;
-                                CAS(&next->prev, temp, new);
+                                CAS(&next->prev, temp, new_node);
                         }
                         result = 1;
                 } else {
-                        node_delete(new, ptst);
+                        node_delete(new_node, ptst);
                 }
         }
 
@@ -203,7 +203,7 @@ static int sl_finish_insert(unsigned int key, void *val, node_t *node,
  * Returns the result of the operation.
  * Note: @val can be NULL.
  */
-int sl_do_operation(set_t *set, sl_optype_t optype, unsigned int key, void *val)
+int sl_do_operation(set_t *set, sl_optype_t optype, sl_key_type key, sl_value_type val)
 {
         node_t *item = NULL, *next_item = NULL;
         node_t *node = NULL, *next = NULL;

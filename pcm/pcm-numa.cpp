@@ -139,8 +139,6 @@ void InitNUMAMonitor() {
         exit(EXIT_FAILURE);
     }
 
-    cerr << "\nDetected " << m->getCPUBrandString() << " \"Intel(r) microarchitecture codename " << m->getUArchCodename() << "\"" << endl;
-
     ncores = m->getNumCores();
 
     return;

@@ -411,7 +411,6 @@ void InitMemoryMonitor() {
             exit(EXIT_FAILURE);
     }
     
-    cerr << "\nDetected "<< m->getCPUBrandString() << " \"Intel(r) microarchitecture codename "<<m->getUArchCodename()<<"\""<<endl;
     if(!m->hasPCICFGUncore())
     {
         cerr << "Jaketown, Ivytown or Haswell Server CPU is required for this tool!" << endl;

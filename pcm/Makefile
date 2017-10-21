@@ -5,7 +5,7 @@
 
 EXE = pcm-numa.x pcm-power.x pcm.x pcm-sensor.x pcm-msr.x pcm-memory.x pcm-tsx.x pcm-pcie.x pcm-core.x
 
-all: $(EXE)
+all: lib
 
 lib: libPCM.a
 

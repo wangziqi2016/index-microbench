@@ -9,6 +9,8 @@
 
 #include "./rotate-skiplist/intset.h"
 #include "./rotate-skiplist/background.h"
+#include "./rotate-skiplist/nohotspot_ops.h"
+
 
 #ifndef _INDEX_H
 #define _INDEX_H
@@ -45,6 +47,10 @@ class Index
   virtual void CollectStatisticalCounter(int) {}
 };
 
+/////////////////////////////////////////////////////////////////////
+// Skiplist
+/////////////////////////////////////////////////////////////////////
+
 template<typename KeyType, class KeyComparator>
 class SkipListIndex : public Index<KeyType, KeyComparator> {
  public:
@@ -58,6 +64,31 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
 
     // Remove the actual index
     return;
+  }
+
+  bool insert(KeyType key, uint64_t value, threadinfo *ti) {
+    sl_insert(set, key, &value);
+    (void)ti;
+    return true;
+  }
+
+  uint64_t find(KeyType key, std::vector<uint64_t> *v, threadinfo *ti) {
+    (void)key; (void)v; (void)ti;
+    return 0UL;
+  }
+
+  bool upsert(KeyType key, uint64_t value, threadinfo *ti) {
+    (void)key; (void)value; (void)ti;
+    return true;
+  }
+
+  uint64_t scan(KeyType key, int range, threadinfo *ti) {
+    (void)key; (void)range; (void)ti;
+    return 0UL;
+  }
+
+  int64_t getMemory() const {
+    return 0L;
   }
 
   /*
@@ -78,6 +109,10 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
   void AssignGCID(size_t thread_id) { (void)thread_id; }
   void UnregisterThread(size_t thread_id) { (void)thread_id; }
 };
+
+/////////////////////////////////////////////////////////////////////
+// ARTOLC
+/////////////////////////////////////////////////////////////////////
 
 template<typename KeyType, class KeyComparator>
 class ArtOLCIndex : public Index<KeyType, KeyComparator>

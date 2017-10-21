@@ -25,7 +25,7 @@ background.o: background.h skiplist.h common.h
 intset.o: intset.h nohotspot_ops.h skiplist.h
 	$(CXX) $(CFLAGS) $(CXX_FLAGS) -std=c++11 -c -o ./intset.o intset.cpp 
 
-test.o: intset.h
+test.o: intset.h test.c
 	$(CXX) $(CFLAGS) $(CXX_FLAGS) -std=c++11 -c -o ./test.o test.c
 
 main: intset.o background.o skiplist.o nohotspot_ops.o test.o ptst.o garbagecoll.o

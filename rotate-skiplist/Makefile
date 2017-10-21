@@ -1,33 +1,35 @@
+#-include Makefile.common
 
-include Makefile.common
+CXX=g++-5
+CXX_FLAGS=-std=c++11 -pthread
 
 .PHONY:	all clean
 
 all:	main
 
-$(BUILDIR)/ptst.o: ptst.h common.h 
-	$(CC) $(CFLAGS) -c -o ./ptst.o ptst.c 
+ptst.o: ptst.h common.h 
+	$(CXX) $(CFLAGS) $(CXX_FLAGS) -std=c++11 -c -o ./ptst.o ptst.cpp 
 
-$(BUILDIR)/garbagecoll.o: garbagecoll.h ptst.h common.h
-	$(CC) $(CFLAGS) -c -o ./garbagecoll.o garbagecoll.c 
+garbagecoll.o: garbagecoll.h ptst.h common.h
+	$(CXX) $(CFLAGS) $(CXX_FLAGS) -std=c++11 -c -o ./garbagecoll.o garbagecoll.cpp
 
-$(BUILDIR)/nohotspot_ops.o: skiplist.h background.h nohotspot_ops.h common.h 
-	$(CC) $(CFLAGS) -c -o ./nohotspot_ops.o nohotspot_ops.c 
+nohotspot_ops.o: skiplist.h background.h nohotspot_ops.h common.h 
+	$(CXX) $(CFLAGS) $(CXX_FLAGS) -std=c++11 -c -o ./nohotspot_ops.o nohotspot_ops.cpp 
 
-$(BUILDIR)/skiplist.o: skiplist.h background.h common.h 
-	$(CC) $(CFLAGS) -c -o ./skiplist.o skiplist.c 
+skiplist.o: skiplist.h background.h common.h
+	$(CXX) $(CFLAGS) $(CXX_FLAGS) -std=c++11 -c -o ./skiplist.o skiplist.cpp 
 
-$(BUILDIR)/background.o: background.h skiplist.h common.h
-	$(CC) $(CFLAGS) -c -o ./background.o background.c 
+background.o: background.h skiplist.h common.h
+	$(CXX) $(CFLAGS) $(CXX_FLAGS) -std=c++11 -c -o ./background.o background.cpp 
 
 intset.o: intset.h nohotspot_ops.h skiplist.h
-	$(CC) $(CFLAGS) -c -o ./intset.o intset.c 
+	$(CXX) $(CFLAGS) $(CXX_FLAGS) -std=c++11 -c -o ./intset.o intset.cpp 
 
 test.o: intset.h
-	$(CC) $(CFLAGS) -c -o ./test.o test.c
+	$(CXX) $(CFLAGS) $(CXX_FLAGS) -std=c++11 -c -o ./test.o test.c
 
 main: intset.o background.o skiplist.o nohotspot_ops.o test.o ptst.o garbagecoll.o
-	$(CC) $(CFLAGS) garbagecoll.o ptst.o skiplist.o nohotspot_ops.o intset.o background.o test.o -o ./main $(LDFLAGS)
+	$(CXX) $(CFLAGS) $(CXX_FLAGS) garbagecoll.o ptst.o skiplist.o nohotspot_ops.o intset.o background.o test.o -o ./main $(LDFLAGS)
 
 clean:
 	-rm -rf *.o

@@ -10,3 +10,5 @@ result_*
 masstree/.deps/*.d
 *.cache
 YCSB
+*.status
+*.a

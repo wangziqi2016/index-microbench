@@ -515,18 +515,20 @@ int main(int argc, char **argv)
 	while (i < initial) {
 		// Whether the key is unbalanced, if it is then just insert keys
 		// in the given range (i.e. the number of iterations)
-    if(unbalanced) {
-		  val = rand_range_re(&global_seed, initial);
-		} else {
-			val = rand_range_re(&global_seed, range);
-		}
+          if(unbalanced) {
+	    val = rand_range_re(&global_seed, initial);
+          } else {
+            val = rand_range_re(&global_seed, range);
+	  }
 
-		// If insert succeeds increament i; since we use random number
-		// insertion could collide with a previously inserted value
-		if (sl_add_old(set, val, 0)) {
-			last = val;
-			i++;
-		}
+          val = i;
+
+	  // If insert succeeds increament i; since we use random number
+	  // insertion could collide with a previously inserted value
+          if (sl_add_old(set, val, 0)) {
+            last = val;
+	    i++;
+          }
 	}
 
 	size = set_size(set, 1);
@@ -535,20 +537,6 @@ int main(int argc, char **argv)
 
         // nullify all the index levels
         bg_stop();
-        /*
-        top = set->head->level-1;
-        for (i = 0; i <= top; i++) {
-                node_t *prev = set->head;
-                node_t *node = prev->succs[IDX(i,sl_zero)];
-                while (node) {
-                        prev->succs[IDX(i,sl_zero)] = NULL;
-                        prev->level = 0;
-                        prev->raise_or_remove = 0;
-                        prev = node;
-                        node = node->succs[IDX(i, sl_zero)];
-                }
-        }
-        */
         node = set->head;
         while (node) {
                 int i;
@@ -663,25 +651,6 @@ int main(int argc, char **argv)
 	effupds = 0;
 	max_retries = 0;
 	for (i = 0; i < nb_threads; i++) {
-                /*
-		printf("Thread %d\n", i);
-		printf("  #add        : %lu\n", data[i].nb_add);
-		printf("    #added    : %lu\n", data[i].nb_added);
-		printf("  #remove     : %lu\n", data[i].nb_remove);
-		printf("    #removed  : %lu\n", data[i].nb_removed);
-		printf("  #contains   : %lu\n", data[i].nb_contains);
-		printf("  #found      : %lu\n", data[i].nb_found);
-		printf("  #aborts     : %lu\n", data[i].nb_aborts);
-		printf("    #lock-r   : %lu\n", data[i].nb_aborts_locked_read);
-		printf("    #lock-w   : %lu\n", data[i].nb_aborts_locked_write);
-		printf("    #val-r    : %lu\n", data[i].nb_aborts_validate_read);
-		printf("    #val-w    : %lu\n", data[i].nb_aborts_validate_write);
-		printf("    #val-c    : %lu\n", data[i].nb_aborts_validate_commit);
-		printf("    #inv-mem  : %lu\n", data[i].nb_aborts_invalid_memory);
-		printf("    #dup-w    : %lu\n", data[i].nb_aborts_double_write);
-		printf("    #failures : %lu\n", data[i].failures_because_contention);
-		printf("  Max retries : %lu\n", data[i].max_retries);
-		*/
                 aborts += data[i].nb_aborts;
 		aborts_locked_read += data[i].nb_aborts_locked_read;
 		aborts_locked_write += data[i].nb_aborts_locked_write;

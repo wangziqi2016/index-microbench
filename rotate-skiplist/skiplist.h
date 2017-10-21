@@ -13,6 +13,7 @@
 #include "ptst.h"
 #include "garbagecoll.h"
 #include <cstdint>
+#include "../indexkey.h"
 
 #define MAX_LEVELS 30
 
@@ -22,7 +23,11 @@
 #define IDX(_i, _z) ((_z) + (_i)) % MAX_LEVELS
 extern unsigned long sl_zero;
 
+#ifndef USE_GENERIC_KEY
 using sl_key_type = uint64_t;
+#else 
+using sl_key_type = GenericKey<31>;
+#endif
 // Always need a void * value type
 using sl_value_type = void *;
 
@@ -45,7 +50,7 @@ struct sl_set {
         struct sl_node  *head;
 };
 
-node_t* node_new(unsigned long key, void *val, node_t *prev, node_t *next,
+node_t* node_new(sl_key_type key, sl_value_type val, node_t *prev, node_t *next,
                  unsigned int level, ptst_t *ptst);
 
 node_t* marker_new(node_t *prev, node_t *next, ptst_t *ptst);

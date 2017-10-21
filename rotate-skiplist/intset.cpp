@@ -27,17 +27,17 @@
 
 #define MAXLEVEL    32
 
-int sl_contains_old(set_t *set, unsigned long key, int transactional)
+int sl_contains_old(set_t *set, sl_key_type key, int transactional)
 {
         return sl_contains(set, key);
 }
 
-int sl_add_old(set_t *set, unsigned long key, int transactional)
+int sl_add_old(set_t *set, sl_key_type key, int transactional)
 {
-        return sl_insert(set, key, (void*) key);
+        return sl_insert(set, key, (void*)&key);
 }
 
-int sl_remove_old(set_t *set, unsigned long key, int transactional)
+int sl_remove_old(set_t *set, sl_key_type key, int transactional)
 {
 	return sl_delete(set, key);
 }

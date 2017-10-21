@@ -1,7 +1,9 @@
-#include <string.h>
 
 #ifndef _INDEX_KEY_H
 #define _INDEX_KEY_H
+
+#include <cstring>
+#include <string>
 
 template <std::size_t keySize>
 class GenericKey {

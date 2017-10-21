@@ -176,42 +176,6 @@ void set_delete(set_t *set)
 }
 
 /**
- * set_print - print the set
- * @set: the skip list set to print
- * @flag: if non-zero include logically deleted nodes in the count
- */
-void set_print(set_t *set, int flag)
-{
-        node_t *head = set->head, *curr = set->head;
-        unsigned long i = head->level - 1;
-        unsigned long zero = sl_zero;
-
-        /* print the index items */
-        while (1) {
-                while (NULL != curr) {
-                        if (flag && (curr->val != curr))
-                                printf("%lu ", curr->key);
-                        else if (!flag)
-                                printf("%lu ", curr->key);
-                        curr = curr->succs[IDX(i,zero)];
-                }
-                printf("\n");
-                curr = head;
-                if (0 == i--)
-                        break;
-        }
-
-        while (NULL != curr) {
-                if (flag && (curr->val != curr))
-                        printf("%lu (%lu) ", curr->key, curr->level);
-                else if (!flag)
-                        printf("%lu (%lu) ", curr->key, curr->level);
-                curr = curr->next;
-        }
-        printf("\n");
-}
-
-/**
  * set_size - print the size of the set
  * @set: the set to print the size of
  * @flag: if non-zero include logically deleted nodes in the count

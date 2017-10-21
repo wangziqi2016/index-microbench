@@ -96,7 +96,7 @@ static void get_index_above(node_t *head,
                             node_t **prev,
                             node_t **node,
                             unsigned long i,
-                            unsigned long key,
+                            sl_key_type key,
                             unsigned long zero);
 
 /**
@@ -286,7 +286,7 @@ static void get_index_above(node_t *above_head,
                             node_t **above_prev,
                             node_t **above_next,
                             unsigned long i,
-                            unsigned long key,
+                            sl_key_type key,
                             unsigned long zero)
 {
         /* get the correct index node above */

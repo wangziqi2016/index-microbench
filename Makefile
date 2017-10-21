@@ -15,7 +15,12 @@ SL_OBJS=$(patsubst %.cpp,%.o,$(wildcard ./rotate-skiplist/*.cpp))
 $(info skip list object files: $(SL_OBJS))
 SNAPPY = /usr/lib/libsnappy.so.1.3.0
 
-all: workload workload_string
+all: workload
+
+ifdef STRING_KEY
+$(info Using string key as key type)
+CFLAGS += -DUSE_GENERIC_KEY
+endif
 
 run_all: workload workload_string
 	./workload a rand $(TYPE) $(THREAD_NUM) 
@@ -37,8 +42,8 @@ workload: workload.o bwtree.o artolc.o ./masstree/mtIndexAPI.a ./pcm/libPCM.a $(
 workload_string.o: workload_string.cpp microbench.h index.h util.h ./masstree/mtIndexAPI.hh ./BwTree/bwtree.h BTreeOLC/BTreeOLC.h
 	$(CXX) $(CFLAGS) -c -o workload_string.o workload_string.cpp
 
-workload_string: workload_string.o bwtree.o artolc.o ./masstree/mtIndexAPI.a
-	$(CXX) $(CFLAGS) -o workload_string workload_string.o bwtree.o artolc.o masstree/mtIndexAPI.a $(MEMMGR) -lpthread -lm -ltbb
+workload_string: workload_string.o bwtree.o artolc.o ./masstree/mtIndexAPI.a $(SL_OBJS)
+	$(CXX) $(CFLAGS) -o workload_string workload_string.o bwtree.o artolc.o  $(SL_OBJS) masstree/mtIndexAPI.a $(MEMMGR) -lpthread -lm -ltbb
 
 bwtree.o: ./BwTree/bwtree.h ./BwTree/bwtree.cpp
 	$(CXX) $(CFLAGS) -c -o bwtree.o ./BwTree/bwtree.cpp

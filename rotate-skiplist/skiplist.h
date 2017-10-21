@@ -14,7 +14,7 @@
 #include "garbagecoll.h"
 #include <cstdint>
 
-#define MAX_LEVELS 40
+#define MAX_LEVELS 30
 
 #define NUM_SIZES 1
 #define NODE_SIZE 0

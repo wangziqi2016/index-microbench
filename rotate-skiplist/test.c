@@ -342,7 +342,8 @@ int main(int argc, char **argv)
   set_t *set;
   int i, c, size;
   unsigned int last = 0;
-  unsigned int val = 0;
+  // This is the key type for the skiplist
+  sl_key_type val = 0;
   unsigned long reads, effreads, updates, effupds, aborts, aborts_locked_read, aborts_locked_write,
   aborts_validate_read, aborts_validate_write, aborts_validate_commit,
   aborts_invalid_memory, aborts_double_write, max_retries, failures_because_contention;
@@ -366,9 +367,12 @@ int main(int argc, char **argv)
   node_t *node = NULL;
   int unbalanced = DEFAULT_UNBALANCED;
 
+  // Byu default, do not use mono int
+  int mono_int = 0;
+
   while(1) {
     i = 0;
-    c = getopt_long(argc, argv, "hAf:d:i:t:r:S:u:U:", long_options, &i);
+    c = getopt_long(argc, argv, "hAmf:d:i:t:r:S:u:U:", long_options, &i);
 
     if(c == -1)
       break;
@@ -405,10 +409,15 @@ int main(int argc, char **argv)
                  "        RNG seed (0=time-based, default=" XSTR(DEFAULT_SEED) ")\n"
                  "  -u, --update-rate <int>\n"
                  "        Percentage of update transactions (default=" XSTR(DEFAULT_UPDATE) ")\n"
+                 "  -m, --mono-int\n"
+                 "        Monotonically increasing integer values, beginning from 0"
                  );
           exit(0);
         case 'A':
           alternate = 1;
+          break;
+        case 'm':
+          mono_int = 1;
           break;
         case 'f':
           effective = atoi(optarg);
@@ -458,6 +467,7 @@ int main(int argc, char **argv)
   printf("Elasticity   : %d\n", unit_tx);
   printf("Alternate    : %d\n", alternate);
   printf("Efffective   : %d\n", effective);
+  printf("Mono int     : %d\n", mono_int);
   printf("Type sizes   : int=%d/long=%d/ptr=%d/word=%d\n",
          (int)sizeof(int),
          (int)sizeof(long),
@@ -513,16 +523,18 @@ int main(int argc, char **argv)
   i = 0;
   // Start insetring values inside the while loop
   while (i < initial) {
-    // Whether the key is unbalanced, if it is then just insert keys
-    // in the given range (i.e. the number of iterations)
-    if(unbalanced) {
-      val = rand_range_re(&global_seed, initial);
+    if(mono_int) {
+      val = i;
     } else {
-      val = rand_range_re(&global_seed, range);
+      // Whether the key is unbalanced, if it is then just insert keys
+      // in the given range (i.e. the number of iterations)
+      if(unbalanced) {
+        val = (sl_key_type)rand_range_re(&global_seed, initial);
+      } else {
+        val = (sl_key_type)rand_range_re(&global_seed, range);
+      }
     }
-
-    val = i;
-
+    
     // If insert succeeds increament i; since we use random number
     // insertion could collide with a previously inserted value
     if (sl_add_old(set, val, 0)) {

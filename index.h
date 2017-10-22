@@ -101,7 +101,11 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
   }
 
   bool upsert(KeyType key, uint64_t value, threadinfo *ti) {
-    (void)key; (void)value; (void)ti;
+    // Upsert is implemented as two operations. In practice if we change
+    // the internals of the skiplist, we can make it one atomic step
+    sl_delete(set, key);
+    sl_insert(set, key, &value);
+    (void)ti;
     return true;
   }
 

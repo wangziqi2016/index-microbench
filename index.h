@@ -96,6 +96,7 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
     // number to compensate for lacking a value
     sl_contains(set, key);
     (void)v; (void)ti;
+    v->clear();
     v->push_back(0);
     return 0UL;
   }
@@ -110,7 +111,8 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
   }
 
   uint64_t scan(KeyType key, int range, threadinfo *ti) {
-    (void)key; (void)range; (void)ti;
+    sl_scan(set, key, range);
+    (void)ti;
     return 0UL;
   }
 

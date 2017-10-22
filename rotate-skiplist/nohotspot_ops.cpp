@@ -191,6 +191,22 @@ static int sl_finish_insert(sl_key_type key, sl_value_type val, node_t *node,
         return result;
 }
 
+static int sl_finish_scan(sl_key_type key, sl_value_type val, node_t *node,
+        void *node_val, node_t *next, ptst_t *ptst) {
+  // This is a hack - we pass the range as a pointer
+  // which is of value type (void *)
+  int range = *(int *)val;
+  while(range > 0 && next != nullptr) {
+        range--;
+        // Interate forward by 1
+        node = next;
+        next = next->next;
+  }
+
+  // Always return 1 to indicate success
+  return 1;
+}
+
 /* - The public nohotspot_ops interface - */
 
 /**
@@ -264,6 +280,10 @@ int sl_do_operation(set_t *set, sl_optype_t optype, sl_key_type key, sl_value_ty
                                 result = sl_finish_insert(key, val, node,
                                                           node_val, next,
                                                           ptst);
+                        else if (SCAN == optype)
+                                result = sl_finish_scan(key, val, node,
+                                                        node_val, next,
+                                                        ptst);
                         if (-1 != result)
                                 break;
                         continue;

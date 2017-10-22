@@ -69,7 +69,7 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
 
     return;
   }
-   
+
   /*
    * Destructor - We need to stop the background thread and also to 
    *              free the index object
@@ -90,7 +90,13 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
   }
 
   uint64_t find(KeyType key, std::vector<uint64_t> *v, threadinfo *ti) {
-    (void)key; (void)v; (void)ti;
+    // Note that skiplist only supports membership check
+    // This is fine, because it still traverses to the location that
+    // the key is stored. We just call push_back() with an arbitraty
+    // number to compensate for lacking a value
+    sl_contains(set, key);
+    (void)v; (void)ti;
+    v->push_back(0);
     return 0UL;
   }
 

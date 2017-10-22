@@ -327,7 +327,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Usage:\n";
     std::cout << "1. workload type: a, c, e\n";
     std::cout << "2. key distribution: email\n";
-    std::cout << "3. index type: bwtree masstree artolc btreeolc\n";
+    std::cout << "3. index type: bwtree skiplist masstree artolc btreeolc\n";
     std::cout << "4. Number of threads: (1 - 40)\n";
     return 1;
   }
@@ -360,6 +360,8 @@ int main(int argc, char *argv[]) {
     index_type = TYPE_ARTOLC;
   } else if (strcmp(argv[3], "btreeolc") == 0) {
     index_type = TYPE_BTREEOLC;
+  } else if (strcmp(argv[3], "skiplist") == 0) { 
+    index_type = TYPE_SKIPLIST;
   } else {
     fprintf(stderr, "Unknown index type: %d\n", index_type);
     exit(1);

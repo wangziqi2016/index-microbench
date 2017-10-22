@@ -56,14 +56,30 @@ template<typename KeyType, class KeyComparator>
 class SkipListIndex : public Index<KeyType, KeyComparator> {
  public:
   set_t *set;
+ public:
+  /*
+   * Constructor - Allocate memory and initialize the skip list index
+   */
+  SkipListIndex(uint64_t key_type) {
+    (void)key_type;
+    ptst_subsystem_init();
+	  gc_subsystem_init();
+	  set_subsystem_init();
+	  set = set_new(1);
+
+    return;
+  }
+   
   /*
    * Destructor - We need to stop the background thread and also to 
    *              free the index object
    */
   ~SkipListIndex() {
     // Stop the background thread
-
-    // Remove the actual index
+    bg_stop();
+    gc_subsystem_destroy();
+    // Delete index
+    set_delete(set);
     return;
   }
 
@@ -95,19 +111,6 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
   // Returns the size of the skiplist
   size_t GetIndexSize() {
     return (size_t)set_size(set, 1);
-  }
-
-  /*
-   * Constructor - Allocate memory and initialize the skip list index
-   */
-  SkipListIndex(uint64_t key_type) {
-    (void)key_type;
-    ptst_subsystem_init();
-	  gc_subsystem_init();
-	  set_subsystem_init();
-	  set = set_new(1);
-
-    return;
   }
   
   // Not actually used

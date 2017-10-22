@@ -189,12 +189,12 @@ inline void exec(int wl,
   double end_time = get_now();
   double tput = count / (end_time - start_time) / 1000000; //Mops/sec
 
+  if(index_type == TYPE_SKIPLIST) {
+    fprintf(stderr, "SkipList size = %lu\n", idx->GetIndexSize());
+  }
+
   std::cout << "insert " << tput << "\n";
   std::cout << "memory " << (idx->getMemory() / 1000000) << "\n";
-
-  //idx->merge();
-  std::cout << "static memory " << (idx->getMemory() / 1000000) << "\n\n";
-  //return;
 
   //READ/UPDATE/SCAN TEST----------------
   start_time = get_now();

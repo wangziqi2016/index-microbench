@@ -196,29 +196,6 @@ typedef struct thread_data {
   unsigned long failures_because_contention;
 } thread_data_t;
 
-
-void print_skiplist(set_t *set) {
-  node_t *curr;
-  int i, j;
-  int arr[levelmax];
-
-  for (i=0; i< sizeof arr/sizeof arr[0]; i++) arr[i] = 0;
-
-  curr = set->head;
-  do {
-    printf("%lu", curr->key);
-    for (i=0; i<curr->level-1; i++) {
-      printf("-*");
-    }
-    arr[curr->level-1]++;
-    printf("\n");
-    curr = curr->next;
-  } while (curr);
-  for (j=0; j<MAX_LEVELS-1; j++)
-    printf("%d nodes of level %d\n", arr[j], j);
-}
-
-
 void *test(void *data) {
   int unext, last = -1;
   unsigned int val = 0;
@@ -367,12 +344,14 @@ int main(int argc, char **argv)
   node_t *node = NULL;
   int unbalanced = DEFAULT_UNBALANCED;
 
-  // Byu default, do not use mono int
+  // By default, do not use mono int
   int mono_int = 0;
+  // By default do not use reverse int also
+  int reverse_int = 0;
 
   while(1) {
     i = 0;
-    c = getopt_long(argc, argv, "hAmf:d:i:t:r:S:u:U:", long_options, &i);
+    c = getopt_long(argc, argv, "hAmvf:d:i:t:r:S:u:U:", long_options, &i);
 
     if(c == -1)
       break;
@@ -411,6 +390,8 @@ int main(int argc, char **argv)
                  "        Percentage of update transactions (default=" XSTR(DEFAULT_UPDATE) ")\n"
                  "  -m, --mono-int\n"
                  "        Monotonically increasing integer values, beginning from 0"
+                 "  -v, --reverse-int\n"
+                 "        Reverse integers (i.e. from maximum to zero)"
                  );
           exit(0);
         case 'A':
@@ -418,6 +399,9 @@ int main(int argc, char **argv)
           break;
         case 'm':
           mono_int = 1;
+          break;
+        case 'v':
+          reverse_int = 1;
           break;
         case 'f':
           effective = atoi(optarg);
@@ -451,6 +435,12 @@ int main(int argc, char **argv)
     }
   }
 
+  // Only one of these two can be valid
+  if(reverse_int == 1 && mono_int == 1) {
+    printf("ERROR: Can only choose one from -v and -m\n");
+    exit(1);
+  }
+
   assert(duration >= 0);
   assert(initial >= 0);
   assert(nb_threads > 0);
@@ -468,6 +458,7 @@ int main(int argc, char **argv)
   printf("Alternate    : %d\n", alternate);
   printf("Efffective   : %d\n", effective);
   printf("Mono int     : %d\n", mono_int);
+  printf("Reverse int  : %d\n", reverse_int);
   printf("Type sizes   : int=%d/long=%d/ptr=%d/word=%d\n",
          (int)sizeof(int),
          (int)sizeof(long),
@@ -525,6 +516,8 @@ int main(int argc, char **argv)
   while (i < initial) {
     if(mono_int) {
       val = i;
+    } else if(reverse_int) {
+      val = initial - 1 - i;
     } else {
       // Whether the key is unbalanced, if it is then just insert keys
       // in the given range (i.e. the number of iterations)

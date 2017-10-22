@@ -270,8 +270,8 @@ inline void exec(int wl,
     for(size_t i = start_index;i < end_index;i++) {
 #endif
       if(index_type == TYPE_SKIPLIST) {
-        idx->insert(init_keys[end_index - 1 - i], 
-                    values[end_index - 1 - i], 
+        idx->insert(init_keys[start_index + end_index - 1 - i], 
+                    values[start_index + end_index - 1 - i], 
                     ti);
       } else {
         idx->insert(init_keys[i], values[i], ti);

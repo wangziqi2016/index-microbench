@@ -515,48 +515,48 @@ int main(int argc, char **argv)
   while (i < initial) {
     // Whether the key is unbalanced, if it is then just insert keys
     // in the given range (i.e. the number of iterations)
-          if(unbalanced) {
+    if(unbalanced) {
       val = rand_range_re(&global_seed, initial);
-          } else {
-            val = rand_range_re(&global_seed, range);
+    } else {
+      val = rand_range_re(&global_seed, range);
     }
 
-          val = i;
+    val = i;
 
     // If insert succeeds increament i; since we use random number
     // insertion could collide with a previously inserted value
-          if (sl_add_old(set, val, 0)) {
-            last = val;
+    if (sl_add_old(set, val, 0)) {
+      last = val;
       i++;
-          }
+    }
   }
 
   size = set_size(set, 1);
   printf("Set size     : %d\n", size);
   printf("Level max    : %d\n", levelmax);
 
-        // nullify all the index levels
-        bg_stop();
-        node = set->head;
-        while (node) {
-                int i;
-                for (i = 0; i < MAX_LEVELS; i++)
-                        node->succs[i] = NULL;
-                node->level = 0;
-                node->raise_or_remove = 0;
-                node = node->next;
-        }
+  // nullify all the index levels
+  bg_stop();
+  node = set->head;
+  while (node) {
+    int i;
+    for (i = 0; i < MAX_LEVELS; i++)
+      node->succs[i] = NULL;
+    node->level = 0;
+    node->raise_or_remove = 0;
+    node = node->next;
+  }
 
-        // wait till the list is balanced
-        set->head->level = 1;
-        bg_start(0);
-        while (set->head->level < floor_log_2(initial)) {
-            AO_nop_full();
-        }
-        bg_stop();
-        bg_start(50000);
-        printf("Number of levels is %lu\n", set->head->level);
+  // wait till the list is balanced
+  set->head->level = 1;
+  bg_start(0);
+  while (set->head->level < floor_log_2(initial)) {
+      AO_nop_full();
+  }
 
+  bg_stop();
+  bg_start(50000);
+  printf("Number of levels is %lu\n", set->head->level);
 
   // Access set from all threads
   barrier_init(&barrier, nb_threads + 1);
@@ -589,7 +589,8 @@ int main(int argc, char **argv)
     data[i].set = set;
     data[i].barrier = &barrier;
     data[i].failures_because_contention = 0;
-                if (pthread_create(&threads[i], &attr, test, (void *)(&data[i])) != 0) {
+
+    if (pthread_create(&threads[i], &attr, test, (void *)(&data[i])) != 0) {
       fprintf(stderr, "Error creating thread\n");
       exit(1);
     }
@@ -622,14 +623,14 @@ int main(int argc, char **argv)
   AO_store_full(&stop, 1);
 #endif /* ICC */
 
-        stop = 1;
+  stop = 1;
 
   gettimeofday(&end, NULL);
   printf("STOPPING...\n");
 
   // Wait for thread completion
   for (i = 0; i < nb_threads; i++) {
-                if (pthread_join(threads[i], NULL) != 0) {
+    if (pthread_join(threads[i], NULL) != 0) {
       fprintf(stderr, "Error waiting for thread completion\n");
       exit(1);
     }
@@ -651,7 +652,7 @@ int main(int argc, char **argv)
   effupds = 0;
   max_retries = 0;
   for (i = 0; i < nb_threads; i++) {
-                aborts += data[i].nb_aborts;
+    aborts += data[i].nb_aborts;
     aborts_locked_read += data[i].nb_aborts_locked_read;
     aborts_locked_write += data[i].nb_aborts_locked_write;
     aborts_validate_read += data[i].nb_aborts_validate_read;
@@ -700,15 +701,14 @@ int main(int argc, char **argv)
   printf("  #failures   : %lu\n",  failures_because_contention);
   printf("Max retries   : %lu\n", max_retries);
 
-        bg_stop();
-        bg_print_stats();
+  bg_stop();
+  bg_print_stats();
 
-        //sl_set_print(set, 1);
-        set_print_nodenums(set, 0);
-        gc_subsystem_destroy();
+  set_print_nodenums(set, 0);
+  gc_subsystem_destroy();
 
   // Delete set
-        set_delete(set);
+  set_delete(set);
 
   // Cleanup STM
   TM_SHUTDOWN();

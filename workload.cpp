@@ -254,7 +254,8 @@ inline void exec(int wl,
   idx->UpdateThreadLocal(1);
 #else
 
-  auto func = [idx, &init_keys, num_thread, &values](uint64_t thread_id, bool) {
+  auto func = [idx, &init_keys, num_thread, &values, index_type] \
+              (uint64_t thread_id, bool) {
     size_t total_num_key = init_keys.size();
     size_t key_per_thread = total_num_key / num_thread;
     size_t start_index = key_per_thread * thread_id;
@@ -268,7 +269,13 @@ inline void exec(int wl,
 #else
     for(size_t i = start_index;i < end_index;i++) {
 #endif
-      idx->insert(init_keys[i], values[i], ti);
+      if(index_type == TYPE_SKIPLIST) {
+        idx->insert(init_keys[end_index - 1 - i], 
+                    values[end_index - 1 - i], 
+                    ti);
+      } else {
+        idx->insert(init_keys[i], values[i], ti);
+      }
       gc_counter++;
       if(gc_counter % 4096 == 0) {
         ti->rcu_quiesce();

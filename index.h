@@ -45,6 +45,7 @@ class Index
   // This is called after threads finish but before the thread local are
   // destroied by the thread manager
   virtual void CollectStatisticalCounter(int) {}
+  virtual size_t GetIndexSize() { return 0UL; }
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -89,6 +90,11 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
 
   int64_t getMemory() const {
     return 0L;
+  }
+  
+  // Returns the size of the skiplist
+  size_t GetIndexSize() {
+    return (size_t)set_size(set, 1);
   }
 
   /*

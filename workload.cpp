@@ -306,6 +306,10 @@ inline void exec(int wl,
   double start_time = get_now(); 
   StartThreads(idx, num_thread, func, false);
   double end_time = get_now();
+
+  if(index_type == TYPE_SKIPLIST) {
+    fprintf(stderr, "SkipList size = %lu\n", idx->GetIndexSize());
+  }
  
   if(memory_bandwidth == true) {
     PCM_memory::EndMemoryMonitor();

@@ -46,6 +46,8 @@ extern bool hyperthreading;
 static bool memory_bandwidth = false;
 // Whether to measure NUMA Throughput
 static bool numa = false;
+// Whether we only perform insert
+static bool insert_only = false;
 
 #include "util.h"
 
@@ -86,15 +88,7 @@ inline void load(int wl,
   std::string init_file;
   std::string txn_file;
 
-  // This is the special case - workload Z only loads the index
-  // but do not execute any transaction. In this case we do not 
-  if(kt == RAND_KEY && wl == WORKLOAD_Z) {
-    init_file = "workloads/loada_zipf_int_100M.dat";
-    txn_file = "workloads/txnsa_zipf_int_100M.dat";
-  } else if(kt == MONO_KEY && wl == WORKLOAD_Z) {
-    init_file = "workloads/mono_inc_loada_zipf_int_100M.dat";
-    txn_file = "workloads/mono_inc_txnsa_zipf_int_100M.dat";
-  } else if (kt == RAND_KEY && wl == WORKLOAD_A) {
+  if (kt == RAND_KEY && wl == WORKLOAD_A) {
     init_file = "workloads/loada_zipf_int_100M.dat";
     txn_file = "workloads/txnsa_zipf_int_100M.dat";
   } else if (kt == RAND_KEY && wl == WORKLOAD_C) {
@@ -161,6 +155,11 @@ inline void load(int wl,
       values.push_back(reinterpret_cast<uint64_t>(init_keys_data+count));
       count++;
     }
+  }
+
+  // If we do not perform other transactions, we can skip txn file
+  if(insert_only == true) {
+    return;
   }
 
   // If we also execute transaction then open the 
@@ -320,7 +319,7 @@ inline void exec(int wl,
   std::cout << "insert " << tput << "\033[0m" << "\n";
 
   // If the workload only executes load phase then we return here
-  if(wl == WORKLOAD_Z) {
+  if(insert_only == true) {
     return;
   }
 
@@ -529,9 +528,6 @@ int main(int argc, char *argv[]) {
     wl = WORKLOAD_C;
   } else if (strcmp(argv[1], "e") == 0) {
     wl = WORKLOAD_E;
-  } else if (strcmp(argv[1], "z") == 0) {
-    // This is the special one - only perform insert
-    wl = WORKLOAD_Z;
   } else {
     fprintf(stderr, "Unknown workload: %s\n", argv[1]);
     exit(1);
@@ -590,6 +586,8 @@ int main(int argc, char *argv[]) {
       memory_bandwidth = true;
     } else if(strcmp(*v, "--numa") == 0) {
       numa = true;
+    } else if(strcmp(*v, "--insert-only") == 0) {
+      insert_only = true;
     }
   }
 
@@ -639,6 +637,10 @@ int main(int argc, char *argv[]) {
 
     // Call init here to avoid calling it mutiple times
     PCM_NUMA::InitNUMAMonitor();
+  }
+
+  if(insert_only == true) {
+    fprintf(stderr, "Program will exit after insert operation\n");
   }
 
   // If the key type is RDTSC we just run the special function

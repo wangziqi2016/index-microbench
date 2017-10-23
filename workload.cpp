@@ -512,10 +512,16 @@ int main(int argc, char *argv[]) {
 
   if (argc < 5) {
     std::cout << "Usage:\n";
-    std::cout << "1. workload type: a, c, e\n";
+    std::cout << "1. workload type: a, c, e, none\n";
+    std::cout << "   \"none\" type means we just load the file and exit. \n"
+                 "This serves as the base line for microbenchamrks\n";
     std::cout << "2. key distribution: rand, mono\n";
-    std::cout << "3. index type: bwtree masstree artolc btreeolc\n";
+    std::cout << "3. index type: bwtree skiplist masstree artolc btreeolc\n";
     std::cout << "4. number of threads (integer)\n";
+    std::cout << "   --hyper: Whether to pin all threads on NUMA node 0\n";
+    std::cout << "   --mem: Whether to monitor memory access\n";
+    std::cout << "   --numa: Whether to monitor NUMA throughput\n";
+    std::cout << "   --insert-only: Whether to only execute insert operations\n";
     
     return 1;
   }

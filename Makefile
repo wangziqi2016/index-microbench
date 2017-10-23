@@ -36,13 +36,13 @@ run_all: workload workload_string
 workload.o: workload.cpp microbench.h index.h util.h ./masstree/mtIndexAPI.hh ./BwTree/bwtree.h BTreeOLC/BTreeOLC.h ./pcm/pcm-memory.cpp ./pcm/pcm-numa.cpp ./papi_util.cpp
 	$(CXX) $(CFLAGS) -c -o workload.o workload.cpp
 
-workload: workload.o bwtree.o artolc.o ./masstree/mtIndexAPI.a ./pcm/libPCM.a $(SL_OBJS)
+workload: skiplist-clean workload.o bwtree.o artolc.o ./masstree/mtIndexAPI.a ./pcm/libPCM.a $(SL_OBJS)
 	$(CXX) $(CFLAGS) -o workload workload.o bwtree.o artolc.o $(SL_OBJS) masstree/mtIndexAPI.a ./pcm/libPCM.a $(MEMMGR) -lpthread -lm -ltbb
 
-workload_string.o: workload_string.cpp microbench.h index.h util.h ./masstree/mtIndexAPI.hh ./BwTree/bwtree.h BTreeOLC/BTreeOLC.h
+workload_string.o: workload_string.cpp microbench.h index.h util.h ./masstree/mtIndexAPI.hh ./BwTree/bwtree.h BTreeOLC/BTreeOLC.h skiplist-clean
 	$(CXX) $(CFLAGS) -c -o workload_string.o workload_string.cpp
 
-workload_string: workload_string.o bwtree.o artolc.o ./masstree/mtIndexAPI.a $(SL_OBJS)
+workload_string: skiplist-clean workload_string.o bwtree.o artolc.o ./masstree/mtIndexAPI.a $(SL_OBJS)
 	$(CXX) $(CFLAGS) -o workload_string workload_string.o bwtree.o artolc.o  $(SL_OBJS) masstree/mtIndexAPI.a $(MEMMGR) -lpthread -lm -ltbb
 
 bwtree.o: ./BwTree/bwtree.h ./BwTree/bwtree.cpp
@@ -60,3 +60,6 @@ generate_workload:
 clean:
 	$(RM) workload workload_string *.o *~ *.d
 	$(RM) ./rotate-skiplist/*.o
+
+skiplist-clean:
+	$(RM) rm ./rotate-skiplist/*.o

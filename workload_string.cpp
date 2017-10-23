@@ -14,6 +14,9 @@ static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
 
 #include "util.h"
 
+// Whether to exit after insert operation
+static bool insert_only = false;
+
 /*
  * MemUsage() - Reads memory usage from /proc file system
  */
@@ -66,7 +69,6 @@ inline void load(int wl,
   }
 
   std::ifstream infile_load(init_file);
-  std::ifstream infile_txn(txn_file);
 
   std::string op;
   std::string key_str;
@@ -112,6 +114,12 @@ inline void load(int wl,
     }
   }
 
+  // For insert only mode we return here
+  if(insert_only == true) {
+    return;
+  }
+
+  std::ifstream infile_txn(txn_file);
   count = 0;
   while ((count < LIMIT) && infile_txn.good()) {
     infile_txn >> op >> key_str;
@@ -195,6 +203,10 @@ inline void exec(int wl,
 
   std::cout << "insert " << tput << "\n";
   std::cout << "memory " << (idx->getMemory() / 1000000) << "\n";
+
+  if(insert_only == true) {
+    return;
+  }
 
   //READ/UPDATE/SCAN TEST----------------
   start_time = get_now();
@@ -329,6 +341,8 @@ int main(int argc, char *argv[]) {
     std::cout << "2. key distribution: email\n";
     std::cout << "3. index type: bwtree skiplist masstree artolc btreeolc\n";
     std::cout << "4. Number of threads: (1 - 40)\n";
+    std::cout << "   --hyper: Whether to pin all threads on NUMA node 0\n";
+    std::cout << "   --insert-only: Whether to only execute insert operations\n";
     return 1;
   }
 
@@ -377,13 +391,24 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Number of threads: %d\n", num_thread);
   }
 
-  if(argc > 5 && strcmp(argv[5], "--hyper") == 0) {
-    hyperthreading = true;
+  // Then read all remianing arguments
+  char **argv_end = argv + argc;
+  for(char **v = argv + 5;v != argv_end;v++) {
+    if(strcmp(*v, "--hyper") == 0) {
+      // Enable hyoerthreading for scheduling threads
+      hyperthreading = true;
+    } else if(strcmp(*v, "--insert-only") == 0) {
+      insert_only = true;
+    }
   }
 
   if(hyperthreading == true) {
     fprintf(stderr, "  Hyperthreading enabled\n");
   }
+
+  if(insert_only == true) {
+    fprintf(stderr, "  Insert-only mode\n");
+  } 
 
   fprintf(stderr, "index type = %d\n", index_type);
 

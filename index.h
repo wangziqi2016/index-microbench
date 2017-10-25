@@ -26,6 +26,8 @@ class Index
 
   virtual uint64_t find(KeyType key, std::vector<uint64_t> *v, threadinfo *ti) = 0;
 
+  virtual uint64_t find_bwtree_fast(KeyType key, std::vector<uint64_t> *v) {};
+
   virtual bool upsert(KeyType key, uint64_t value, threadinfo *ti) = 0;
 
   virtual uint64_t scan(KeyType key, int range, threadinfo *ti) = 0;
@@ -333,9 +335,18 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
     size_t inner_alloc_total = 0, inner_used_total = 0;
     size_t leaf_alloc_total = 0, leaf_used_total = 0;
 
+    // Use the base node pointer to replace root node ID
+    // We do not modify the mapping table in this step
+    uint64_t index_root_id = index_p->root_id.load();
+
+#ifndef BWTREE_USE_MAPPING_TABLE
+    fprintf(stderr, "Replacing all NodeIDs to BaseNode *\n");
+    index_p->root_id = reinterpret_cast<NodeID>(index_p->GetNode(index_p->root_id));
+#endif
+
     fprintf(stderr, "BwTree - Start consolidating delta chains...\n");
     int ret = index_p->DebugConsolidateAllRecursive(
-      index_p->root_id.load(),
+      index_root_id,
       &inner_depth_total,
       &leaf_depth_total,
       &inner_node_total,
@@ -404,6 +415,14 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
 
     return 0UL;
   }
+
+#ifndef BWTREE_USE_MAPPING_TABLE
+  uint64_t find_bwtree_fast(KeyType key, std::vector<uint64_t> *v) {
+    index_p->GetValueNoMappingTable(key, *v);
+
+    return 0UL;
+  }
+#endif
 
   bool upsert(KeyType key, uint64_t value, threadinfo *) {
     //index_p->Delete(key, value);

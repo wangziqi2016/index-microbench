@@ -14,7 +14,7 @@
 #include "tbb/tbb.h"
 #endif
 
-//#define BWTREE_CONSOLIDATE_AFTER_INSERT
+#define BWTREE_CONSOLIDATE_AFTER_INSERT
 
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
   #ifdef USE_TBB
@@ -305,18 +305,18 @@ inline void exec(int wl,
   if(numa == true) {
     PCM_NUMA::EndNUMAMonitor();
   }
-
-  // Only execute consolidation if BwTree delta chain is used
-#ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
-  idx->AfterLoadCallback();
-#endif
-
 #endif   
   
   double tput = count / (end_time - start_time) / 1000000; //Mops/sec
 
   std::cout << "\033[1;32m";
   std::cout << "insert " << tput << "\033[0m" << "\n";
+
+  // Only execute consolidation if BwTree delta chain is used
+#ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
+  fprintf(stderr, "Starting consolidating delta chain on each level\n");
+  idx->AfterLoadCallback();
+#endif
 
   // If the workload only executes load phase then we return here
   if(insert_only == true) {
@@ -367,7 +367,12 @@ inline void exec(int wl,
       }
       else if (op == OP_READ) { //READ
         v.clear();
+
+#ifdef BWTREE_USE_MAPPING_TABLE
         idx->find(keys[i], &v, ti);
+#else
+        idx->find_bwtree_fast(keys[i], &v);
+#endif
         
         // If we count read misses then increment the 
         // counter here if the vetor is empty

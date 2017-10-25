@@ -67,7 +67,7 @@
 
 //#define BWTREE_USE_CAS
 
-#define BWTREE_USE_MAPPING_TABLE
+//#define BWTREE_USE_MAPPING_TABLE
 
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -8816,7 +8816,7 @@ before_switch:
 
     EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
 
-    const BaseNode *current_node_p = reinterpret_cast<const BaseNode *>(root_id);
+    const BaseNode *current_node_p = reinterpret_cast<const BaseNode *>(root_id.load());
     while(current_node_p->IsOnLeafDeltaChain() == false) {
       const InnerNode *inner_node_p = static_cast<const InnerNode *>(current_node_p);
       // Get the node ID (which is actually BaseNode pointers)
@@ -8831,8 +8831,8 @@ before_switch:
     const LeafNode *leaf_node_p = static_cast<const LeafNode *>(current_node_p);
     auto start_p = leaf_node_p->Begin();
     auto end_p = leaf_node_p->End();   
-    auto it = std::lower_bound(start_it,
-                               end_it,
+    auto it = std::lower_bound(start_p,
+                               end_p,
                                std::make_pair(search_key, ValueType{}),
                                key_value_pair_cmp_obj);
 

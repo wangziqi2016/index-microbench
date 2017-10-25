@@ -224,6 +224,8 @@ static constexpr int PREALLOCATE_THREAD_NUM = 1024;
 
 //#define BWTREE_USE_CAS
 
+#define BWTREE_USE_MAPPING_TABLE
+
 #ifndef BWTREE_USE_CAS
 template <typename T>
 class FakeAtomic {

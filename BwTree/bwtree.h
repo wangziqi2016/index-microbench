@@ -244,7 +244,7 @@ class FakeAtomic {
   }
 
   inline bool compare_exchange_strong(const T old_val, 
-                                      const T &new_val) {
+                                      T &new_val) {
     if(data == old_val) {
       std::swap<T>(new_val, data);
       return true;

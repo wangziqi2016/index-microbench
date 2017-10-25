@@ -260,12 +260,12 @@ class FakeAtomic {
     return false;
   }
 
-  FakeAtomic &operator=(const T &other) {
+  inline FakeAtomic &operator=(const T &other) {
     data = other;
     return *this;
   }
 
-  FakeAtomic &operator=(const FakeAtomic<T> &other) {
+  inline FakeAtomic &operator=(const FakeAtomic<T> &other) {
     if(&other != this) {
       data = other.data;
     }
@@ -273,19 +273,22 @@ class FakeAtomic {
     return *this;
   }
 
-  T fetch_add(const T &amount) {
+  inline T fetch_add(const T &amount) {
     T old = data;
     data += amount;
     return old;
   }
 
-  T fetch_sub(const T &amount) {
+  inline T fetch_sub(const T &amount) {
     T old = data;
     data -= amount;
     return old;
   }
 
-  
+  // Implicit conversion operator
+  inline operator T() const {
+    return data;
+  }
 };
 #endif
 

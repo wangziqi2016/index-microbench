@@ -222,9 +222,9 @@ static constexpr int PREALLOCATE_THREAD_NUM = 1024;
 
 #define BWTREE_SEARCH_SHORTCUT
 
-#define BWTREE_USE_CAS
+//#define BWTREE_USE_CAS
 
-#ifdef BWTREE_USE_CAS
+#ifndef BWTREE_USE_CAS
 template <typename T>
 class FakeAtomic {
  public:
@@ -246,12 +246,27 @@ class FakeAtomic {
   inline bool compare_exchange_strong(const T old_val, 
                                       const T &new_val) {
     if(data == old_val) {
-      std::swap(new_val, data);
+      std::swap<T>(new_val, data);
       return true;
     }
 
     return false;
   }
+
+  FakeAtomic &operator=(const T &other) {
+    data = other;
+    return *this;
+  }
+
+  FakeAtomic &operator=(const FakeAtomic<T> &other) {
+    if(&other != this) {
+      data = other.data;
+    }
+
+    return *this;
+  }
+
+  
 };
 #endif
 
@@ -8875,7 +8890,7 @@ before_switch:
 #ifdef BWTREE_USE_CAS
   std::array<std::atomic<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
 #else
-  std::array<fake_atomic<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
+  std::array<FakeAtomic<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
 #endif
 
   // This list holds free NodeID which was removed by remove delta

@@ -213,10 +213,47 @@ static constexpr int PREALLOCATE_THREAD_NUM = 1024;
 #define INC_COUNTER(name, value) do {} while(false);
 #endif
 
+/////////////////////////////////////////////////////////////////////
+// Feature Selection
+/////////////////////////////////////////////////////////////////////
+
 // This determines whether bwtree will use preallocation
 #define BWTREE_PREALLOCATION
 
 #define BWTREE_SEARCH_SHORTCUT
+
+#define BWTREE_USE_CAS
+
+#ifdef BWTREE_USE_CAS
+template <typename T>
+class FakeAtomic {
+ public:
+  T data;
+ public:
+  using BaseType = T;
+  FakeAtomic() : data{} {}
+  ~FakeAtomic() {}
+  FakeAtomic(const FakeAtomic &other) : data{other.data} {}
+  
+  inline T load() const {
+    return data;
+  } 
+
+  inline void store(const T &pdata) {
+    data = pdata;
+  }
+
+  inline bool compare_exchange_strong(const T old_val, 
+                                      const T &new_val) {
+    if(data == old_val) {
+      std::swap(new_val, data);
+      return true;
+    }
+
+    return false;
+  }
+};
+#endif
 
 
 /*
@@ -8833,7 +8870,13 @@ before_switch:
   NodeID first_leaf_id;
 
   std::atomic<NodeID> next_unused_node_id;
+
+  // If we allow CAS operation, then use atomic. Otherwise use normal type
+#ifdef BWTREE_USE_CAS
   std::array<std::atomic<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
+#else
+  std::array<fake_atomic<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
+#endif
 
   // This list holds free NodeID which was removed by remove delta
   // We recycle NodeID in epoch manager

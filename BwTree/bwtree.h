@@ -8787,7 +8787,6 @@ before_switch:
    */
   void GetValue(const KeyType &search_key,
                 std::vector<ValueType> &value_list) {
-#ifdef BWTREE_USE_MAPPING_TABLE
     bwt_printf("GetValue()\n");
 
     INC_COUNTER(READ, 1);
@@ -8798,17 +8797,55 @@ before_switch:
     TraverseReadOptimized(&context, &value_list);
 
     epoch_manager.LeaveEpoch(epoch_node_p);
-#else
+    
+    return;
+  }
+
+#ifndef BWTREE_USE_MAPPING_TABLE
+  /*
+   * GetValueNoMappingTable() - This function gets value for a given index without
+   *                            using the mapping table.
+   *
+   * Note that we also assume inner and leaf nodes are consolidated before this operation                           
+   */
+  void GetValueNoMappingTable(const KeyType &search_key,
+                              std::vector<ValueType> &value_list) {
+    bwt_printf("GetValue()\n");
+
     INC_COUNTER(READ, 1);
+
     EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
 
-    
+    const BaseNode *current_node_p = reinterpret_cast<const BaseNode *>(root_id);
+    while(current_node_p->IsOnLeafDeltaChain() == false) {
+      const InnerNode *inner_node_p = static_cast<const InnerNode *>(current_node_p);
+      // Get the node ID (which is actually BaseNode pointers)
+      current_node_p = reinterpret_cast<const BaseNode *>(
+        LocateSeparatorByKey(search_key, 
+                             inner_node_p, 
+                             0, 
+                             inner_node_p->GetSize()));
+    }
+
+    // We know it is on a leaf node
+    const LeafNode *leaf_node_p = static_cast<const LeafNode *>(current_node_p);
+    auto start_p = leaf_node_p->Begin();
+    auto end_p = leaf_node_p->End();   
+    auto it = std::lower_bound(start_it,
+                               end_it,
+                               std::make_pair(search_key, ValueType{}),
+                               key_value_pair_cmp_obj);
+
+    if((it != leaf_node_p->End()) && \
+       (KeyCmpEqual(search_key, it->first))) {
+      value_list.push_back(it->second);
+    }
 
     epoch_manager.LeaveEpoch(epoch_node_p);
 
-#endif
     return;
   }
+#endif
 
   /*
    * GetValue() - Return value in a ValueSet object

@@ -56,6 +56,23 @@
 
 #endif
 
+/////////////////////////////////////////////////////////////////////
+// Feature Selection
+/////////////////////////////////////////////////////////////////////
+
+// This determines whether bwtree will use preallocation
+#define BWTREE_PREALLOCATION
+
+#define BWTREE_SEARCH_SHORTCUT
+
+//#define BWTREE_USE_CAS
+
+//#define BWTREE_USE_MAPPING_TABLE
+
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
 // This must be declared before all include directives
 using NodeID = uint64_t;
 
@@ -213,10 +230,67 @@ static constexpr int PREALLOCATE_THREAD_NUM = 1024;
 #define INC_COUNTER(name, value) do {} while(false);
 #endif
 
-// This determines whether bwtree will use preallocation
-#define BWTREE_PREALLOCATION
 
-#define BWTREE_SEARCH_SHORTCUT
+#ifndef BWTREE_USE_CAS
+template <typename T>
+class FakeAtomic {
+ public:
+  T data;
+ public:
+  using BaseType = T;
+  FakeAtomic() : data{} {}
+  ~FakeAtomic() {}
+  FakeAtomic(const FakeAtomic &other) : data{other.data} {}
+  
+  inline T load() const {
+    return data;
+  } 
+
+  inline void store(const T &pdata) {
+    data = pdata;
+  }
+
+  inline bool compare_exchange_strong(const T old_val, 
+                                      T &new_val) {
+    if(data == old_val) {
+      std::swap<T>(new_val, data);
+      return true;
+    }
+
+    return false;
+  }
+
+  inline FakeAtomic &operator=(const T &other) {
+    data = other;
+    return *this;
+  }
+
+  inline FakeAtomic &operator=(const FakeAtomic<T> &other) {
+    if(&other != this) {
+      data = other.data;
+    }
+
+    return *this;
+  }
+
+  inline T fetch_add(const T &amount) {
+    T old = data;
+    data += amount;
+    return old;
+  }
+
+  inline T fetch_sub(const T &amount) {
+    T old = data;
+    data -= amount;
+    return old;
+  }
+
+  // Implicit conversion operator
+  inline operator T() const {
+    return data;
+  }
+};
+#endif
 
 
 /*
@@ -3697,7 +3771,13 @@ class BwTree : public BwTreeBase {
                                             inner_used_total,
                                             leaf_alloc_total,
                                             leaf_used_total);
-      }
+        // If mapping table is not used, we also need to translate all 
+        // node IDs into physical pointers, and then store them back
+        // inside InnerNodes
+#ifndef BWTREE_USE_MAPPING_TABLE
+        *p = reinterpret_cast<NodeID>(GetNode(*p));
+#endif
+     }
     }
     
     return ret;
@@ -8717,9 +8797,55 @@ before_switch:
     TraverseReadOptimized(&context, &value_list);
 
     epoch_manager.LeaveEpoch(epoch_node_p);
+    
+    return;
+  }
+
+#ifndef BWTREE_USE_MAPPING_TABLE
+  /*
+   * GetValueNoMappingTable() - This function gets value for a given index without
+   *                            using the mapping table.
+   *
+   * Note that we also assume inner and leaf nodes are consolidated before this operation                           
+   */
+  void GetValueNoMappingTable(const KeyType &search_key,
+                              std::vector<ValueType> &value_list) {
+    bwt_printf("GetValue()\n");
+
+    INC_COUNTER(READ, 1);
+
+    EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
+
+    const BaseNode *current_node_p = reinterpret_cast<const BaseNode *>(root_id.load());
+    while(current_node_p->IsOnLeafDeltaChain() == false) {
+      const InnerNode *inner_node_p = static_cast<const InnerNode *>(current_node_p);
+      // Get the node ID (which is actually BaseNode pointers)
+      current_node_p = reinterpret_cast<const BaseNode *>(
+        LocateSeparatorByKey(search_key, 
+                             inner_node_p, 
+                             0, 
+                             inner_node_p->GetSize()));
+    }
+
+    // We know it is on a leaf node
+    const LeafNode *leaf_node_p = static_cast<const LeafNode *>(current_node_p);
+    auto start_p = leaf_node_p->Begin();
+    auto end_p = leaf_node_p->End();   
+    auto it = std::lower_bound(start_p,
+                               end_p,
+                               std::make_pair(search_key, ValueType{}),
+                               key_value_pair_cmp_obj);
+
+    if((it != leaf_node_p->End()) && \
+       (KeyCmpEqual(search_key, it->first))) {
+      value_list.push_back(it->second);
+    }
+
+    epoch_manager.LeaveEpoch(epoch_node_p);
 
     return;
   }
+#endif
 
   /*
    * GetValue() - Return value in a ValueSet object
@@ -8826,14 +8952,24 @@ before_switch:
   const KeyValuePairEqualityChecker key_value_pair_eq_obj;
   const KeyValuePairHashFunc key_value_pair_hash_obj;
 
+#ifdef BWTREE_USE_CAS
   // This value is atomic and will change
   std::atomic<NodeID> root_id;
+#else
+  FakeAtomic<NodeID> root_id;
+#endif
 
   // This value is non-atomic, but it remains constant after constructor
   NodeID first_leaf_id;
 
   std::atomic<NodeID> next_unused_node_id;
+
+  // If we allow CAS operation, then use atomic. Otherwise use normal type
+#ifdef BWTREE_USE_CAS
   std::array<std::atomic<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
+#else
+  std::array<FakeAtomic<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
+#endif
 
   // This list holds free NodeID which was removed by remove delta
   // We recycle NodeID in epoch manager

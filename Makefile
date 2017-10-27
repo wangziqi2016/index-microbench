@@ -10,9 +10,13 @@ CFLAGS = -g -O3 -Wno-invalid-offsetof -mcx16 -DNDEBUG -DBWTREE_NODEBUG $(DEPCFLA
 THREAD_NUM?=1
 TYPE?=bwtree
 
+# Can also change it to rotate skiplist
+SL_DIR=./nohotspot-skiplist
+
 # skiplist source files
-SL_OBJS=$(patsubst %.cpp,%.o,$(wildcard ./rotate-skiplist/*.cpp))
+SL_OBJS=$(patsubst %.cpp,%.o,$(wildcard $(SL_DIR)/*.cpp))
 $(info skip list object files: $(SL_OBJS))
+
 SNAPPY = /usr/lib/libsnappy.so.1.3.0
 
 all: workload
@@ -59,7 +63,7 @@ generate_workload:
 
 clean:
 	$(RM) workload workload_string *.o *~ *.d
-	$(RM) ./rotate-skiplist/*.o
+	$(RM) $(SL_DIR)/*.o
 
 skiplist-clean:
-	$(RM) rm ./rotate-skiplist/*.o
+	$(RM) rm $(SL_DIR)/*.o

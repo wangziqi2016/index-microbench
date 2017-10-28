@@ -2523,7 +2523,7 @@ class BwTree : public BwTreeBase {
       //                         ^                        ^
       //                       Limit                     Tail
       char *alloc_base = \
-        new char[sizeof(EN) + 
+        new char[sizeof(EN) +
                  byte_size + 
                  chunk_size +
                  sizeof(AM)];
@@ -3145,8 +3145,14 @@ class BwTree : public BwTreeBase {
                                 int p_item_count,
                                 const KeyNodeIDPair &p_low_key,
                                 const KeyNodeIDPair &p_high_key) {
+#ifdef BWTREE_USE_DELTA_UPDATE
       // This is the byte size of the KeyType and NodeID array
       size_t leaf_node_size = sizeof(KeyValuePair) * p_item_count;
+#else
+      // If we do not use delta update, then we must reserve enough
+      // storage in the node
+      size_t leaf_node_size = sizeof(KeyValuePair) * LEAF_NODE_SIZE_UPPER_THRESHOLD;
+#endif
         
       LeafNode *leaf_node_p = \
         static_cast<LeafNode *>(LeafBaseType::Get(leaf_node_size,

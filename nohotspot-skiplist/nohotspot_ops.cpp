@@ -158,7 +158,7 @@ static int sl_finish_insert(sl_key_t key, val_t val, node_t *node,
                             val_t node_val, node_t *next, ptst_t *ptst)
 {
         int result = -1;
-        node_t *new;
+        node_t *new_node;
 
         if (node->key == key) {
                 if (NULL == node_val) {
@@ -168,16 +168,16 @@ static int sl_finish_insert(sl_key_t key, val_t val, node_t *node,
                         result = 0;
                 }
         } else {
-                new = node_new(key, val, node, next, 0, ptst);
-                if (CAS(&node->next, next, new)) {
+                new_node = node_new(key, val, node, next, 0, ptst);
+                if (CAS(&node->next, next, new_node)) {
 
                         assert (node->next != node);
 
                         if (NULL != next)
-                                next->prev = new; /* safe */
+                                next->prev = new_node; /* safe */
                         result = 1;
                 } else {
-                        node_delete(new, ptst);
+                        node_delete(new_node, ptst);
                 }
         }
 
@@ -233,7 +233,7 @@ int sl_do_operation(set_t *set, sl_optype_t optype, sl_key_t key, val_t val)
                 }
                 next = node->next;
                 if (NULL != next) {
-                        next_val = next->val;
+                        next_val = (void **)next->val;
                         if ((node_t*)next_val == next) {
                                 bg_help_remove(node, next, ptst);
                                 continue;

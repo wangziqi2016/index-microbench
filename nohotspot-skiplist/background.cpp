@@ -463,7 +463,7 @@ void bg_print_stats(void)
  */
 void bg_help_remove(node_t *prev, node_t *node, ptst_t *ptst)
 {
-        node_t *n, *new;
+        node_t *n, *new_node;
 
         #ifdef BG_STATS 
         int retval;
@@ -477,10 +477,10 @@ void bg_help_remove(node_t *prev, node_t *node, ptst_t *ptst)
 
         n = node->next;
         while (NULL == n || !n->marker) {
-                        new = node_new(0, NULL, node, n, 0, ptst);
-                        new->val = new;
-                        new->marker = 1;
-                        CAS(&node->next, n, new);
+                        new_node = node_new(0, NULL, node, n, 0, ptst);
+                        new_node->val = new_node;
+                        new_node->marker = 1;
+                        CAS(&node->next, n, new_node);
 
                         assert (node->next != node);
 

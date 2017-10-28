@@ -60,7 +60,7 @@ node_t* node_new(sl_key_t key, val_t val, node_t *prev, node_t *next,
 {
         node_t *node;
 
-        node = gc_alloc(ptst, gc_id[NODE_LEVEL]);
+        node = (node_t *)gc_alloc(ptst, gc_id[NODE_LEVEL]);
 
         node->key       = key;
         node->val       = val;
@@ -85,7 +85,7 @@ inode_t* inode_new(inode_t *right, inode_t *down, node_t *node, ptst_t *ptst)
 {
         inode_t *inode;
 
-        inode = gc_alloc(ptst, gc_id[INODE_LEVEL]);
+        inode = (inode_t *)gc_alloc(ptst, gc_id[INODE_LEVEL]);
 
         inode->right = right;
         inode->down = down;
@@ -124,13 +124,13 @@ set_t* set_new(int start)
 {
         set_t *set;
 
-        set = malloc(sizeof(set_t));
+        set = (set_t *)malloc(sizeof(set_t));
         if (!set) {
                 perror("Failed to malloc a set\n");
                 exit(1);
         }
 
-        set->head = malloc(sizeof(node_t));
+        set->head = (node_t *)malloc(sizeof(node_t));
         set->head->key    = 0;
         set->head->val    = NULL;
         set->head->prev   = NULL;
@@ -138,7 +138,7 @@ set_t* set_new(int start)
         set->head->level  = 1;
         set->head->marker = 0;
 
-        set->top = malloc(sizeof(inode_t));
+        set->top = (inode_t *)malloc(sizeof(inode_t));
         set->top->right = NULL;
         set->top->down  = NULL;
         set->top->node  = set->head;

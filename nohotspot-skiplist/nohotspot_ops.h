@@ -10,12 +10,12 @@
 
 #include "skiplist.h"
 
-typedef enum sl_optype sl_optype_t;
 enum sl_optype {
         CONTAINS,
         DELETE,
         INSERT
 };
+typedef enum sl_optype sl_optype_t;
 
 int sl_do_operation(set_t *set, sl_optype_t optype, sl_key_t key, val_t val);
 

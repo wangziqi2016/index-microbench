@@ -184,14 +184,14 @@ void set_print(set_t *set, int flag)
         /* print the index items */
         while (NULL != ihead) {
                 while (NULL != itemp) {
-                        printf("%lu ", itemp->node->key);
+                        //printf("%lu ", itemp->node->key);
                         itemp = itemp->right;
                 }
                 printf("\n");
                 ihead = ihead->down;
                 itemp = ihead;
         }
-
+/*
         while (NULL != node) {
                 if (flag && (NULL != node->val && node->val != node))
                         printf("%lu ", node->key);
@@ -199,6 +199,7 @@ void set_print(set_t *set, int flag)
                         printf("%lu ", node->key);
                 node = node->next;
         }
+*/
         printf("\n");
 }
 

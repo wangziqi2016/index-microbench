@@ -14,13 +14,13 @@ XBDIR 		?= SET_XBOOST_PATH
 
 # Compiler
 SOLARIS_CC 	?= gcc
-CC		= gcc
+CC		= g++
 
 # Version
 ifeq ($(VERSION),DEBUG)
      CFLAGS     += -g -DDEBUG -O0
 else
-     CFLAGS     += -O3 -DNDEBUG
+     CFLAGS     += -O3 -DNDEBUG -std=c++11
 endif
 
 # Parallelism

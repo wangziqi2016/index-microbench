@@ -136,7 +136,7 @@ static struct gc_chunk* gc_alloc_more_chunks(void)
         int i;
         gc_chunk *h, *p;
 
-        h = ALIGNED_ALLOC(CHUNKS_PER_ALLOC * sizeof(gc_chunk));
+        h = (gc_chunk *)ALIGNED_ALLOC(CHUNKS_PER_ALLOC * sizeof(gc_chunk));
         if (!h) {
                 perror("Couldn't malloc chunks\n");
                 exit(1);
@@ -217,7 +217,7 @@ static gc_chunk* gc_get_filled_chunks(int n, int sz)
         ADD_TO(gc_global.allocations, 1);
 #endif
 
-        node = ALIGNED_ALLOC(n * BLKS_PER_CHUNK * sz);
+        node = (char *)ALIGNED_ALLOC(n * BLKS_PER_CHUNK * sz);
         if (!node) {
                 perror("malloc failed: gc_get_filled_chunks\n");
                 exit(1);
@@ -555,7 +555,7 @@ gc_st* gc_init(void)
         gc_st *gc;
         int i;
 
-        gc = ALIGNED_ALLOC(sizeof(gc_st));
+        gc = (gc_st *)ALIGNED_ALLOC(sizeof(gc_st));
         if (NULL == gc) {
                 perror("malloc failed: gc_init\n");
                 exit(1);

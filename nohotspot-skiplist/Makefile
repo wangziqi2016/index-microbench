@@ -1,8 +1,9 @@
 
 include Makefile.common
 
-BINS = ./
+BINS = .
 INCLUDE_DIR=./atomic_ops
+BUILDIR=.
 
 .PHONY:	all clean
 
@@ -30,7 +31,8 @@ test.o: intset.h
 	$(CC) $(CFLAGS) -c -o $(BUILDIR)/test.o test.c -I$(INCLUDE_DIR)
 
 main: intset.o background.o skiplist.o nohotspot_ops.o test.o ptst.o garbagecoll.o
-	$(CC) $(CFLAGS) $(BUILDIR)/garbagecoll.o $(BUILDIR)/ptst.o $(BUILDIR)/skiplist.o $(BUILDIR)/nohotspot_ops.o $(BUILDIR)/intset.o $(BUILDIR)/background.o $(BUILDIR)/test.o -o $(BINS) $(LDFLAGS)
+	$(CC) $(CFLAGS) $(BUILDIR)/garbagecoll.o $(BUILDIR)/ptst.o $(BUILDIR)/skiplist.o $(BUILDIR)/nohotspot_ops.o $(BUILDIR)/intset.o $(BUILDIR)/background.o $(BUILDIR)/test.o -o $(BINS)/test $(LDFLAGS)
 
 clean:
-	-rm -f $(BINS)
+	-rm -f $(BINS)/*.o
+	rm -f ./test

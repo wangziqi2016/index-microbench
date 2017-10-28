@@ -8,6 +8,8 @@
 #define SKIPLIST_H_
 
 #include "./atomic_ops/atomic_ops.h"
+#include <cstdint>
+#include "../indexkey.h"
 
 #include "common.h"
 #include "ptst.h"
@@ -19,8 +21,12 @@
 #define NODE_LEVEL 0
 #define INODE_LEVEL 1
 
-typedef unsigned long sl_key_t;
-typedef void* val_t;
+#ifndef USE_GENERIC_KEY
+using sl_key_t = uint64_t;
+#else 
+using sl_key_t = GenericKey<31>;
+#endif
+using val_t = void *;
 
 /* bottom-level nodes */
 typedef VOLATILE struct sl_node node_t;

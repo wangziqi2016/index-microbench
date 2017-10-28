@@ -71,7 +71,7 @@
 
 //#define BWTREE_USE_MAPPING_TABLE
 
-#define BWTREE_USE_DELTA_UPDATE
+//#define BWTREE_USE_DELTA_UPDATE
 
 // If we do not use mapping table, then must consolidate the index
 #ifndef BWTREE_USE_MAPPING_TABLE
@@ -8555,7 +8555,14 @@ before_switch:
   }
 
   // This is only defined if we use delta update
-#ifndef USE_DELTA_UPDATE
+#ifndef BWTREE_USE_DELTA_UPDATE
+
+  /*
+   * InsertInPlace() - This function inserts the integer key in-place
+   *
+   * Only used for benchmarking purposes; Do not use any non-POD type
+   * as keys; do not use this function for multiple threads
+   */
   bool InsertInPlace(const KeyType &key, const ValueType &value) {
     EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
 
@@ -8578,6 +8585,29 @@ before_switch:
       fprintf(stderr, "[InsertInPlace] Node type is not LeafType\n");
       exit(1);
     }
+
+    LeafNode *leaf_node_p = (LeafNode *)node_p;
+
+    const size_t element_size = sizeof(std::pair<KeyType, ValueType>);
+
+    // This is the number of elements
+    size_t item_count = leaf_node_p->GetItemCount();
+    size_t byte_to_copy = element_size * (item_count - (size_t)index_pair.first);
+
+    char *move_start_p = leaf_node_p->Begin() + index_pair.first;
+    char *after_move_p = move_start_p + element_size;
+    if(after_move_p + byte_to_copy >= leaf_node_p->End()) {
+      fprintf(stderr, "Leaf node overflows\n");
+      exit(1);
+    }
+
+    memmove(after_move_p, move_start_p, byte_to_copy);
+
+    *((std::pair<KeyType, ValueType> *)move_start_p) = \
+      std::make_pair(key, value);
+
+    leaf_node_p->end_p = (void *)((char *)leaf_node_p->end_p + element_size);
+    leaf_node_p->metadata.item_count++;
 
     return true;
   }

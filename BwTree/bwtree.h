@@ -3158,7 +3158,7 @@ class BwTree : public BwTreeBase {
 #else
       // If we do not use delta update, then we must reserve enough
       // storage in the node
-      size_t leaf_node_size = sizeof(KeyValuePair) * LEAF_NODE_SIZE_UPPER_THRESHOLD;
+      size_t leaf_node_size = sizeof(KeyValuePair) * (LEAF_NODE_SIZE_UPPER_THRESHOLD + 1);
 #endif
         
       LeafNode *leaf_node_p = \
@@ -3925,7 +3925,6 @@ class BwTree : public BwTreeBase {
                     0,
                     std::make_pair(KeyType{}, INVALID_NODE_ID),
                     std::make_pair(KeyType{}, INVALID_NODE_ID));
-
     #endif
 
     InstallNewNode(first_leaf_id, left_most_leaf);
@@ -7608,7 +7607,6 @@ before_switch:
       // Perform corresponding action based on node size
       if(node_size >= LEAF_NODE_SIZE_UPPER_THRESHOLD) {
         bwt_printf("Node size >= leaf upper threshold. Split\n");
-
         // Note: This function takes this as argument since it will
         // do key comparison
         const LeafNode *new_leaf_node_p = leaf_node_p->GetSplitSibling(this);
@@ -7625,7 +7623,6 @@ before_switch:
         if(new_leaf_node_p == nullptr) {
           bwt_printf("LeafNode size exceeds overhead, "
                      "but could not find split point\n");
-
           return;
         }
 
@@ -8579,6 +8576,8 @@ before_switch:
   bool InsertInPlace(const KeyType &key, const ValueType &value) {
     EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
 
+    //printf("InsertInPlace\n");
+
     Context context{key};
     std::pair<int, bool> index_pair;
 
@@ -8607,12 +8606,12 @@ before_switch:
     size_t item_count = leaf_node_p->GetItemCount();
     size_t byte_to_copy = element_size * (item_count - (size_t)index_pair.first);
 
-    char *move_start_p = (char *)leaf_node_p->Begin() + index_pair.first;
+    char *move_start_p = (char *)(leaf_node_p->Begin() + index_pair.first);
     char *after_move_p = move_start_p + element_size;
-    if(after_move_p + byte_to_copy >= (char *)leaf_node_p->End()) {
-      fprintf(stderr, "Leaf node overflows\n");
-      exit(1);
-    }
+    //if(after_move_p + byte_to_copy >= (char *)leaf_node_p->End()) {
+    //  fprintf(stderr, "Leaf node overflows\n");
+    //  exit(1);
+    //}
 
     memmove(after_move_p, move_start_p, byte_to_copy);
 
@@ -8621,6 +8620,8 @@ before_switch:
 
     leaf_node_p->end = leaf_node_p->end + element_size;
     leaf_node_p->GetMetaData().item_count++;
+
+    //printf("%d\n", (int)leaf_node_p->GetItemCount());
 
     return true;
   }

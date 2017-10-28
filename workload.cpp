@@ -361,7 +361,6 @@ inline void exec(int wl,
     int counter = 0;
     for(size_t i = start_index;i < end_index;i++) {
       int op = ops[i];
-      
       if (op == OP_INSERT) { //INSERT
         idx->insert(keys[i], values[i], ti);
       }
@@ -371,7 +370,7 @@ inline void exec(int wl,
 #ifdef BWTREE_USE_MAPPING_TABLE
         idx->find(keys[i], &v, ti);
 #else
-        idx->find_bwtree_fast(keys[i], &v);
+        //idx->find_bwtree_fast(keys[i], &v);
 #endif
         
         // If we count read misses then increment the 

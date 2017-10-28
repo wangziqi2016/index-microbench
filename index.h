@@ -286,6 +286,8 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
 {
  public:
   using index_type = BwTree<KeyType, uint64_t, KeyComparator, KeyEqualityChecker, KeyHashFunc>;
+  using BaseNode = typename index_type::BaseNode;
+
   BwTreeIndex(uint64_t kt) {
     index_p = new index_type{};
     assert(index_p != nullptr);
@@ -334,16 +336,8 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
     int inner_size_total = 0, leaf_size_total = 0;
     size_t inner_alloc_total = 0, inner_used_total = 0;
     size_t leaf_alloc_total = 0, leaf_used_total = 0;
-
-    // Use the base node pointer to replace root node ID
-    // We do not modify the mapping table in this step
+   
     uint64_t index_root_id = index_p->root_id.load();
-
-#ifndef BWTREE_USE_MAPPING_TABLE
-    fprintf(stderr, "Replacing all NodeIDs to BaseNode *\n");
-    index_p->root_id = reinterpret_cast<NodeID>(index_p->GetNode(index_p->root_id));
-#endif
-
     fprintf(stderr, "BwTree - Start consolidating delta chains...\n");
     int ret = index_p->DebugConsolidateAllRecursive(
       index_root_id,
@@ -358,6 +352,7 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
       &leaf_alloc_total,
       &leaf_used_total);
     fprintf(stderr, "BwTree - Finished consolidating %d delta chains\n", ret);
+   
     fprintf(stderr,
             "    Inner Avg. Depth: %f (%d / %d)\n",
             (double)inner_depth_total / (double)inner_node_total,
@@ -391,6 +386,15 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
             leaf_used_total,
             leaf_alloc_total);
 
+// Only do thid after the consolidation, because the mapping will change
+// during the consolidation
+
+#ifndef BWTREE_USE_MAPPING_TABLE
+    fprintf(stderr, "Replacing all NodeIDs to BaseNode *\n");
+    BaseNode *node_p = (BaseNode *)index_p->GetNode(index_p->root_id.load());
+    index_p->root_id = reinterpret_cast<NodeID>(node_p);
+    index_p->DebugReplaceNodeIDRecursive(node_p);
+#endif
     return;
   }
   

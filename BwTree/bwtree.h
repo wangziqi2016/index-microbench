@@ -1,4 +1,4 @@
-//===----------------------------------------------------------------------===//
+
 //
 //                         PelotonDB
 //
@@ -3672,6 +3672,59 @@ class BwTree : public BwTreeBase {
     return 0;
   }
   
+  
+  /*
+   * DebugReplaceNodeIDRecursive() - This function replaces the node ID with
+   *                                 physical pointers in inner nodes
+   *
+   * Note that this function assumes that all nodes are either leaf nodes or
+   * inner nodes. To achieve this you must call another debug function which
+   * consolidates all nodes                                
+   */
+  void DebugReplaceNodeIDRecursive(BaseNode *node_p) {
+    NodeType type = node_p->GetType();
+    
+    if(node_p->IsOnLeafDeltaChain() == true) {
+      if(type != NodeType::LeafType) {
+        fprintf(stderr,
+                "[Replace NodeID] Unexpected leaf node type: %d\n",
+                static_cast<int>(type));
+        exit(1);
+      }
+    } else {
+      if(type != NodeType::InnerType) {
+        fprintf(stderr,
+                "[Replace NodeID] Unexpected inner node type: %d\n",
+                static_cast<int>(type));
+        exit(1);
+      }
+    
+      InnerNode *inner_node_p = static_cast<InnerNode *>(node_p); 
+      for(NodeID *p = inner_node_p->NodeIDBegin(); \
+          p != inner_node_p->NodeIDEnd(); \
+          p++) {
+        BaseNode *next_node_p = (BaseNode *)GetNode(*p);
+        DebugReplaceNodeIDRecursive(next_node_p);
+      }
+/*
+      for(NodeID *p = inner_node_p->NodeIDBegin(); \
+          p != inner_node_p->NodeIDEnd(); \
+          p++) {
+        BaseNode *next_node_p = (BaseNode *)GetNode(*p);
+        mapping_table[*p] = nullptr;
+        if(next_node_p == nullptr) {
+          fprintf(stderr, "[Replace NodeID] Invalid node ID\n");
+          exit(1);
+        }
+
+        //*p = reinterpret_cast<NodeID>(next_node_p);
+      }
+*/
+    }
+    
+    return;
+  }
+
   /*
    * DebugConsolidateAllRecursive() - This function traverses and consolidates
    *                                  all delta chains
@@ -3771,12 +3824,6 @@ class BwTree : public BwTreeBase {
                                             inner_used_total,
                                             leaf_alloc_total,
                                             leaf_used_total);
-        // If mapping table is not used, we also need to translate all 
-        // node IDs into physical pointers, and then store them back
-        // inside InnerNodes
-#ifndef BWTREE_USE_MAPPING_TABLE
-        *p = reinterpret_cast<NodeID>(GetNode(*p));
-#endif
      }
     }
     
@@ -8810,39 +8857,45 @@ before_switch:
    */
   void GetValueNoMappingTable(const KeyType &search_key,
                               std::vector<ValueType> &value_list) {
-    bwt_printf("GetValue()\n");
-
-    INC_COUNTER(READ, 1);
-
+    printf("Entering\n");
     EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
 
+    int level = 0;
+    printf("Before loading root Id\n");
     const BaseNode *current_node_p = reinterpret_cast<const BaseNode *>(root_id.load());
+    printf("After loading root id\n");
     while(current_node_p->IsOnLeafDeltaChain() == false) {
+      printf("%p\n", current_node_p);
+      level += 1;
       const InnerNode *inner_node_p = static_cast<const InnerNode *>(current_node_p);
+
       // Get the node ID (which is actually BaseNode pointers)
       current_node_p = reinterpret_cast<const BaseNode *>(
         LocateSeparatorByKey(search_key, 
                              inner_node_p, 
-                             0, 
+                             1, 
                              inner_node_p->GetSize()));
     }
 
+    printf("Leaf level\n");
     // We know it is on a leaf node
     const LeafNode *leaf_node_p = static_cast<const LeafNode *>(current_node_p);
     auto start_p = leaf_node_p->Begin();
-    auto end_p = leaf_node_p->End();   
+    auto end_p = leaf_node_p->End();  
+    printf("Before lower bound\n"); 
     auto it = std::lower_bound(start_p,
                                end_p,
                                std::make_pair(search_key, ValueType{}),
                                key_value_pair_cmp_obj);
-
+    printf("After lower bound\n");
     if((it != leaf_node_p->End()) && \
        (KeyCmpEqual(search_key, it->first))) {
+      printf("Before push back\n");
       value_list.push_back(it->second);
     }
-
+    printf("After push back\n");
     epoch_manager.LeaveEpoch(epoch_node_p);
-
+    printf("Before return\n");
     return;
   }
 #endif

@@ -60,6 +60,8 @@
 // Feature Selection
 /////////////////////////////////////////////////////////////////////
 
+//#define USE_OLD_EPOCH
+
 // This determines whether bwtree will use preallocation
 #define BWTREE_PREALLOCATION
 
@@ -68,6 +70,11 @@
 //#define BWTREE_USE_CAS
 
 //#define BWTREE_USE_MAPPING_TABLE
+
+// If we do not use mapping table, then must consolidate the index
+#ifndef BWTREE_USE_MAPPING_TABLE
+#define BWTREE_CONSOLIDATE_AFTER_INSERT
+#endif
 
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -103,10 +110,6 @@ using NodeID = uint64_t;
  */
 #define ALL_PUBLIC
 
-/*
- * USE_OLD_EPOCH - This flag switches between old epoch and new epoch mechanism
- */
-//#define USE_OLD_EPOCH
 
 /*
  * BWTREE_TEMPLATE_ARGUMENTS - Save some key strokes
@@ -3706,7 +3709,7 @@ class BwTree : public BwTreeBase {
         BaseNode *next_node_p = (BaseNode *)GetNode(*p);
         DebugReplaceNodeIDRecursive(next_node_p);
       }
-/*
+
       for(NodeID *p = inner_node_p->NodeIDBegin(); \
           p != inner_node_p->NodeIDEnd(); \
           p++) {
@@ -3717,9 +3720,9 @@ class BwTree : public BwTreeBase {
           exit(1);
         }
 
-        //*p = reinterpret_cast<NodeID>(next_node_p);
+        *p = reinterpret_cast<NodeID>(next_node_p);
       }
-*/
+
     }
     
     return;
@@ -8857,15 +8860,15 @@ before_switch:
    */
   void GetValueNoMappingTable(const KeyType &search_key,
                               std::vector<ValueType> &value_list) {
-    printf("Entering\n");
+    //printf("Entering\n");
     EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
 
     int level = 0;
-    printf("Before loading root Id\n");
+    //printf("Before loading root Id\n");
     const BaseNode *current_node_p = reinterpret_cast<const BaseNode *>(root_id.load());
-    printf("After loading root id\n");
+    //printf("After loading root id\n");
     while(current_node_p->IsOnLeafDeltaChain() == false) {
-      printf("%p\n", current_node_p);
+      //printf("%p\n", current_node_p);
       level += 1;
       const InnerNode *inner_node_p = static_cast<const InnerNode *>(current_node_p);
 
@@ -8877,25 +8880,25 @@ before_switch:
                              inner_node_p->GetSize()));
     }
 
-    printf("Leaf level\n");
+    //printf("Leaf level\n");
     // We know it is on a leaf node
     const LeafNode *leaf_node_p = static_cast<const LeafNode *>(current_node_p);
     auto start_p = leaf_node_p->Begin();
     auto end_p = leaf_node_p->End();  
-    printf("Before lower bound\n"); 
+    //printf("Before lower bound\n"); 
     auto it = std::lower_bound(start_p,
                                end_p,
                                std::make_pair(search_key, ValueType{}),
                                key_value_pair_cmp_obj);
-    printf("After lower bound\n");
+    //printf("After lower bound\n");
     if((it != leaf_node_p->End()) && \
        (KeyCmpEqual(search_key, it->first))) {
-      printf("Before push back\n");
+      //printf("Before push back\n");
       value_list.push_back(it->second);
     }
-    printf("After push back\n");
+    //printf("After push back\n");
     epoch_manager.LeaveEpoch(epoch_node_p);
-    printf("Before return\n");
+    //printf("Before return\n");
     return;
   }
 #endif

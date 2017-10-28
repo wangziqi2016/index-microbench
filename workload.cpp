@@ -370,7 +370,7 @@ inline void exec(int wl,
 #ifdef BWTREE_USE_MAPPING_TABLE
         idx->find(keys[i], &v, ti);
 #else
-        //idx->find_bwtree_fast(keys[i], &v);
+        idx->find_bwtree_fast(keys[i], &v);
 #endif
         
         // If we count read misses then increment the 

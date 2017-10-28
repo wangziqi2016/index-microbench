@@ -71,6 +71,8 @@
 
 //#define BWTREE_USE_MAPPING_TABLE
 
+#define BWTREE_USE_DELTA_UPDATE
+
 // If we do not use mapping table, then must consolidate the index
 #ifndef BWTREE_USE_MAPPING_TABLE
 #define BWTREE_CONSOLIDATE_AFTER_INSERT
@@ -8551,6 +8553,35 @@ before_switch:
 
     return true;
   }
+
+  // This is only defined if we use delta update
+#ifndef USE_DELTA_UPDATE
+  bool InsertInPlace(const KeyType &key, const ValueType &value) {
+    EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
+
+    Context context{key};
+    std::pair<int, bool> index_pair;
+
+    const KeyValuePair *item_p = Traverse(&context, &value, &index_pair);  
+    if(item_p != nullptr) {
+      epoch_manager.LeaveEpoch(epoch_node_p);
+      return false;
+    }
+    
+    NodeSnapshot *snapshot_p = GetLatestNodeSnapshot(&context);
+    const BaseNode *node_p = snapshot_p->node_p;
+    NodeID node_id = snapshot_p->node_id;
+    
+    // For safety reasons add a check here; we could remove this
+    // once the algorithm is stable
+    if(node_p->GetType() != NodeType::LeafType) {
+      fprintf(stderr, "[InsertInPlace] Node type is not LeafType\n");
+      exit(1);
+    }
+
+    return true;
+  }
+#endif
   
   /*
    * Upsert() - Update or Insert

@@ -28,6 +28,9 @@ class Index
 
   virtual uint64_t find_bwtree_fast(KeyType key, std::vector<uint64_t> *v) {};
 
+  // Used for bwtree only
+  virtual bool insert_bwtree_fast(KeyType key, uint64_t value) {};
+
   virtual bool upsert(KeyType key, uint64_t value, threadinfo *ti) = 0;
 
   virtual uint64_t scan(KeyType key, int range, threadinfo *ti) = 0;
@@ -425,6 +428,13 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
     index_p->GetValueNoMappingTable(key, *v);
 
     return 0UL;
+  }
+#endif
+
+#ifndef BWTREE_USE_DELTA_UPDATE
+  bool insert_bwtree_fast(KeyType key, uint64_t value) {
+    index_p->InsertInPlace(key, value);
+    return true;
   }
 #endif
 

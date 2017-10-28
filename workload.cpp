@@ -269,7 +269,11 @@ inline void exec(int wl,
                     values[start_index + end_index - 1 - i], 
                     ti);
       } else {
+#ifdef BWTREE_USE_DELTA_UPDATE
         idx->insert(init_keys[i], values[i], ti);
+#else
+        idx->insert_bwtree_fast(init_keys[i], values[i]);
+#endif
       }
       gc_counter++;
       if(gc_counter % 4096 == 0) {

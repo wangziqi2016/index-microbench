@@ -1404,6 +1404,13 @@ class BwTree : public BwTreeBase {
     {}
 
     /*
+     * GetMetaData() - Returns a reference to the metadata object   
+     */
+    inline NodeMetaData &GetMetaData() {
+      return metadata;
+    }
+
+    /*
      * GetType() - Return the type of node
      *
      * This method does not allow overridding
@@ -8600,9 +8607,9 @@ before_switch:
     size_t item_count = leaf_node_p->GetItemCount();
     size_t byte_to_copy = element_size * (item_count - (size_t)index_pair.first);
 
-    char *move_start_p = leaf_node_p->Begin() + index_pair.first;
+    char *move_start_p = (char *)leaf_node_p->Begin() + index_pair.first;
     char *after_move_p = move_start_p + element_size;
-    if(after_move_p + byte_to_copy >= leaf_node_p->End()) {
+    if(after_move_p + byte_to_copy >= (char *)leaf_node_p->End()) {
       fprintf(stderr, "Leaf node overflows\n");
       exit(1);
     }
@@ -8612,8 +8619,8 @@ before_switch:
     *((std::pair<KeyType, ValueType> *)move_start_p) = \
       std::make_pair(key, value);
 
-    leaf_node_p->end_p = (void *)((char *)leaf_node_p->end_p + element_size);
-    leaf_node_p->metadata.item_count++;
+    leaf_node_p->end = leaf_node_p->end + element_size;
+    leaf_node_p->GetMetaData().item_count++;
 
     return true;
   }

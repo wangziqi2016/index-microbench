@@ -55,7 +55,7 @@ bwtree.o: ./BwTree/bwtree.h ./BwTree/bwtree.cpp
 artolc.o: ./ARTOLC/*.cpp ./ARTOLC/*.h
 	$(CXX) $(CFLAGS) ./ARTOLC/Tree.cpp -c -o artolc.o $(MEMMGR) -lpthread -lm -ltbb
 
-./rotate-skiplist/%.o: ./rotate-skiplist/%.cpp ./rotate-skiplist/%.h
+$(SL_DIR)/%.o: $(SL_DIR)/%.cpp $(SL_DIR)/%.h
 	$(CXX) $(CFLAGS) -c -o $@ $< $(MEMMGR) -lpthread -lm -ltbb
 
 generate_workload:

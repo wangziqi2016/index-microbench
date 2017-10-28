@@ -7,9 +7,9 @@
 
 #include "masstree/mtIndexAPI.hh"
 
-#include "./rotate-skiplist/intset.h"
-#include "./rotate-skiplist/background.h"
-#include "./rotate-skiplist/nohotspot_ops.h"
+#include "./nohotspot-skiplist/intset.h"
+#include "./nohotspot-skiplist/background.h"
+#include "./nohotspot-skiplist/nohotspot_ops.h"
 
 
 #ifndef _INDEX_H

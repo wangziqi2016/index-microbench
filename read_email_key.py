@@ -63,7 +63,7 @@ def read_txn_file(load_dict, new_list):
   filename2 = sys.argv[4]
   if os.path.isfile(filename1) is False:
     raise TypeError("Illegal txn file: %s" % (filename1, ))
-  elif os.path.isfile(filename2) is True or os.path.isdir(filename) is True:
+  elif os.path.isfile(filename2) is True or os.path.isdir(filename2) is True:
     raise TypeError("Illegal output file: %s" % (filename2, ))
 
   fp1 = open(filename1, "r")
@@ -80,8 +80,8 @@ def read_txn_file(load_dict, new_list):
     if index == -1:
       raise ValueError("Illegal line @ %d" % (line_num, ))
     
-    out_s = index[:index] + " "
-    key = index[index + 1:]
+    out_s = line[:index] + " "
+    key = line[index + 1:]
     key_index = load_dict.get(key, None)
     if key_index is None:
       raise ValueError("Key %s @ %d does not exist" % (key, line_num))
@@ -93,12 +93,15 @@ def read_txn_file(load_dict, new_list):
     fp2.write(out_s)
     
     line_num += 1
+
+  fp1.close()
+  fp2.close()
   
   return
 
-if len(sys.argv) != 4:
-  print("This program must take three arguments!")
-  print("python read_email_key.py [load file] [workload file] [27MB load file]")
+if len(sys.argv) != 5:
+  print("This program must take four arguments!")
+  print("python read_email_key.py [load file] [workload file] [27MB load file] [output file]")
   sys.exit(1)
 
 load_dict = read_load_file()

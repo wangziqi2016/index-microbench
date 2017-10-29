@@ -115,7 +115,28 @@ def read_txn_file(load_dict, new_list):
   
   return
 
-def convert_new_list
+def convert_new_list(new_list):
+  """
+  This function converts the new list into an output file which loads
+  all strings
+  """
+  filename = sys.argv[4]
+  if os.path.isdir(filename) is True:
+    raise TypeError("Illegal output file: %s" % (filename, ))
+  
+  fp = open(filename, "w")
+  line_num = 0
+  for line in new_list:
+    if line_num != 0:
+      fp.write("\n")
+    
+    s = "INSERT " + line
+    fp.write(s)
+    line_num += 1
+  
+  fp.close()
+  return
+
 
 if len(sys.argv) != 5:
   print("This program must take four arguments!")

@@ -67,11 +67,11 @@
 
 #define BWTREE_SEARCH_SHORTCUT
 
-//#define BWTREE_USE_CAS
+#define BWTREE_USE_CAS
 
-//#define BWTREE_USE_MAPPING_TABLE
+#define BWTREE_USE_MAPPING_TABLE
 
-//#define BWTREE_USE_DELTA_UPDATE
+#define BWTREE_USE_DELTA_UPDATE
 
 // If we do not use mapping table, then must consolidate the index
 #ifndef BWTREE_USE_MAPPING_TABLE
@@ -243,9 +243,9 @@ class FakeAtomic {
   T data;
  public:
   using BaseType = T;
-  FakeAtomic() : data{} {}
-  ~FakeAtomic() {}
-  FakeAtomic(const FakeAtomic &other) : data{other.data} {}
+  inline FakeAtomic() : data{} {}
+  inline ~FakeAtomic() {}
+  inline FakeAtomic(const FakeAtomic &other) : data{other.data} {}
   
   inline T load() const {
     return data;
@@ -257,12 +257,14 @@ class FakeAtomic {
 
   inline bool compare_exchange_strong(const T old_val, 
                                       T &new_val) {
-    if(data == old_val) {
-      std::swap<T>(new_val, data);
-      return true;
-    }
+    //if(data == old_val) {
+    //  std::swap<T>(new_val, data);
+    //  return true;
+    //}
 
-    return false;
+    //return false;
+    data = new_val;
+    return true;
   }
 
   inline FakeAtomic &operator=(const T &other) {

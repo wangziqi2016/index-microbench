@@ -22,6 +22,7 @@ def read_load_file():
   
   fp = open(filename, "r")
   line_num = 0
+  ret = {}
   for line in fp:
     line = line.strip()
     index = line.find(" ")
@@ -30,8 +31,6 @@ def read_load_file():
       raise ValueError("Illegal line @ %d" % (line_num, ))
 
     ret[line[index + 1:]] = line_num
-
-    print line[index + 1:]
 
     line_num += 1
 
@@ -45,4 +44,5 @@ if len(sys.argv) != 4:
   print("python read_email_key.py [load file] [workload file] [27MB load file]")
   sys.exit(1)
 
-
+load_dict = read_load_file()
+print("Read %d items" % (len(load_dict), ))

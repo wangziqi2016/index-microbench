@@ -14,7 +14,7 @@
 #include "tbb/tbb.h"
 #endif
 
-#define BWTREE_CONSOLIDATE_AFTER_INSERT
+//#define BWTREE_CONSOLIDATE_AFTER_INSERT
 
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
   #ifdef USE_TBB

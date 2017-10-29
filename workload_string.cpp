@@ -376,8 +376,6 @@ int main(int argc, char *argv[]) {
     index_type = TYPE_BTREEOLC;
   } else if (strcmp(argv[3], "skiplist") == 0) { 
     index_type = TYPE_SKIPLIST;
-  } else if (strcmp(argv[3], "none") == 0) {
-    index_type = TYPE_NONE;
   } else {
     fprintf(stderr, "Unknown index type: %d\n", index_type);
     exit(1);
@@ -422,11 +420,6 @@ int main(int argc, char *argv[]) {
 
   load(wl, kt, index_type, init_keys, keys, values, ranges, ops);
   fprintf(stderr, "Finish loading (Mem = %lu)\n", MemUsage());
-
-  if(index_type == TYPE_NONE) {
-    fprintf(stderr, "Type None is selected - no execution phase\n");
-    return 0;
-  }
 
   exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
   fprintf(stderr, "Finished execution (Mem = %lu)\n", MemUsage());

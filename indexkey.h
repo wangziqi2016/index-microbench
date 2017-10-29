@@ -12,7 +12,14 @@ public:
 public:
   inline void setFromString(std::string key) {
     memset(data, 0, keySize);
-    strcpy(data, key.c_str());
+    if(key.size() >= keySize) {
+      memcpy(data, key.c_str(), keySize - 1);
+      data[keySize - 1] = '\0';
+    } else {
+      strcpy(data, key.c_str());
+    }
+    
+    return;
   }
 
   // Constructor - Fills it with 0x00

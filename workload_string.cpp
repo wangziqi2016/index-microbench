@@ -14,6 +14,8 @@ static const uint64_t value_type=1; // 0 = random pointers, 1 = pointers to keys
 
 #include "util.h"
 
+#define USE_27MB_FILE
+
 // Whether to exit after insert operation
 static bool insert_only = false;
 
@@ -53,6 +55,10 @@ inline void load(int wl,
                  std::vector<int> &ops) {
   std::string init_file;
   std::string txn_file;
+
+  // If we do not use the 27MB file then use old set of files; Otherwise 
+  // use 27 MB email workload
+#ifndef USE_27MB_FILE
   // 0 = a, 1 = c, 2 = e
   if (kt == EMAIL_KEY && wl == WORKLOAD_A) {
     init_file = "workloads/email_loada_zipf_int_100M.dat";
@@ -67,6 +73,21 @@ inline void load(int wl,
     fprintf(stderr, "Unknown workload or key type: %d, %d\n", wl, kt);
     exit(1);
   }
+#else
+  if (kt == EMAIL_KEY && wl == WORKLOAD_A) {
+    init_file = "workloads/email_load.dat";
+    txn_file = "workloads/email_a.dat";
+  } else if (kt == EMAIL_KEY && wl == WORKLOAD_C) {
+    init_file = "workloads/email_load.dat";
+    txn_file = "workloads/email_c.dat";
+  } else if (kt == EMAIL_KEY && wl == WORKLOAD_E) {
+    init_file = "workloads/email_load.dat";
+    txn_file = "workloads/email_e.dat";
+  } else {
+    fprintf(stderr, "Unknown workload or key type: %d, %d\n", wl, kt);
+    exit(1);
+  }
+#endif
 
   std::ifstream infile_load(init_file);
 

@@ -12,3 +12,4 @@ masstree/.deps/*.d
 YCSB
 *.status
 *.a
+emails_random.txt

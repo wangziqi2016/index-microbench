@@ -324,6 +324,7 @@ inline void exec(int wl,
 
   // If the workload only executes load phase then we return here
   if(insert_only == true) {
+    delete idx;
     return;
   }
 
@@ -451,6 +452,8 @@ inline void exec(int wl,
   }
 
   std::cout << "\033[0m";
+
+  delete idx;
 
   return;
 }

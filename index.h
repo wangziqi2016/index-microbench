@@ -51,6 +51,9 @@ class Index
   // destroied by the thread manager
   virtual void CollectStatisticalCounter(int) {}
   virtual size_t GetIndexSize() { return 0UL; }
+
+  // Destructor must also be virtual
+  virtual ~Index() {}
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -68,9 +71,9 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
   SkipListIndex(uint64_t key_type) {
     (void)key_type;
     ptst_subsystem_init();
-	  gc_subsystem_init();
-	  set_subsystem_init();
-	  set = set_new(1);
+    gc_subsystem_init();
+    set_subsystem_init();
+    set = set_new(1);
 
     return;
   }
@@ -301,6 +304,11 @@ class BwTreeIndex : public Index<KeyType, KeyComparator>
             index_type::INNER_PREALLOCATION_SIZE,
             index_type::LEAF_PREALLOCATION_SIZE);
 
+    return;
+  }
+
+  ~BwTreeIndex() {
+    delete index_p;
     return;
   }
 

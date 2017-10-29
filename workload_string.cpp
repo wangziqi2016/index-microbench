@@ -200,9 +200,10 @@ inline void exec(int wl,
   if(index_type == TYPE_SKIPLIST) {
     fprintf(stderr, "SkipList size = %lu\n", idx->GetIndexSize());
   }
-
-  std::cout << "insert " << tput << "\n";
-  std::cout << "memory " << (idx->getMemory() / 1000000) << "\n";
+  
+  std::cout << "\033[1;32m";
+  std::cout << "insert " << tput;
+  std::cout << "\033[0m" << "\n";
 
   if(insert_only == true) {
     return;
@@ -317,20 +318,24 @@ inline void exec(int wl,
 
   tput = txn_num / (end_time - start_time) / 1000000; //Mops/sec
 
-  std::cout << "sum = " << sum << "\n";
+  std::cout << "\033[1;31m";
 
   if (wl == WORKLOAD_A) {  
-    std::cout << "read/update " << (tput + (sum - sum)) << "\n";
+    std::cout << "read/update " << (tput + (sum - sum));
   }
   else if (wl == WORKLOAD_C) {
-    std::cout << "read " << (tput + (sum - sum)) << "\n";
+    std::cout << "read " << (tput + (sum - sum));
   }
   else if (wl == WORKLOAD_E) {
-    std::cout << "insert/scan " << (tput + (sum - sum)) << "\n";
+    std::cout << "insert/scan " << (tput + (sum - sum));
   }
   else {
-    std::cout << "read/update " << (tput + (sum - sum)) << "\n";
+    std::cout << "read/update " << (tput + (sum - sum));
   }
+
+  std::cout << "\033[0m" << "\n";
+
+  return;
 }
 
 int main(int argc, char *argv[]) {

@@ -5,7 +5,7 @@
 #
 # Run this file with the following arguments:
 #
-# python read_email_key.py [load file] [workload file] [27MB load file]
+# python read_email_key.py [load file] [workload file] [27MB load file] [output file name]
 #
 
 import sys
@@ -37,7 +37,64 @@ def read_load_file():
   fp.close()
   return ret
 
+def read_new_file():
+  """
+  This function reads the 27MB file into a list and return
+  """
+  filename = sys.argv[3]
+  if os.path.isfile(filename) is False:
+    raise TypeError("Illegal 27M file: %s" % (filename, ))
   
+  fp = open(filename, "r")
+  ret = []
+  for line in fp:
+    ret.append(line)
+  
+  fp.close()
+  return ret
+
+
+def read_txn_file(load_dict, new_list):
+  """
+  This function reads the transaction file, and it also outputs a new file
+  regarding
+  """
+  filename1 = sys.argv[2]
+  filename2 = sys.argv[4]
+  if os.path.isfile(filename1) is False:
+    raise TypeError("Illegal txn file: %s" % (filename1, ))
+  elif os.path.isfile(filename2) is True or os.path.isdir(filename) is True:
+    raise TypeError("Illegal output file: %s" % (filename2, ))
+
+  fp1 = open(filename1, "r")
+  fp2 = open(filename2, "w")
+
+  line_num = 0
+  max_index = len(new_list)
+  for line in fp1:
+    if line_num != 0:
+      fp2.write("\n")
+
+    line = line.strip()
+    index = line.find(" ")
+    if index == -1:
+      raise ValueError("Illegal line @ %d" % (line_num, ))
+    
+    out_s = index[:index] + " "
+    key = index[index + 1:]
+    key_index = load_dict.get(key, None)
+    if key_index is None:
+      raise ValueError("Key %s @ %d does not exist" % (key, line_num))
+    
+    if key_index >= max_index:
+      key_index %= max_index
+    
+    out_s += new_list[key_index]
+    fp2.write(out_s)
+    
+    line_num += 1
+  
+  return
 
 if len(sys.argv) != 4:
   print("This program must take three arguments!")
@@ -46,3 +103,6 @@ if len(sys.argv) != 4:
 
 load_dict = read_load_file()
 print("Read %d items" % (len(load_dict), ))
+new_list = read_new_file()
+print("Read %d new strings" % (len(new_list), ))
+read_txn_file(load_dict, new_list)

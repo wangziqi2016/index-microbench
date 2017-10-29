@@ -48,7 +48,7 @@ def read_new_file():
   fp = open(filename, "r")
   ret = []
   for line in fp:
-    ret.append(line)
+    ret.append(line.strip())
   
   fp.close()
   return ret
@@ -63,7 +63,7 @@ def read_txn_file(load_dict, new_list):
   filename2 = sys.argv[4]
   if os.path.isfile(filename1) is False:
     raise TypeError("Illegal txn file: %s" % (filename1, ))
-  elif os.path.isfile(filename2) is True or os.path.isdir(filename2) is True:
+  elif os.path.isdir(filename2) is True:
     raise TypeError("Illegal output file: %s" % (filename2, ))
 
   fp1 = open(filename1, "r")
@@ -79,17 +79,33 @@ def read_txn_file(load_dict, new_list):
     index = line.find(" ")
     if index == -1:
       raise ValueError("Illegal line @ %d" % (line_num, ))
+   
+    op = line[:index] 
+    out_s = op + " "
+
+    if op == "SCAN":
+      index2 = line.find(" ", index + 1)
+      if index2 == -1: 
+        raise ValueError("Illegal scan line @ %d" % (line_num, ))
+      key = line[index + 1:index2]
+    else:
+      key = line[index + 1:]
+
+    if op != "INSERT":
+      key_index = load_dict.get(key, None)
+      if key_index is None:
+        raise ValueError("Key %s @ %d does not exist" % (key, line_num))
     
-    out_s = line[:index] + " "
-    key = line[index + 1:]
-    key_index = load_dict.get(key, None)
-    if key_index is None:
-      raise ValueError("Key %s @ %d does not exist" % (key, line_num))
+      if key_index >= max_index:
+        key_index %= max_index
     
-    if key_index >= max_index:
-      key_index %= max_index
-    
-    out_s += new_list[key_index]
+      out_s += new_list[key_index]
+    else:
+      out_s = line
+
+    if op == "SCAN":
+      out_s = out_s + line[index2:]
+
     fp2.write(out_s)
     
     line_num += 1

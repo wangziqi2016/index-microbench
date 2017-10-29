@@ -115,13 +115,21 @@ def read_txn_file(load_dict, new_list):
   
   return
 
+def convert_new_list
+
 if len(sys.argv) != 5:
   print("This program must take four arguments!")
   print("python read_email_key.py [load file] [workload file] [27MB load file] [output file]")
+  print("  If the first two is 'none' then we just convert the 27MB file")
   sys.exit(1)
 
-load_dict = read_load_file()
-print("Read %d items" % (len(load_dict), ))
-new_list = read_new_file()
-print("Read %d new strings" % (len(new_list), ))
-read_txn_file(load_dict, new_list)
+if sys.argv[2] == "none" and sys.argv[1] == "none":
+  print("Converting the load file")
+  new_list = read_new_file()
+  convert_new_list(new_list)
+else:
+  load_dict = read_load_file()
+  print("Read %d items" % (len(load_dict), ))
+  new_list = read_new_file()
+  print("Read %d new strings" % (len(new_list), ))
+  read_txn_file(load_dict, new_list)

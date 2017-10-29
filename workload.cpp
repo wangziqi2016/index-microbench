@@ -133,7 +133,7 @@ inline void load(int wl,
     count++;
   }
   
-  fprintf(stderr, "    Loaded %d keys\n", count);
+  fprintf(stderr, "Loaded %d keys\n", count);
 
   count = 0;
   uint64_t value = 0;
@@ -593,6 +593,7 @@ int main(int argc, char *argv[]) {
   }
   
   // Then read all remianing arguments
+  int repeat_counter = 1;
   char **argv_end = argv + argc;
   for(char **v = argv + 5;v != argv_end;v++) {
     if(strcmp(*v, "--hyper") == 0) {
@@ -605,6 +606,9 @@ int main(int argc, char *argv[]) {
       numa = true;
     } else if(strcmp(*v, "--insert-only") == 0) {
       insert_only = true;
+    } else if(strcmp(*v, "--repeat") == 0) {
+      // If we repeat, then exec() will be called for 5 times
+      repeat_counter = 5;
     }
   }
 
@@ -631,6 +635,11 @@ int main(int argc, char *argv[]) {
   // If we do not interleave threads on two sockets then this will be printed
   if(hyperthreading == true) {
     fprintf(stderr, "  Hyperthreading for thread 10 - 19, 30 - 39\n");
+  }
+
+  if(repeat_counter != 1) {
+    fprintf(stderr, "  Repeat for %d times (NOTE: Memory number may not be correct)\n",
+            repeat_counter);
   }
 
   if(memory_bandwidth == true) {
@@ -683,8 +692,12 @@ int main(int argc, char *argv[]) {
     load(wl, kt, index_type, init_keys, keys, values, ranges, ops);
     printf("Finished loading workload file (mem = %lu)\n", MemUsage());
     if(index_type != TYPE_NONE) {
-      exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
-      printf("Finished running benchmark (mem = %lu)\n", MemUsage());
+      // Then repeat executing the same workload
+      while(repeat_counter > 0) {
+        exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
+        repeat_counter--;
+        printf("Finished running benchmark (mem = %lu)\n", MemUsage());
+      }
     } else {
       fprintf(stderr, "Type None is selected - no execution phase\n");
     }

@@ -392,6 +392,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Then read all remianing arguments
+  int repeat_counter = 1;
   char **argv_end = argv + argc;
   for(char **v = argv + 5;v != argv_end;v++) {
     if(strcmp(*v, "--hyper") == 0) {
@@ -399,6 +400,8 @@ int main(int argc, char *argv[]) {
       hyperthreading = true;
     } else if(strcmp(*v, "--insert-only") == 0) {
       insert_only = true;
+    } else if(strcmp(*v, "--repeat") == 0) {
+      repeat_counter = 5;
     }
   }
 
@@ -409,6 +412,10 @@ int main(int argc, char *argv[]) {
   if(insert_only == true) {
     fprintf(stderr, "  Insert-only mode\n");
   } 
+
+  if(repeat_counter != 1) {
+    fprintf(stderr, "  We run the workload part for %d times\n", repeat_counter);
+  }
 
   fprintf(stderr, "index type = %d\n", index_type);
 
@@ -421,8 +428,11 @@ int main(int argc, char *argv[]) {
   load(wl, kt, index_type, init_keys, keys, values, ranges, ops);
   fprintf(stderr, "Finish loading (Mem = %lu)\n", MemUsage());
 
-  exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
-  fprintf(stderr, "Finished execution (Mem = %lu)\n", MemUsage());
+  while(repeat_counter > 0) {
+    exec(wl, index_type, num_thread, init_keys, keys, values, ranges, ops);
+    fprintf(stderr, "Finished execution (Mem = %lu)\n", MemUsage());
+    repeat_counter--;
+  }
 
   return 0;
 }

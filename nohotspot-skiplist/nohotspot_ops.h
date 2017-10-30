@@ -18,13 +18,13 @@ enum sl_optype {
 };
 typedef enum sl_optype sl_optype_t;
 
-int sl_do_operation(set_t *set, sl_optype_t optype, sl_key_t key, val_t val);
+int sl_do_operation(long *steps, set_t *set, sl_optype_t optype, sl_key_t key, val_t val);
 
 /* these are macros instead of functions to improve performance */
-#define sl_contains(a, b) sl_do_operation((a), CONTAINS, (b), NULL);
-#define sl_delete(a, b) sl_do_operation((a), DELETE, (b), NULL);
-#define sl_insert(a, b, c) sl_do_operation((a), INSERT, (b), (c));
+#define sl_contains(steps, a, b) sl_do_operation((steps), (a), CONTAINS, (b), NULL);
+#define sl_delete(steps, a, b) sl_do_operation((steps), (a), DELETE, (b), NULL);
+#define sl_insert(steps, a, b, c) sl_do_operation((steps), (a), INSERT, (b), (c));
 // Note that the range must keep valid before this function returns
-#define sl_scan(a, start_key, range) sl_do_operation((a), SCAN, (start_key), (void *)&(range))
+#define sl_scan(steps, a, start_key, range) sl_do_operation((steps), (a), SCAN, (start_key), (void *)&(range))
 
 #endif /* NOHOTSPOT_OPS_H_ */

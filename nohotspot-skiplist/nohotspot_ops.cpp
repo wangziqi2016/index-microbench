@@ -212,7 +212,7 @@ static int sl_finish_scan(sl_key_t key, val_t val, node_t *node,
  * Returns the result of the operation.
  * Note: @val can be NULL. 
  */
-int sl_do_operation(set_t *set, sl_optype_t optype, sl_key_t key, val_t val)
+int sl_do_operation(long *steps, set_t *set, sl_optype_t optype, sl_key_t key, val_t val)
 {
         inode_t *item = NULL, *next_item = NULL;
         node_t *node = NULL, *next = NULL;
@@ -229,6 +229,8 @@ int sl_do_operation(set_t *set, sl_optype_t optype, sl_key_t key, val_t val)
         /* find an entry-point to the node-level */
         item = set->top;
         while (1) {
+                // Statistics - increase the number of steps we have gone
+                (*steps)++;
                 next_item = item->right;
                 if (NULL == next_item || next_item->node->key > key) {
                         next_item = item->down;
@@ -244,7 +246,9 @@ int sl_do_operation(set_t *set, sl_optype_t optype, sl_key_t key, val_t val)
         }
         /* find the correct node and next */
         while (1) {
+                (*steps)++;
                 while (node == (node_val = node->val)) {
+                        (*steps)++;
                         node = node->prev;
                 }
                 next = node->next;

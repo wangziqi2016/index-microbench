@@ -1,6 +1,10 @@
 #include "microbench.h"
 #include "index.h"
 
+// Used for skiplist
+thread_local long skiplist_steps = 0;
+std::atomic<long> skiplist_total_steps;
+
 typedef GenericKey<31> keytype;
 typedef GenericComparator<31> keycomp;
 

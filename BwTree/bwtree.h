@@ -63,19 +63,21 @@
 //#define USE_OLD_EPOCH
 
 // This determines whether bwtree will use preallocation
-#define BWTREE_PREALLOCATION
+//#define BWTREE_PREALLOCATION
 
 #define BWTREE_SEARCH_SHORTCUT
 
-#define BWTREE_USE_CAS
+//#define BWTREE_USE_CAS
 
-#define BWTREE_USE_MAPPING_TABLE
+//#define BWTREE_USE_MAPPING_TABLE
 
-#define BWTREE_USE_DELTA_UPDATE
+//#define BWTREE_USE_DELTA_UPDATE
 
 // If we do not use mapping table, then must consolidate the index
+// also we do not call destructor
 #ifndef BWTREE_USE_MAPPING_TABLE
 #define BWTREE_CONSOLIDATE_AFTER_INSERT
+#define BWTREE_DO_NOT_DESTRUCT
 #endif
 
 /////////////////////////////////////////////////////////////////////
@@ -3411,6 +3413,7 @@ class BwTree : public BwTreeBase {
     bwt_printf("Next node ID at exit: %lu\n", next_unused_node_id.load());
     bwt_printf("Destructor: Free tree nodes\n");
 
+#ifndef BWTREE_DO_NOT_DESTRUCT
     // Clear all garbage nodes awaiting cleaning
     // First of all it should set all last active epoch counter to -1
     ClearThreadLocalGarbage();
@@ -3419,7 +3422,7 @@ class BwTree : public BwTreeBase {
     size_t node_count = FreeNodeByNodeID(root_id.load());
 
     bwt_printf("Freed %lu tree nodes\n", node_count);
-
+#endif
     return;
   }
   

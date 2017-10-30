@@ -135,6 +135,8 @@ inline void load(int wl,
     }
   }
 
+  fprintf(stderr, "Number of init entries: %lu\n", init_keys.size());
+
   // For insert only mode we return here
   if(insert_only == true) {
     return;
@@ -170,6 +172,8 @@ inline void load(int wl,
     }
     count++;
   }
+
+  std::cout << "Finished loading workload file\n";
 
 }
 
@@ -227,6 +231,7 @@ inline void exec(int wl,
   std::cout << "\033[0m" << "\n";
 
   if(insert_only == true) {
+    delete idx;
     return;
   }
 
@@ -356,6 +361,8 @@ inline void exec(int wl,
 
   std::cout << "\033[0m" << "\n";
 
+  delete idx;
+
   return;
 }
 
@@ -369,6 +376,7 @@ int main(int argc, char *argv[]) {
     std::cout << "4. Number of threads: (1 - 40)\n";
     std::cout << "   --hyper: Whether to pin all threads on NUMA node 0\n";
     std::cout << "   --insert-only: Whether to only execute insert operations\n";
+    std::cout << "   --repeat: Repeat 5 times\n";
     return 1;
   }
 
@@ -437,7 +445,11 @@ int main(int argc, char *argv[]) {
 
   if(insert_only == true) {
     fprintf(stderr, "  Insert-only mode\n");
-  } 
+  }
+
+#ifdef USE_27MB_FILE
+  fprintf(stderr, "  Using 27MB workload file\n");
+#endif 
 
   if(repeat_counter != 1) {
     fprintf(stderr, "  We run the workload part for %d times\n", repeat_counter);

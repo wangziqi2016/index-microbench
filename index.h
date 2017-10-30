@@ -60,6 +60,9 @@ class Index
 // Skiplist
 /////////////////////////////////////////////////////////////////////
 
+extern thread_local long skiplist_steps;
+extern std::atomic<long> skiplist_total_steps;
+
 template<typename KeyType, class KeyComparator>
 class SkipListIndex : public Index<KeyType, KeyComparator> {
  public:
@@ -70,6 +73,8 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
    */
   SkipListIndex(uint64_t key_type) {
     (void)key_type;
+    skiplist_total_steps.store(0L);
+
     ptst_subsystem_init();
     gc_subsystem_init();
     set_subsystem_init();
@@ -92,7 +97,7 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
   }
 
   bool insert(KeyType key, uint64_t value, threadinfo *ti) {
-    sl_insert(set, key, &value);
+    sl_insert(&skiplist_steps, set, key, &value);
     (void)ti;
     return true;
   }
@@ -102,7 +107,7 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
     // This is fine, because it still traverses to the location that
     // the key is stored. We just call push_back() with an arbitraty
     // number to compensate for lacking a value
-    sl_contains(set, key);
+    sl_contains(&skiplist_steps, set, key);
     (void)v; (void)ti;
     v->clear();
     v->push_back(0);
@@ -112,14 +117,14 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
   bool upsert(KeyType key, uint64_t value, threadinfo *ti) {
     // Upsert is implemented as two operations. In practice if we change
     // the internals of the skiplist, we can make it one atomic step
-    sl_delete(set, key);
-    sl_insert(set, key, &value);
+    sl_delete(&skiplist_steps, set, key);
+    sl_insert(&skiplist_steps, set, key, &value);
     (void)ti;
     return true;
   }
 
   uint64_t scan(KeyType key, int range, threadinfo *ti) {
-    sl_scan(set, key, range);
+    sl_scan(&skiplist_steps, set, key, range);
     (void)ti;
     return 0UL;
   }
@@ -135,8 +140,19 @@ class SkipListIndex : public Index<KeyType, KeyComparator> {
   
   // Not actually used
   void UpdateThreadLocal(size_t thread_num) { (void)thread_num; }
-  void AssignGCID(size_t thread_id) { (void)thread_id; }
-  void UnregisterThread(size_t thread_id) { (void)thread_id; }
+
+  // Before thread starts we set the steps to 0
+  void AssignGCID(size_t thread_id) { 
+    (void)thread_id; 
+    skiplist_steps = 0L; 
+  }
+
+  // Before thread exits we aggregate the steps into the global counter
+  void UnregisterThread(size_t thread_id) { 
+    (void)thread_id; 
+    skiplist_total_steps.fetch_add(skiplist_steps);
+    return;
+  }
 };
 
 /////////////////////////////////////////////////////////////////////

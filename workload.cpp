@@ -7,6 +7,10 @@
 
 #include <cstring>
 #include <cctype>
+#include <atomic>
+
+thread_local long skiplist_steps = 0;
+std::atomic<long> skiplist_total_steps;
 
 //#define USE_TBB
 
@@ -300,6 +304,7 @@ inline void exec(int wl,
 
   if(index_type == TYPE_SKIPLIST) {
     fprintf(stderr, "SkipList size = %lu\n", idx->GetIndexSize());
+    fprintf(stderr, "Skiplist avg. steps = %f\n", (double)skiplist_total_steps / (double)init_keys.size());
   }
  
   if(memory_bandwidth == true) {

@@ -130,17 +130,6 @@ struct BTreeLeaf : public BTreeLeafBase {
       return lower;
    }
 
-   unsigned lowerBoundBF(Key k) {
-      auto base=data;
-      unsigned n=count;
-      while (n>1) {
-         const unsigned half=n/2;
-         base=(base[half].first<k)?(base+half):base;
-         n-=half;
-      }
-      return (base->first<k)+base-data;
-   }
-
   void insert(Key k,Payload p) {
     assert(count<maxEntries);
     if (count) {

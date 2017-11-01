@@ -643,6 +643,11 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Could only use workload C\n");
     exit(1);
   }
+
+  if(index_type != TYPE_BWTREE) {
+    fprintf(stderr, "Could only use BwTree\n");
+    exit(1);
+  }
 #endif
 
 #ifndef BWTREE_USE_CAS
@@ -651,8 +656,14 @@ int main(int argc, char *argv[]) {
 
 #ifndef BWTREE_USE_DELTA_UPDATE
   fprintf(stderr, "  BwTree does not use delta update\n");
+  if(index_type != TYPE_BWTREE) {
+    fprintf(stderr, "Could only use BwTree\n");
+  }
 #endif
 
+#ifdef USE_OLD_EPOCH
+  fprintf(stderr, "  BwTree uses old epoch\n");
+#endif
 
   // If we do not interleave threads on two sockets then this will be printed
   if(hyperthreading == true) {

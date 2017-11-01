@@ -13,6 +13,8 @@
 #include <atomic>
 #include <immintrin.h>
 #include <sched.h>
+// std::pair
+#include <utility>
 
 namespace btreeolc {
 
@@ -93,9 +95,14 @@ struct BTreeLeaf : public BTreeLeafBase {
    };
 
    static const uint64_t maxEntries=(pageSize-sizeof(NodeBase))/(sizeof(Key)+sizeof(Payload));
+   // This is the element type of the leaf node
+   using KeyValueType = std::pair<Key, Payload>;
 
-   Key keys[maxEntries];
-   Payload payloads[maxEntries];
+   // This is the array that we perform search on
+   KeyValueType data[maxEntries];
+
+   //Key keys[maxEntries];
+   //Payload payloads[maxEntries];
 
    BTreeLeaf() {
       count=0;
@@ -109,6 +116,9 @@ struct BTreeLeaf : public BTreeLeafBase {
       unsigned upper=count;
       do {
          unsigned mid=((upper-lower)/2)+lower;
+         // This is the key at the pivot position
+         const Key middle_key = data[mid].first;
+
          if (k<keys[mid]) {
             upper=mid;
          } else if (k>keys[mid]) {

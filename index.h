@@ -1,7 +1,14 @@
+
+#define BTREE_SLOWER_LAYOUT
+
 #include <iostream>
 #include "indexkey.h"
 #include "ARTOLC/Tree.h"
+#ifndef BTREE_SLOWER_LAYOUT
 #include "BTreeOLC/BTreeOLC.h"
+#else
+#include "BTreeOLC/BTreeOLC_child_layout.h"
+#endif
 #include "BwTree/bwtree.h"
 #include <byteswap.h>
 

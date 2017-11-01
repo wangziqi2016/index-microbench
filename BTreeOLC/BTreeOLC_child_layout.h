@@ -138,7 +138,7 @@ struct BTreeLeaf : public BTreeLeafBase {
          base=(base[half].first<k)?(base+half):base;
          n-=half;
       }
-      return (base->first<k)+base-base;
+      return (base->first<k)+base-data;
    }
 
   void insert(Key k,Payload p) {

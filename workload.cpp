@@ -446,17 +446,22 @@ inline void exec(int wl,
   std::cout << "\033[1;31m";
 
   if (wl == WORKLOAD_A) {  
-    std::cout << "read/update " << (tput + (sum - sum)) << "\n";
+    std::cout << "read/update " << (tput + (sum - sum));
   } else if (wl == WORKLOAD_C) {
-    std::cout << "read " << (tput + (sum - sum)) << "\n";
+    std::cout << "read " << (tput + (sum - sum));
   } else if (wl == WORKLOAD_E) {
-    std::cout << "insert/scan " << (tput + (sum - sum)) << "\n";
+    std::cout << "insert/scan " << (tput + (sum - sum));
   } else {
     fprintf(stderr, "Unknown workload type: %d\n", wl);
     exit(1);
   }
 
-  std::cout << "\033[0m";
+  std::cout << "\033[0m" << "\n";
+
+  if(index_type == TYPE_SKIPLIST) {
+    fprintf(stderr, "SkipList size = %lu\n", idx->GetIndexSize());
+    fprintf(stderr, "Skiplist avg. steps = %f\n", (double)skiplist_total_steps / (double)init_keys.size());
+  }
 
   delete idx;
 

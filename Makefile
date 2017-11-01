@@ -37,7 +37,7 @@ run_all: workload workload_string
 	./workload_string c email $(TYPE) $(THREAD_NUM)
 	./workload_string e email $(TYPE) $(THREAD_NUM)
 
-workload.o: workload.cpp microbench.h index.h util.h ./masstree/mtIndexAPI.hh ./BwTree/bwtree.h BTreeOLC/BTreeOLC.h ./pcm/pcm-memory.cpp ./pcm/pcm-numa.cpp ./papi_util.cpp
+workload.o: workload.cpp microbench.h index.h util.h ./masstree/mtIndexAPI.hh ./BwTree/bwtree.h BTreeOLC/BTreeOLC.h BTreeOLC/BTreeOLC_child_layout.h ./pcm/pcm-memory.cpp ./pcm/pcm-numa.cpp ./papi_util.cpp
 	$(CXX) $(CFLAGS) -c -o workload.o workload.cpp
 
 workload: skiplist-clean workload.o bwtree.o artolc.o ./masstree/mtIndexAPI.a ./pcm/libPCM.a $(SL_OBJS)

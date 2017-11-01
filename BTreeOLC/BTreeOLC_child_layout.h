@@ -119,9 +119,9 @@ struct BTreeLeaf : public BTreeLeafBase {
          // This is the key at the pivot position
          const Key middle_key = data[mid].first;
 
-         if (k<keys[mid]) {
+         if (k<middle_key) {
             upper=mid;
-         } else if (k>keys[mid]) {
+         } else if (k>middle_key) {
             lower=mid+1;
          } else {
             return mid;
@@ -131,14 +131,14 @@ struct BTreeLeaf : public BTreeLeafBase {
    }
 
    unsigned lowerBoundBF(Key k) {
-      auto base=keys;
+      auto base=data;
       unsigned n=count;
       while (n>1) {
          const unsigned half=n/2;
-         base=(base[half]<k)?(base+half):base;
+         base=(base[half].first<k)?(base+half):base;
          n-=half;
       }
-      return (*base<k)+base-keys;
+      return (base->first<k)+base-base;
    }
 
   void insert(Key k,Payload p) {

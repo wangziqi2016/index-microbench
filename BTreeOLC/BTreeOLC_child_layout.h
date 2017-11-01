@@ -89,20 +89,12 @@ struct BTreeLeafBase : public NodeBase {
 
 template<class Key,class Payload>
 struct BTreeLeaf : public BTreeLeafBase {
-   struct Entry {
-      Key k;
-      Payload p;
-   };
-
-   static const uint64_t maxEntries=(pageSize-sizeof(NodeBase))/(sizeof(Key)+sizeof(Payload));
    // This is the element type of the leaf node
    using KeyValueType = std::pair<Key, Payload>;
+   static const uint64_t maxEntries=(pageSize-sizeof(NodeBase))/(sizeof(KeyValueType));
 
    // This is the array that we perform search on
    KeyValueType data[maxEntries];
-
-   //Key keys[maxEntries];
-   //Payload payloads[maxEntries];
 
    BTreeLeaf() {
       count=0;
@@ -117,7 +109,7 @@ struct BTreeLeaf : public BTreeLeafBase {
       do {
          unsigned mid=((upper-lower)/2)+lower;
          // This is the key at the pivot position
-         const Key middle_key = data[mid].first;
+         const Key &middle_key = data[mid].first;
 
          if (k<middle_key) {
             upper=mid;
@@ -137,9 +129,8 @@ struct BTreeLeaf : public BTreeLeafBase {
       if ((pos<count) && (data[pos].first==k)) {
         // Upsert
         data[pos].second = p;
-	      return;
+        return;
       }
-
       memmove(data+pos+1,data+pos,sizeof(KeyValueType)*(count-pos));
       //memmove(payloads+pos+1,payloads+pos,sizeof(Payload)*(count-pos));
       data[pos].first=k;

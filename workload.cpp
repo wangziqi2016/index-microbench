@@ -18,7 +18,7 @@ std::atomic<long> skiplist_total_steps;
 #include "tbb/tbb.h"
 #endif
 
-//#define BWTREE_CONSOLIDATE_AFTER_INSERT
+#define BWTREE_CONSOLIDATE_AFTER_INSERT
 
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
   #ifdef USE_TBB
@@ -636,6 +636,23 @@ int main(int argc, char *argv[]) {
 #ifdef BWTREE_COLLECT_STATISTICS
   fprintf(stderr, "  BwTree will collect statistics\n");
 #endif
+
+#ifndef BWTREE_USE_MAPPING_TABLE
+  fprintf(stderr, "  BwTree does not use mapping table\n");
+  if(wl != WORKLOAD_C) {
+    fprintf(stderr, "Could only use workload C\n");
+    exit(1);
+  }
+#endif
+
+#ifndef BWTREE_USE_CAS
+  fprintf(stderr, "  BwTree does not use CAS\n");
+#endif
+
+#ifndef BWTREE_USE_DELTA_UPDATE
+  fprintf(stderr, "  BwTree does not use delta update\n");
+#endif
+
 
   // If we do not interleave threads on two sockets then this will be printed
   if(hyperthreading == true) {

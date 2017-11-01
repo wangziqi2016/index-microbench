@@ -168,7 +168,7 @@ struct BTreeLeaf : public BTreeLeafBase {
       count = count-newLeaf->count;
       memcpy(newLeaf->data, data+count, sizeof(KeyValueType)*newLeaf->count);
       //memcpy(newLeaf->payloads, payloads+count, sizeof(Payload)*newLeaf->count);
-      sep = keys[count-1];
+      sep = data[count-1].first;
       return newLeaf;
    }
 };
@@ -411,9 +411,9 @@ struct BTree {
     BTreeLeaf<Key,Value>* leaf = static_cast<BTreeLeaf<Key,Value>*>(node);
     unsigned pos = leaf->lowerBound(k);
     bool success;
-    if ((pos<leaf->count) && (leaf->keys[pos]==k)) {
+    if ((pos<leaf->count) && (leaf->data[pos].first==k)) {
       success = true;
-      result = leaf->payloads[pos];
+      result = leaf->data[pos].second;
     }
     if (parent) {
       parent->readUnlockOrRestart(versionParent, needRestart);
@@ -464,7 +464,7 @@ struct BTree {
     for (unsigned i=pos; i<leaf->count; i++) {
       if (count==range)
 	break;
-      output[count++] = leaf->payloads[i];
+      output[count++] = leaf->data[i].second;
     }
 
     if (parent) {

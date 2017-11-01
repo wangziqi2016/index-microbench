@@ -145,18 +145,19 @@ struct BTreeLeaf : public BTreeLeafBase {
     assert(count<maxEntries);
     if (count) {
       unsigned pos=lowerBound(k);
-      if ((pos<count) && (keys[pos]==k)) {
-	// Upsert
-	payloads[pos] = p;
-	return;
+      if ((pos<count) && (data[pos].first==k)) {
+        // Upsert
+        data[pos].second = p;
+	      return;
       }
-      memmove(keys+pos+1,keys+pos,sizeof(Key)*(count-pos));
-      memmove(payloads+pos+1,payloads+pos,sizeof(Payload)*(count-pos));
-      keys[pos]=k;
-      payloads[pos]=p;
+
+      memmove(data+pos+1,data+pos,sizeof(KeyValueType)*(count-pos));
+      //memmove(payloads+pos+1,payloads+pos,sizeof(Payload)*(count-pos));
+      data[pos].first=k;
+      data[pos].second=p;
     } else {
-      keys[0]=k;
-      payloads[0]=p;
+      data[0].first=k;
+      data[0].second=p;
     }
     count++;
   }
@@ -165,8 +166,8 @@ struct BTreeLeaf : public BTreeLeafBase {
       BTreeLeaf* newLeaf = new BTreeLeaf();
       newLeaf->count = count-(count/2);
       count = count-newLeaf->count;
-      memcpy(newLeaf->keys, keys+count, sizeof(Key)*newLeaf->count);
-      memcpy(newLeaf->payloads, payloads+count, sizeof(Payload)*newLeaf->count);
+      memcpy(newLeaf->data, data+count, sizeof(KeyValueType)*newLeaf->count);
+      //memcpy(newLeaf->payloads, payloads+count, sizeof(Payload)*newLeaf->count);
       sep = keys[count-1];
       return newLeaf;
    }

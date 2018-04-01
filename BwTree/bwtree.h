@@ -36,6 +36,8 @@
 #include <cstddef>
 #include <vector>
 
+#include <sys/mman.h>
+
 /*
  * BWTREE_PELOTON - Specifies whether Peloton-specific features are
  *                  Compiled or not
@@ -63,15 +65,15 @@
 //#define USE_OLD_EPOCH
 
 // This determines whether bwtree will use preallocation
-//#define BWTREE_PREALLOCATION
+#define BWTREE_PREALLOCATION
 
 #define BWTREE_SEARCH_SHORTCUT
 
-//#define BWTREE_USE_CAS
+#define BWTREE_USE_CAS
 
-//#define BWTREE_USE_MAPPING_TABLE
+#define BWTREE_USE_MAPPING_TABLE
 
-//#define BWTREE_USE_DELTA_UPDATE
+#define BWTREE_USE_DELTA_UPDATE
 
 // If we do not use mapping table, then must consolidate the index
 // also we do not call destructor
@@ -3423,6 +3425,7 @@ class BwTree : public BwTreeBase {
 
     bwt_printf("Freed %lu tree nodes\n", node_count);
 #endif
+    munmap(mapping_table, 1024 * 1024 * 1024);
     return;
   }
   
@@ -3951,6 +3954,13 @@ class BwTree : public BwTreeBase {
     bwt_printf("Initializing mapping table.... size = %lu\n",
                MAPPING_TABLE_SIZE);
     bwt_printf("Fast initialization: Do not set to zero\n");
+
+
+    mapping_table = (std::atomic<const BaseNode *> *) \
+                     mmap(NULL, 1024 * 1024 * 1024, 
+                        PROT_READ | PROT_WRITE, 
+                        MAP_ANONYMOUS | MAP_PRIVATE,
+                        -1, 0);
 
     return;
   }
@@ -8941,15 +8951,15 @@ before_switch:
   void GetValueNoMappingTable(const KeyType &search_key,
                               std::vector<ValueType> &value_list) {
     //printf("Entering\n");
-    EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
+    //EpochNode *epoch_node_p = epoch_manager.JoinEpoch();
 
-    int level = 0;
+    //int level = 0;
     //printf("Before loading root Id\n");
     const BaseNode *current_node_p = reinterpret_cast<const BaseNode *>(root_id.load());
     //printf("After loading root id\n");
     while(current_node_p->IsOnLeafDeltaChain() == false) {
       //printf("%p\n", current_node_p);
-      level += 1;
+      //level += 1;
       const InnerNode *inner_node_p = static_cast<const InnerNode *>(current_node_p);
 
       // Get the node ID (which is actually BaseNode pointers)
@@ -8974,10 +8984,10 @@ before_switch:
     if((it != leaf_node_p->End()) && \
        (KeyCmpEqual(search_key, it->first))) {
       //printf("Before push back\n");
-      value_list.push_back(it->second);
+      //value_list.push_back(it->second);
     }
     //printf("After push back\n");
-    epoch_manager.LeaveEpoch(epoch_node_p);
+    //epoch_manager.LeaveEpoch(epoch_node_p);
     //printf("Before return\n");
     return;
   }
@@ -9102,7 +9112,8 @@ before_switch:
 
   // If we allow CAS operation, then use atomic. Otherwise use normal type
 #ifdef BWTREE_USE_CAS
-  std::array<std::atomic<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
+  //std::array<std::atomic<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
+  std::atomic<const BaseNode *> *mapping_table;
 #else
   std::array<FakeAtomic<const BaseNode *>, MAPPING_TABLE_SIZE> mapping_table;
 #endif

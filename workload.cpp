@@ -707,6 +707,9 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Program will exit after insert operation\n");
   }
 
+  fprintf(stderr, "  BTree element pair count: %lu\n", 
+          (uint64_t)btreeolc::BTreeLeaf<uint64_t, uint64_t>::maxEntries);
+
   // If the key type is RDTSC we just run the special function
   if(kt != RDTSC_KEY) {
     std::vector<keytype> init_keys;

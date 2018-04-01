@@ -429,6 +429,11 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Number of threads: %d\n", num_thread);
   }
 
+  fprintf(stderr, "Leaf delta chain threshold: %d; Inner delta chain threshold: %d\n",
+          LEAF_DELTA_CHAIN_LENGTH_THRESHOLD,
+          INNER_DELTA_CHAIN_LENGTH_THRESHOLD);
+
+
   // Then read all remianing arguments
   int repeat_counter = 1;
   char **argv_end = argv + argc;

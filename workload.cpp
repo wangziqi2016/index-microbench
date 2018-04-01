@@ -138,6 +138,11 @@ inline void load(int wl,
     }
     init_keys.push_back(key);
     count++;
+
+    // If we have reached the max init key limit then just break
+    if(max_init_key > 0 && count == max_init_key) {
+      break;
+    }
   }
   
   fprintf(stderr, "Loaded %d keys\n", count);
@@ -624,7 +629,7 @@ int main(int argc, char *argv[]) {
       // If we repeat, then exec() will be called for 5 times
       repeat_counter = 5;
     } else if(strcmp(*v, "--max-init-key") == 0) {
-      max_init_key = atoll(v + 1);
+      max_init_key = atoll(*(v + 1));
       if(max_init_key <= 0) {
         fprintf(stderr, "Illegal maximum init keys: %ld\n", max_init_key);
         exit(1);
@@ -636,6 +641,11 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "Unknown switch: %s\n", *v);
       exit(1);
     }
+  }
+
+  if(max_init_key != -1) {
+    fprintf(stderr, "Maximum init keys: %ld\n", max_init_key);
+    fprintf(stderr, "  NOTE: Memory is not affected in this case\n");
   }
 
 #ifdef COUNT_READ_MISS
@@ -723,9 +733,6 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Program will exit after insert operation\n");
   }
 
-  if(max_init_key != -1) {
-    fprintf(stderr, "Maximum init keys: %ld\n", max_init_key);
-  }
 
   fprintf(stderr, "  BTree element pair count: %lu\n", 
           (uint64_t)btreeolc::BTreeLeaf<uint64_t, uint64_t>::maxEntries);

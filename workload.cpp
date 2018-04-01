@@ -18,7 +18,7 @@ std::atomic<long> skiplist_total_steps;
 #include "tbb/tbb.h"
 #endif
 
-#define BWTREE_CONSOLIDATE_AFTER_INSERT
+//#define BWTREE_CONSOLIDATE_AFTER_INSERT
 
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
   #ifdef USE_TBB
@@ -52,6 +52,9 @@ static bool memory_bandwidth = false;
 static bool numa = false;
 // Whether we only perform insert
 static bool insert_only = false;
+
+// We could set an upper bound of the number of loaded keys
+static int64_t max_init_key = -1;
 
 #include "util.h"
 
@@ -217,6 +220,7 @@ inline void exec(int wl,
 
   //WRITE ONLY TEST-----------------
   int count = (int)init_keys.size();
+  fprintf(stderr, "Populating the index with %d keys using %d threads\n", count, num_thread);
 
 #ifdef USE_TBB  
   tbb::task_scheduler_init init{num_thread};
@@ -619,6 +623,18 @@ int main(int argc, char *argv[]) {
     } else if(strcmp(*v, "--repeat") == 0) {
       // If we repeat, then exec() will be called for 5 times
       repeat_counter = 5;
+    } else if(strcmp(*v, "--max-init-key") == 0) {
+      max_init_key = atoll(v + 1);
+      if(max_init_key <= 0) {
+        fprintf(stderr, "Illegal maximum init keys: %ld\n", max_init_key);
+        exit(1);
+      } 
+
+      // Ignore the next argument
+      v++;
+    } else {
+      fprintf(stderr, "Unknown switch: %s\n", *v);
+      exit(1);
     }
   }
 
@@ -705,6 +721,10 @@ int main(int argc, char *argv[]) {
 
   if(insert_only == true) {
     fprintf(stderr, "Program will exit after insert operation\n");
+  }
+
+  if(max_init_key != -1) {
+    fprintf(stderr, "Maximum init keys: %ld\n", max_init_key);
   }
 
   fprintf(stderr, "  BTree element pair count: %lu\n", 

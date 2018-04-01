@@ -18,6 +18,7 @@ std::atomic<long> skiplist_total_steps;
 #include "tbb/tbb.h"
 #endif
 
+// Enable this if you need pre-allocation utilization
 //#define BWTREE_CONSOLIDATE_AFTER_INSERT
 
 #ifdef BWTREE_CONSOLIDATE_AFTER_INSERT
@@ -667,6 +668,10 @@ int main(int argc, char *argv[]) {
 #ifdef BWTREE_COLLECT_STATISTICS
   fprintf(stderr, "  BwTree will collect statistics\n");
 #endif
+
+  fprintf(stderr, "Leaf delta chain threshold: %d; Inner delta chain threshold: %d\n",
+          LEAF_DELTA_CHAIN_LENGTH_THRESHOLD,
+          INNER_DELTA_CHAIN_LENGTH_THRESHOLD);
 
 #ifndef BWTREE_USE_MAPPING_TABLE
   fprintf(stderr, "  BwTree does not use mapping table\n");

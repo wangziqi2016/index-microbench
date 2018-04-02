@@ -223,6 +223,8 @@ inline void load(int wl,
       var += ((r - avg) * (r - avg));
     }
 
+    var /= (long)ranges.size();
+
     fprintf(stderr, "YCSB-E scan Avg length: %ld; Variance: %ld\n",
             avg, var);
   }

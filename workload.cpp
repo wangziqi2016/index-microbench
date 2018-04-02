@@ -208,6 +208,25 @@ inline void load(int wl,
     count++;
   }
 
+
+  // Average and variation
+  long avg = 0, var = 0;
+  // If it is YSCB-E workload then we compute average and stdvar
+  if(ranges.size() != 0) {
+    for(int r : ranges) {
+      avg += r;
+    }
+
+    avg /= (long)ranges.size();
+
+    for(int r : ranges) {
+      var += ((r - avg) * (r - avg));
+    }
+
+    fprintf(stderr, "YCSB-E scan Avg length: %ld; Variance: %ld\n",
+            avg, var);
+  }
+
 }
 
 //==============================================================

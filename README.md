@@ -30,3 +30,13 @@
    The generated workload files will be in ./workloads
 
 5. NOTE: To generate email-key workloads, you need an email list (list.txt)# index-microbench 
+
+## Publications ##
+
+This index benchmarking framework has been used as the experimental environment for the following research papers:
+
+Ziqi Wang, Andrew Pavlo, Hyeontaek Lim, Viktor Leis, Huanchen Zhang,
+Michael Kaminsky, and David G. Andersen. 2018. Building a Bw-Tree Takes
+More Than Just Buzz Words. In Proceedings of 2018 International Conference
+on Management of Data (SIGMOD’18). ACM, New York, NY, USA, 16 pages.
+https://doi.org/10.1145/3183713.3196895

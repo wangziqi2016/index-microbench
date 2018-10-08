@@ -98,7 +98,7 @@ class BTreeRTMIndex : public Index<KeyType, KeyComparator>
   }
 
   bool upsert(KeyType key, uint64_t value, threadinfo *ti) {
-    bt_insert(tree, (uint64_t)key, value);
+    bt_upsert(tree, (uint64_t)key, value);
     return true;
   }
 

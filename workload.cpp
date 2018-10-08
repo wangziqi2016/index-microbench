@@ -568,7 +568,7 @@ int main(int argc, char *argv[]) {
     std::cout << "   \"none\" type means we just load the file and exit. \n"
                  "This serves as the base line for microbenchamrks\n";
     std::cout << "2. key distribution: rand, mono\n";
-    std::cout << "3. index type: bwtree skiplist masstree artolc btreeolc\n";
+    std::cout << "3. index type: bwtree skiplist masstree artolc btreeolc btreertm\n";
     std::cout << "4. number of threads (integer)\n";
     std::cout << "   --hyper: Whether to pin all threads on NUMA node 0\n";
     std::cout << "   --mem: Whether to monitor memory access\n";
@@ -615,6 +615,8 @@ int main(int argc, char *argv[]) {
     index_type = TYPE_BTREEOLC;
   else if (strcmp(argv[3], "skiplist") == 0)
     index_type = TYPE_SKIPLIST;
+  else if (strcmp(argv[3], "btreertm") == 0)
+    index_type = TYPE_BTREERTM;
   else if (strcmp(argv[3], "none") == 0)
     // This is a special type used for measuring base cost (i.e.
     // only loading the workload files but do not invoke the index)

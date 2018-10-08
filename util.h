@@ -60,6 +60,8 @@ Index<KeyType, KeyComparator> *getInstance(const int type, const uint64_t kt) {
     return new BTreeOLCIndex<KeyType, KeyComparator>(kt);
   else if (type == TYPE_SKIPLIST)
     return new SkipListIndex<KeyType, KeyComparator>(kt);
+  else if (type == TYPE_BTREERTM)
+    return new BTreeRTMIndex<KeyType, KeyComparator>(kt);
   else {
     fprintf(stderr, "Unknown index type: %d\n", type);
     exit(1);

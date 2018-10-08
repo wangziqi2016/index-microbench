@@ -35,7 +35,7 @@ typedef struct {
 } btree_t;
 
 inline uint64_t *btnode_at(btnode_t *node, int index, int isvalue) {
-  assert(index >= 0 && index < node->size && node->size <= BTNODE_CAPACITY);
+  assert(index < node->size); assert(node->size <= BTNODE_CAPACITY); assert(index >= 0);
   return &node->data[(((node->permute >> (index << 2)) & 0xFUL) << 1) + isvalue];
 }
 
@@ -59,5 +59,6 @@ btnode_t *bt_findleaf(btree_t *tree, uint64_t key);
 int bt_insert(btree_t *tree, uint64_t key, uint64_t value);
 int bt_remove(btree_t *tree, uint64_t key);
 uint64_t bt_find(btree_t *tree, uint64_t key, int *success);
+int bt_upsert(btree_t *tree, uint64_t key, uint64_t value);
 
 #endif

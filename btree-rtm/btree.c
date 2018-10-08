@@ -54,21 +54,20 @@ void bt_free(btree_t *tree) {
 
 // Given a key, return the slot index with a key equal to or greater than the key
 // Could be end of any active slot, which means the key is the biggest
+// For inner nodes, do not search the first separator key because it can be -Inf
 int btnode_lb(const btree_t *tree, btnode_t *node, uint64_t key, int *exact) {
-  for(int i = 0;i < node->size;i++) {
+  for(int i = (node->property & BTNODE_INNER) ? 1 : 0;i < node->size;i++) {
     int cmpret = tree->cmp(*btnode_at(node, i, BTNODE_KEY), key);
-    if(cmpret >= 0) {
-      *exact = cmpret == 0;
-      return i;
-    }
+    if(cmpret >= 0) { *exact = cmpret == 0; return i; }
   }
   *exact = 0;
   return node->size;
 }
 
-// Stop at the first location greater than the key
+// Stop at the first location greater than the key. This function does not search the first element of inner node
 int btnode_ub(const btree_t *tree, btnode_t *node, uint64_t key) {
-  for(int i = 0;i < node->size;i++) if(tree->cmp(*btnode_at(node, i, BTNODE_KEY), key) > 0) return i;
+  assert(node->property & BTNODE_INNER);
+  for(int i = 1;i < node->size;i++) if(tree->cmp(*btnode_at(node, i, BTNODE_KEY), key) > 0) return i;
   return node->size;
 }
 
@@ -89,6 +88,7 @@ int btnode_insert(btree_t *tree, btnode_t *node, uint64_t key, uint64_t value) {
 // Removing is a heavyweight operation because we must rearrange the elements
 void btnode_removeat(btnode_t *node, int index) {
   assert(index >= 0 && index < node->size);
+  assert(!(node->property & BTNODE_INNER) || index != 0); // Should not remove the leftmost separator for inner node
   uint64_t physical_slot = (node->permute >> (index << 2)) & 0xFUL;
   memmove(node->data + (physical_slot << 1), 
           node->data + (physical_slot << 1) + 2, 
@@ -188,6 +188,7 @@ btnode_t *btnode_smo(btree_t *tree, btnode_t *node, uint64_t key, btnode_t *pare
     btnode_insert(tree, parent, *btnode_at(new_node, 0, BTNODE_KEY), (uint64_t)new_node);
     if(tree->cmp(key, *btnode_at(new_node, 0, BTNODE_KEY)) >= 0) node = new_node; // Search new node if key is in it
   } else if(parent && node->size < BTNODE_MERGE_THRESHOLD) { // Consider merging only when it is not root
+    assert(parent_index != -1);
     int merged = 0;
     if(parent_index != 0) { // Left merge
       btnode_t *left = (btnode_t *)*btnode_at(parent, parent_index - 1, BTNODE_VALUE);
@@ -210,14 +211,14 @@ btnode_t *btnode_smo(btree_t *tree, btnode_t *node, uint64_t key, btnode_t *pare
   return node;
 }
 
-// Returns the leaf node after SMO, even for read-only op (SMO should be relatively infrequently)
+// Returns the leaf node after SMO, even for read-only op (SMO should be relatively infrequent)
 btnode_t *bt_findleaf(btree_t *tree, uint64_t key) {
   btnode_t *parent = NULL, *curr = tree->root;
   int parent_index = -1;
   while(curr->property & BTNODE_INNER) {
     curr = btnode_smo(tree, curr, key, parent, parent_index); // May adjust the node we need to search
-    assert(tree->cmp(key, *btnode_at(curr, 0, BTNODE_KEY)) >= 0);
-    assert(curr->next == NULL || tree->cmp(key, *btnode_at(curr->next, 0, BTNODE_KEY)) < 0);
+    //assert(tree->cmp(key, *btnode_at(curr, 0, BTNODE_KEY)) >= 0);
+    //assert(curr->next == NULL || tree->cmp(key, *btnode_at(curr->next, 0, BTNODE_KEY)) < 0);
     assert(btnode_ub(tree, curr, key) != 0);
     parent = curr;
     parent_index = btnode_ub(tree, curr, key) - 1; // The index of the child node we will visit
@@ -239,7 +240,21 @@ int bt_remove(btree_t *tree, uint64_t key) {
 uint64_t bt_find(btree_t *tree, uint64_t key, int *success) {
   btnode_t *leaf = bt_findleaf(tree, key);
   if(leaf->size == 0) { *success = 0; return 0; }
-  assert(tree->cmp(key, *btnode_at(leaf, 0, BTNODE_KEY)) >= 0);
-  assert(leaf->next == NULL || tree->cmp(key, *btnode_at(leaf->next, 0, BTNODE_KEY)) < 0);
-  return *btnode_at(leaf, btnode_lb(tree, leaf, key, success), BTNODE_VALUE);
+  //assert(tree->cmp(key, *btnode_at(leaf, 0, BTNODE_KEY)) >= 0);
+  //assert(leaf->next == NULL || tree->cmp(key, *btnode_at(leaf->next, 0, BTNODE_KEY)) < 0);
+  //btnode_print(leaf);
+  int index = btnode_lb(tree, leaf, key, success);
+  if(!*success) return 0;
+  return *btnode_at(leaf, index, BTNODE_VALUE);
+}
+
+// Update if key exists, insert if not; return 1 if insert happens, 0 if not
+int bt_upsert(btree_t *tree, uint64_t key, uint64_t value) {
+  btnode_t *leaf = bt_findleaf(tree, key);
+  if(leaf->size == 0) { btnode_insert(tree, leaf, key, value); return 1; }
+  int success;
+  int index = btnode_lb(tree, leaf, key, &success);
+  if(!success) { btnode_insert(tree, leaf, key, value); return 1; }
+  *btnode_at(leaf, index, BTNODE_VALUE) = value;
+  return 0;
 }

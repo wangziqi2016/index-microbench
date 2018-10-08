@@ -13,6 +13,7 @@
 #include <byteswap.h>
 
 #include "masstree/mtIndexAPI.hh"
+#include "btree-rtm/btree.h"
 
 #include "./nohotspot-skiplist/intset.h"
 #include "./nohotspot-skiplist/background.h"
@@ -69,6 +70,58 @@ class Index
 
 extern thread_local long skiplist_steps;
 extern std::atomic<long> skiplist_total_steps;
+
+template<typename KeyType, class KeyComparator>
+class BTreeRTMIndex : public Index<KeyType, KeyComparator>
+{
+ public:
+  ~BTreeRTMIndex() {
+    bt_free(tree);
+  }
+
+  void UpdateThreadLocal(size_t thread_num) {}
+  void AssignGCID(size_t thread_id) {}
+  void UnregisterThread(size_t thread_id) {}
+
+  bool insert(KeyType key, uint64_t value, threadinfo *ti) {
+    bt_insert(tree, (uint64_t)key, value);
+    return true;
+  }
+
+  uint64_t find(KeyType key, std::vector<uint64_t> *v, threadinfo *ti) {
+    uint64_t result;
+    int success;
+    result = bt_find(tree, key, &success);
+    v->clear();
+    v->push_back(result);
+    return 0;
+  }
+
+  bool upsert(KeyType key, uint64_t value, threadinfo *ti) {
+    bt_insert(tree, (uint64_t)key, value);
+    return true;
+  }
+
+  void incKey(uint64_t& key) { key++; };
+  void incKey(GenericKey<31>& key) { key.data[strlen(key.data)-1]++; };
+
+  uint64_t scan(KeyType key, int range, threadinfo *ti) {
+    return 0;
+  }
+
+  int64_t getMemory() const {
+    return 0;
+  }
+
+  void merge() {}
+
+  BTreeRTMIndex(uint64_t kt) {
+    tree = bt_init(bt_intcmp);
+  }
+
+ private:
+  btree_t *tree;
+};
 
 template<typename KeyType, class KeyComparator>
 class SkipListIndex : public Index<KeyType, KeyComparator> {
@@ -241,7 +294,6 @@ class ArtOLCIndex : public Index<KeyType, KeyComparator>
   Key maxKey;
   ART_OLC::Tree *idx;
 };
-
 
 template<typename KeyType, class KeyComparator>
 class BTreeOLCIndex : public Index<KeyType, KeyComparator>

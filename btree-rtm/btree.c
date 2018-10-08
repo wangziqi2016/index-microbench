@@ -25,7 +25,7 @@ void btnode_freeall(btnode_t *node, int level) {
 // Print a btnode object. Used for debugging or erorr message
 void btnode_print(btnode_t *node) {
   printf("btnode_t * @ %p\n", node);
-  printf("size = %d; level = %d; property = 0x%lX", node->size, node->level, node->property);
+  printf("size = %d; level = %u; property = 0x%X", node->size, node->level, node->property);
   if(node->property & BTNODE_INNER) printf(" Inner");
   if(node->property & BTNODE_LEAF) printf(" Leaf");
   if(node->property & BTNODE_ROOT) printf(" Root");
@@ -56,7 +56,8 @@ void bt_free(btree_t *tree) {
 // Could be end of any active slot, which means the key is the biggest
 // For inner nodes, do not search the first separator key because it can be -Inf
 int btnode_lb(const btree_t *tree, btnode_t *node, uint64_t key, int *exact) {
-  for(int i = (node->property & BTNODE_INNER) ? 1 : 0;i < node->size;i++) {
+  int start = benode_startindex(tree, node, key, (node->property & BTNODE_INNER) ? 1 : 0);
+  for(int i = start;i < node->size;i++) {
     int cmpret = tree->cmp(*btnode_at(node, i, BTNODE_KEY), key);
     if(cmpret >= 0) { *exact = cmpret == 0; return i; }
   }
@@ -67,7 +68,8 @@ int btnode_lb(const btree_t *tree, btnode_t *node, uint64_t key, int *exact) {
 // Stop at the first location greater than the key. This function does not search the first element of inner node
 int btnode_ub(const btree_t *tree, btnode_t *node, uint64_t key) {
   assert(node->property & BTNODE_INNER);
-  for(int i = 1;i < node->size;i++) if(tree->cmp(*btnode_at(node, i, BTNODE_KEY), key) > 0) return i;
+  int start = benode_startindex(tree, node, key, 1);
+  for(int i = start;i < node->size;i++) if(tree->cmp(*btnode_at(node, i, BTNODE_KEY), key) > 0) return i;
   return node->size;
 }
 
@@ -123,8 +125,8 @@ btnode_t *btnode_split(btnode_t *node) {
   int mid = node->size / 2; // First node in the upper half
   btnode_t *new_node = btnode_init(node->property);
   new_node->size = node->size - mid;
-  new_node->next = node->next;
-  new_node->prev = node;
+  btnode_setnext(new_node, btnode_getnext(node)); // new_node->next = node->next;
+  btnode_setprev(new_node, node); // new_node->prev = node;
   new_node->level = node->level;
   for(int i = 0;i < new_node->size;i++) {
     new_node->data[i << 1] = *btnode_at(node, mid + i, BTNODE_KEY);
@@ -139,7 +141,7 @@ btnode_t *btnode_split(btnode_t *node) {
     temp_permute |= ((uint64_t)i << (i << 2));
   }
   memcpy(node->data, temp, sizeof(uint64_t) * (mid << 1));
-  node->next = new_node;
+  btnode_setnext(node, new_node); // node->next = new_node;
   node->permute = temp_permute;
   node->size = mid;
   return new_node;
@@ -164,7 +166,7 @@ btnode_t *btnode_merge(btnode_t *left, btnode_t *right) {
   left->size += right->size;
   memcpy(left->data, temp, sizeof(uint64_t) * (left->size << 1));
   left->permute = temp_permute;
-  left->next = right->next;         // Update sibling pointer
+  btnode_setnext(left, btnode_getnext(right)); // left->next = right->next;
   right->size = right->permute = 0; // For TSX: Abort any txn that has accessed right node
   btnode_free(right);
   return left;
@@ -217,8 +219,6 @@ btnode_t *bt_findleaf(btree_t *tree, uint64_t key) {
   int parent_index = -1;
   while(curr->property & BTNODE_INNER) {
     curr = btnode_smo(tree, curr, key, parent, parent_index); // May adjust the node we need to search
-    //assert(tree->cmp(key, *btnode_at(curr, 0, BTNODE_KEY)) >= 0);
-    //assert(curr->next == NULL || tree->cmp(key, *btnode_at(curr->next, 0, BTNODE_KEY)) < 0);
     assert(btnode_ub(tree, curr, key) != 0);
     parent = curr;
     parent_index = btnode_ub(tree, curr, key) - 1; // The index of the child node we will visit
@@ -239,10 +239,6 @@ int bt_remove(btree_t *tree, uint64_t key) {
 
 uint64_t bt_find(btree_t *tree, uint64_t key, int *success) {
   btnode_t *leaf = bt_findleaf(tree, key);
-  if(leaf->size == 0) { *success = 0; return 0; }
-  //assert(tree->cmp(key, *btnode_at(leaf, 0, BTNODE_KEY)) >= 0);
-  //assert(leaf->next == NULL || tree->cmp(key, *btnode_at(leaf->next, 0, BTNODE_KEY)) < 0);
-  //btnode_print(leaf);
   int index = btnode_lb(tree, leaf, key, success);
   if(!*success) return 0;
   return *btnode_at(leaf, index, BTNODE_VALUE);

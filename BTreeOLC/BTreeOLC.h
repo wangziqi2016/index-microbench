@@ -145,7 +145,7 @@ struct BTreeLeaf : public BTreeLeafBase {
 
    BTreeLeaf* split(Key& sep) {
       BTreeLeaf* newLeaf = new BTreeLeaf();
-      newLeaf->count = count-(count/2);
+      newLeaf->count = count/2;
       count = count-newLeaf->count;
       memcpy(newLeaf->keys, keys+count, sizeof(Key)*newLeaf->count);
       memcpy(newLeaf->payloads, payloads+count, sizeof(Payload)*newLeaf->count);
@@ -200,7 +200,7 @@ struct BTreeInner : public BTreeInnerBase {
 
    BTreeInner* split(Key& sep) {
       BTreeInner* newInner=new BTreeInner();
-      newInner->count=count-(count/2);
+      newInner->count=count/2;
       count=count-newInner->count-1;
       sep=keys[count];
       memcpy(newInner->keys,keys+count+1,sizeof(Key)*(newInner->count+1));
